@@ -22,3 +22,4 @@ yarn-error.log
 /.vscode
 /.zed
 firebase-credentials.json
+SECURITY_CHECKLIST.md
