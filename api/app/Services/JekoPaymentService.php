@@ -336,22 +336,44 @@ class JekoPaymentService
     /**
      * Vérifier la signature HMAC-SHA256 du webhook
      *
-     * @param string $payload Le corps brut de la requête
-     * @param string $signature La signature reçue dans l'en-tête Jeko-Signature
+     * @param string $payload Le corps brut de la requête (JSON string)
+     * @param string|null $signature La signature reçue dans l'en-tête Jeko-Signature
      * @return bool
      */
-    public function verifyWebhookSignature(string $payload, string $signature): bool
+    public function verifyWebhookSignature(string $payload, ?string $signature): bool
     {
+        // Mode sandbox/test - accepter si pas de secret configuré
+        if (config('jeko.sandbox') && empty(config('jeko.webhook_secret'))) {
+            Log::warning('Jeko: Webhook signature skipped in sandbox mode');
+            return true;
+        }
+        
         $secret = config('jeko.webhook_secret');
         
         if (empty($secret)) {
-            Log::warning('Jeko: Webhook secret not configured');
+            Log::channel('security')->error('Jeko: Webhook secret not configured in production');
             return false;
         }
         
+        if (empty($signature)) {
+            Log::channel('security')->warning('Jeko: No signature provided');
+            return false;
+        }
+        
+        // Calculer la signature attendue avec HMAC-SHA256
         $expectedSignature = hash_hmac('sha256', $payload, $secret);
         
-        return hash_equals($expectedSignature, $signature);
+        // Comparaison timing-safe pour éviter les timing attacks
+        $isValid = hash_equals($expectedSignature, $signature);
+        
+        if (!$isValid) {
+            Log::channel('security')->warning('Jeko: Signature mismatch', [
+                'expected_prefix' => substr($expectedSignature, 0, 10),
+                'received_prefix' => substr($signature, 0, 10),
+            ]);
+        }
+        
+        return $isValid;
     }
 
     /**

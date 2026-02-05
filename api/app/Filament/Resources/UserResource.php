@@ -27,9 +27,13 @@ class UserResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
+    // ==================== EAGER LOADING (Performance) ====================
+    
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->where('role', 'client');
+        return parent::getEloquentQuery()
+            ->where('role', 'client')
+            ->withCount('clientOrders');
     }
 
     public static function form(Form $form): Form

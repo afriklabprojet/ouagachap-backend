@@ -35,6 +35,14 @@ class OrderResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'order_number';
 
+    // ==================== EAGER LOADING (Performance) ====================
+    
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->with(['client:id,name,phone', 'courier:id,name,phone', 'zone:id,name', 'payment:id,order_id,status,amount']);
+    }
+
     // ==================== FORM ====================
     
     public static function form(Form $form): Form

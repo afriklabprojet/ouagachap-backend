@@ -19,21 +19,27 @@ class JekoWebhookController extends Controller
 
     /**
      * Gérer le webhook JEKO
+     * 
+     * La signature HMAC-SHA256 est vérifiée avec le corps brut de la requête
      */
     public function handle(Request $request): JsonResponse
     {
+        // IMPORTANT: Utiliser le corps brut pour la vérification HMAC
+        $rawPayload = $request->getContent();
         $payload = $request->all();
-        $signature = $request->header('Jeko-Signature');
+        $signature = $request->header('Jeko-Signature') ?? $request->header('X-Jeko-Signature') ?? '';
 
-        Log::info('Webhook JEKO reçu', [
-            'payload' => $payload,
+        Log::channel('security')->info('Webhook JEKO reçu', [
+            'ip' => $request->ip(),
             'has_signature' => !empty($signature),
+            'user_agent' => $request->userAgent(),
         ]);
 
-        // Vérifier la signature
-        if (!$this->jekoService->verifyWebhookSignature($payload, $signature)) {
-            Log::warning('Signature webhook JEKO invalide', [
-                'payload' => $payload,
+        // Vérifier la signature HMAC-SHA256 avec le corps brut
+        if (!$this->jekoService->verifyWebhookSignature($rawPayload, $signature)) {
+            Log::channel('security')->warning('Signature webhook JEKO invalide', [
+                'ip' => $request->ip(),
+                'signature_received' => substr($signature, 0, 20) . '...',
             ]);
             
             return response()->json([

@@ -6,19 +6,23 @@
         <style>
             .courier-marker { background: transparent !important; border: none !important; }
             .leaflet-popup-content-wrapper { border-radius: 12px !important; }
+            .stat-number-green { color: #059669 !important; -webkit-text-fill-color: #059669 !important; }
+            .stat-number-gray { color: #374151 !important; -webkit-text-fill-color: #374151 !important; }
+            .stat-number-orange { color: #ea580c !important; -webkit-text-fill-color: #ea580c !important; }
+            .stat-label { color: #6b7280 !important; -webkit-text-fill-color: #6b7280 !important; }
         </style>
         @endpush
 
         {{-- Header avec statistiques --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 p-6 shadow-xl">
-                <div class="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-white/10"></div>
+            <div class="relative overflow-hidden rounded-2xl bg-white p-6 shadow-xl border border-gray-200">
+                <div class="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-emerald-500/10"></div>
                 <div class="relative flex items-center justify-between">
                     <div>
-                        <p class="text-emerald-100 text-sm font-medium">Coursiers en ligne</p>
-                        <p class="text-4xl font-black text-white mt-1">{{ $this->getOnlineCouriersCount() }}</p>
+                        <p class="stat-label text-sm font-medium">Coursiers en ligne</p>
+                        <p class="stat-number-green text-4xl font-black mt-1">{{ $this->getOnlineCouriersCount() }}</p>
                     </div>
-                    <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20">
+                    <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500">
                         <span class="relative flex h-4 w-4">
                             <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75"></span>
                             <span class="relative inline-flex h-4 w-4 rounded-full bg-white"></span>
@@ -27,27 +31,27 @@
                 </div>
             </div>
 
-            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-600 to-gray-700 p-6 shadow-xl">
-                <div class="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-white/10"></div>
+            <div class="relative overflow-hidden rounded-2xl bg-white p-6 shadow-xl border border-gray-200">
+                <div class="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-gray-500/10"></div>
                 <div class="relative flex items-center justify-between">
                     <div>
-                        <p class="text-gray-300 text-sm font-medium">Hors ligne</p>
-                        <p class="text-4xl font-black text-white mt-1">{{ $this->getOfflineCouriersCount() }}</p>
+                        <p class="stat-label text-sm font-medium">Hors ligne</p>
+                        <p class="stat-number-gray text-4xl font-black mt-1">{{ $this->getOfflineCouriersCount() }}</p>
                     </div>
-                    <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20">
+                    <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-500">
                         <x-heroicon-o-user-minus class="w-8 h-8 text-white"/>
                     </div>
                 </div>
             </div>
 
-            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-500 to-amber-600 p-6 shadow-xl">
-                <div class="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-white/10"></div>
+            <div class="relative overflow-hidden rounded-2xl bg-white p-6 shadow-xl border border-gray-200">
+                <div class="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-orange-500/10"></div>
                 <div class="relative flex items-center justify-between">
                     <div>
-                        <p class="text-orange-100 text-sm font-medium">Total coursiers</p>
-                        <p class="text-4xl font-black text-white mt-1">{{ $this->getTotalCouriersCount() }}</p>
+                        <p class="stat-label text-sm font-medium">Total coursiers</p>
+                        <p class="stat-number-orange text-4xl font-black mt-1">{{ $this->getTotalCouriersCount() }}</p>
                     </div>
-                    <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20">
+                    <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-500">
                         <x-heroicon-o-users class="w-8 h-8 text-white"/>
                     </div>
                 </div>

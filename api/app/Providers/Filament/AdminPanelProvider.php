@@ -62,9 +62,11 @@ class AdminPanelProvider extends PanelProvider
                     ->label('Finance')
                     ->icon('heroicon-o-banknotes'),
                 NavigationGroup::make()
+                    ->label('Suivi en direct')
+                    ->icon('heroicon-o-map-pin'),
+                NavigationGroup::make()
                     ->label('Configuration')
-                    ->icon('heroicon-o-cog-6-tooth')
-                    ->collapsed(),
+                    ->icon('heroicon-o-cog-6-tooth'),
                 NavigationGroup::make()
                     ->label('Système')
                     ->icon('heroicon-o-server')

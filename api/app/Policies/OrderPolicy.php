@@ -45,11 +45,21 @@ class OrderPolicy
     }
 
     /**
-     * Update order status (courier assigned to order)
+     * Update order status (courier assigned to order only)
      */
     public function update(User $user, Order $order): bool
     {
-        return $this->ownsOrder($user, $order);
+        // Seul le coursier assigné peut mettre à jour (pas le client)
+        return $user->isCourier() && $order->courier_id === $user->id;
+    }
+
+    /**
+     * Delete order (admin only via before())
+     */
+    public function delete(User $user, Order $order): bool
+    {
+        // Only admins can delete (handled by before())
+        return false;
     }
 
     /**

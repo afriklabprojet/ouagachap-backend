@@ -143,6 +143,46 @@ class CacheService
     {
         Cache::forget('config:general');
         Cache::forget('config:contact');
+        Cache::forget('site_settings:all');
+        Cache::forget('site_settings:landing');
+    }
+
+    /**
+     * Récupérer tous les site settings (cachés)
+     */
+    public function getSiteSettings(): array
+    {
+        return Cache::remember('site_settings:all', $this->defaultTtl, function () {
+            return \App\Models\SiteSetting::pluck('value', 'key')->toArray();
+        });
+    }
+
+    /**
+     * Récupérer les settings pour la landing page (cachés)
+     */
+    public function getLandingSettings(): array
+    {
+        return Cache::remember('site_settings:landing', $this->defaultTtl, function () {
+            $settings = \App\Models\SiteSetting::pluck('value', 'key')->toArray();
+            
+            // Décoder les JSON
+            foreach (['features', 'pricing_plans', 'testimonials'] as $key) {
+                if (isset($settings[$key]) && is_string($settings[$key])) {
+                    $settings[$key] = json_decode($settings[$key], true) ?? [];
+                }
+            }
+            
+            return $settings;
+        });
+    }
+
+    /**
+     * Invalider le cache des site settings
+     */
+    public function clearSiteSettingsCache(): void
+    {
+        Cache::forget('site_settings:all');
+        Cache::forget('site_settings:landing');
     }
 
     /**
@@ -153,6 +193,7 @@ class CacheService
         $this->clearZonesCache();
         $this->clearFaqsCache();
         $this->clearConfigCache();
+        $this->clearSiteSettingsCache();
     }
 
     /**

@@ -27,6 +27,14 @@ class PaymentResource extends Resource
 
     protected static ?int $navigationSort = 3;
 
+    // ==================== EAGER LOADING (Performance) ====================
+    
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->with(['user:id,name,phone', 'order:id,order_number,total_price']);
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -115,12 +123,12 @@ class PaymentResource extends Resource
                 Tables\Columns\TextColumn::make('method')
                     ->label('Méthode')
                     ->badge()
-                    ->formatStateUsing(fn($state) => PaymentMethod::tryFrom($state)?->label() ?? $state),
+                    ->formatStateUsing(fn($state) => $state instanceof PaymentMethod ? $state->label() : (PaymentMethod::tryFrom($state)?->label() ?? $state)),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Statut')
                     ->badge()
-                    ->color(fn(PaymentStatus $state): string => $state->color())
-                    ->formatStateUsing(fn(PaymentStatus $state): string => $state->label()),
+                    ->color(fn($state): string => $state instanceof PaymentStatus ? $state->color() : 'gray')
+                    ->formatStateUsing(fn($state): string => $state instanceof PaymentStatus ? $state->label() : (string) $state),
                 Tables\Columns\TextColumn::make('phone_number')
                     ->label('Téléphone')
                     ->toggleable(isToggledHiddenByDefault: true),

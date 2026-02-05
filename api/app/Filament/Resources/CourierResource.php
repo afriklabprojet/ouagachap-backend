@@ -28,9 +28,15 @@ class CourierResource extends Resource
     protected static ?int $navigationSort = 2;
     protected static ?string $navigationGroup = 'Utilisateurs';
 
+    // ==================== EAGER LOADING (Performance) ====================
+    
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->where('role', UserRole::COURIER);
+        return parent::getEloquentQuery()
+            ->where('role', UserRole::COURIER)
+            ->withCount(['courierOrders as active_orders_count' => function ($query) {
+                $query->whereIn('status', [OrderStatus::ASSIGNED->value, OrderStatus::PICKED_UP->value]);
+            }]);
     }
 
     public static function form(Form $form): Form
