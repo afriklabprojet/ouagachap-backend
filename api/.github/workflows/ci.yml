@@ -67,18 +67,20 @@ jobs:
       - name: Create SQLite database
         run: touch database/database.sqlite
 
-      - name: Run tests
+      - name: Run tests with coverage
         env:
           DB_CONNECTION: sqlite
           DB_DATABASE: database/database.sqlite
-        run: php artisan test --parallel
+        run: php artisan test --parallel --coverage-clover=coverage.xml
 
       - name: Upload coverage to Codecov
         if: matrix.php == '8.3'
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
           fail_ci_if_error: false
+          verbose: true
 
   # =========================================================================
   # STATIC ANALYSIS
