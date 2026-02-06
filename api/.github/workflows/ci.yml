@@ -71,7 +71,7 @@ jobs:
         env:
           DB_CONNECTION: sqlite
           DB_DATABASE: database/database.sqlite
-        run: php artisan test --parallel --coverage-clover=coverage.xml
+        run: php artisan test --coverage-clover=coverage.xml --coverage-text
 
       - name: Upload coverage to Codecov
         if: matrix.php == '8.3'
@@ -81,6 +81,8 @@ jobs:
           files: ./coverage.xml
           fail_ci_if_error: false
           verbose: true
+          flags: unittests
+          name: codecov-ouagachap
 
   # =========================================================================
   # STATIC ANALYSIS
