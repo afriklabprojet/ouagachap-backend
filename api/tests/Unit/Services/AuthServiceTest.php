@@ -47,9 +47,14 @@ class AuthServiceTest extends TestCase
 
     public function test_send_otp_creates_otp_code(): void
     {
+        // Force SMS mode (not Firebase)
+        config(['otp.driver' => 'sms']);
+        config(['sms.default' => 'log']);
+
         $result = $this->authService->sendOtp('70123456');
 
         $this->assertTrue($result['success']);
+        $this->assertEquals('sms', $result['method']);
         $this->assertArrayHasKey('expires_at', $result);
         $this->assertDatabaseHas('otp_codes', [
             'phone' => '70123456',
@@ -59,12 +64,13 @@ class AuthServiceTest extends TestCase
     public function test_send_otp_returns_debug_code_in_dev(): void
     {
         config(['app.debug' => true]);
+        config(['otp.driver' => 'sms']);
         config(['sms.default' => 'log']);
 
         $result = $this->authService->sendOtp('70123456');
 
         $this->assertTrue($result['success']);
-        $this->assertNotNull($result['debug_code']);
+        $this->assertArrayHasKey('debug_code', $result);
         $this->assertEquals(6, strlen($result['debug_code']));
     }
 
