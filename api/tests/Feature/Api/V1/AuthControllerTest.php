@@ -18,6 +18,10 @@ class AuthControllerTest extends TestCase
 
     public function test_can_send_otp_to_valid_phone(): void
     {
+        // Force SMS mode instead of Firebase for testing
+        config(['otp.driver' => 'sms']);
+        config(['sms.default' => 'log']);
+
         $response = $this->postJson('/api/v1/auth/otp/send', [
             'phone' => '70123456',
         ]);
