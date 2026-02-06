@@ -1,0 +1,133 @@
+@import 'tailwindcss';
+
+/* OUAGA CHAP - Custom Theme */
+
+/* Login page custom styling */
+.fi-simple-layout {
+    background: linear-gradient(135deg, #F97316 0%, #EA580C 50%, #10B981 100%) !important;
+}
+
+.fi-simple-main {
+    backdrop-filter: blur(10px);
+}
+
+/* Dashboard enhancements */
+.fi-header {
+    border-bottom: 3px solid #F97316;
+}
+
+/* Sidebar styling */
+.fi-sidebar {
+    border-right: 1px solid rgba(249, 115, 22, 0.2);
+}
+
+.fi-sidebar-nav-groups {
+    padding: 0.5rem;
+}
+
+/* Cards with subtle orange accent */
+.fi-wi-stats-overview-stat {
+    border-left: 4px solid #F97316;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fi-wi-stats-overview-stat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(249, 115, 22, 0.15);
+}
+
+/* Success stats green accent */
+.fi-wi-stats-overview-stat.fi-color-success {
+    border-left-color: #10B981;
+}
+
+/* Buttons */
+.fi-btn-primary {
+    background: linear-gradient(135deg, #F97316, #EA580C) !important;
+}
+
+.fi-btn-primary:hover {
+    background: linear-gradient(135deg, #EA580C, #C2410C) !important;
+}
+
+/* Tables */
+.fi-ta-row:hover {
+    background-color: rgba(249, 115, 22, 0.05) !important;
+}
+
+/* Navigation active state */
+.fi-sidebar-item-active {
+    background: linear-gradient(90deg, rgba(249, 115, 22, 0.15), transparent) !important;
+    border-left: 3px solid #F97316 !important;
+}
+
+/* Badges */
+.fi-badge-success {
+    background-color: #10B981 !important;
+}
+
+.fi-badge-warning {
+    background-color: #F97316 !important;
+}
+
+/* Dark mode adjustments */
+.dark .fi-simple-layout {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+}
+
+.dark .fi-sidebar {
+    border-right: 1px solid rgba(249, 115, 22, 0.3);
+}
+
+.dark .fi-header {
+    border-bottom-color: rgba(249, 115, 22, 0.5);
+}
+
+/* Charts */
+.fi-wi-chart {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* Notifications */
+.fi-notification {
+    border-left: 4px solid #F97316;
+}
+
+/* Loading spinner */
+.fi-loading-indicator {
+    color: #F97316 !important;
+}
+
+/* Modal */
+.fi-modal-window {
+    border-top: 4px solid #F97316;
+}
+
+/* Form inputs focus */
+.fi-input:focus {
+    border-color: #F97316 !important;
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1) !important;
+}
+
+/* Select dropdown */
+.fi-select-option[data-selected] {
+    background-color: #F97316 !important;
+}
+
+/* Tabs */
+.fi-tabs-tab[aria-selected="true"] {
+    border-bottom-color: #F97316 !important;
+    color: #F97316 !important;
+}
+
+/* Quick actions widget */
+.quick-action-card {
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.quick-action-card:hover {
+    border-color: #F97316;
+    transform: scale(1.02);
+}

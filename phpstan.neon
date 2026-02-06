@@ -1,0 +1,35 @@
+includes:
+    - ./vendor/larastan/larastan/extension.neon
+
+parameters:
+    # Start at level 5, increase progressively to 8
+    level: 5
+
+    paths:
+        - app
+
+    # Exclude heavy directories
+    excludePaths:
+        - app/Http/Middleware/TrustProxies.php
+        - vendor
+
+    # Laravel-specific settings
+    treatPhpDocTypesAsCertain: false
+
+    # Ignore some errors for now (can be fixed incrementally)
+    ignoreErrors:
+        # Filament dynamic calls
+        - '#Call to an undefined method Filament\\.*#'
+        
+        # Eloquent magic methods
+        - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Builder::.*#'
+        
+        # Request dynamic properties
+        - '#Access to an undefined property Illuminate\\Http\\Request::\$.*#'
+        
+        # Missing typehints (to be fixed progressively)
+        - identifier: missingType.iterableValue
+        - identifier: missingType.generics
+
+    # Report unmatched ignored errors
+    reportUnmatchedIgnoredErrors: false

@@ -1,0 +1,527 @@
+name: Authentification
+description: |-
+
+  Endpoints pour l'authentification par OTP et la gestion du profil utilisateur.
+endpoints:
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/v1/auth/otp/send
+    metadata:
+      custom: []
+      groupName: Authentification
+      groupDescription: |-
+
+        Endpoints pour l'authentification par OTP et la gestion du profil utilisateur.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Envoyer un OTP'
+      description: |-
+        Envoie un code OTP à 6 chiffres au numéro de téléphone spécifié.
+        Le code expire après 5 minutes.
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      phone:
+        custom: []
+        name: phone
+        description: 'Le numéro de téléphone au format Burkina Faso.'
+        required: true
+        example: '+22670123456'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanBodyParameters:
+      phone: '+22670123456'
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"success": true, "message": "Code OTP envoyé avec succès.", "data": {"expires_in": 300}}'
+        headers: []
+        description: ''
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/v1/auth/otp/verify
+    metadata:
+      custom: []
+      groupName: Authentification
+      groupDescription: |-
+
+        Endpoints pour l'authentification par OTP et la gestion du profil utilisateur.
+      subgroup: ''
+      subgroupDescription: ''
+      title: "Vérifier l'OTP"
+      description: |-
+        Vérifie le code OTP et connecte/inscrit l'utilisateur.
+        Retourne un token Bearer pour les requêtes authentifiées.
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      phone:
+        custom: []
+        name: phone
+        description: 'Le numéro de téléphone.'
+        required: true
+        example: '+22670123456'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      code:
+        custom: []
+        name: code
+        description: 'Le code OTP à 6 chiffres.'
+        required: true
+        example: '123456'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      device_name:
+        custom: []
+        name: device_name
+        description: "Nom de l'appareil."
+        required: false
+        example: 'iPhone 15'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanBodyParameters:
+      phone: '+22670123456'
+      code: '123456'
+      device_name: 'iPhone 15'
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"success": true, "message": "Connexion réussie.", "data": {"user": {"id": 1, "name": "John", "phone": "+22670123456", "role": "client"}, "token": "1|abc123..."}}'
+        headers: []
+        description: ''
+      -
+        custom: []
+        status: 401
+        content: '{"success": false, "message": "Code OTP invalide ou expiré."}'
+        headers: []
+        description: ''
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/v1/auth/register/courier
+    metadata:
+      custom: []
+      groupName: Authentification
+      groupDescription: |-
+
+        Endpoints pour l'authentification par OTP et la gestion du profil utilisateur.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Inscription coursier'
+      description: |-
+        Inscrit un nouvel utilisateur en tant que coursier.
+        Le coursier doit ensuite être approuvé par un admin.
+      authenticated: false
+      deprecated: false
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      phone:
+        custom: []
+        name: phone
+        description: 'Numéro de téléphone.'
+        required: true
+        example: '+22670123456'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      name:
+        custom: []
+        name: name
+        description: 'Nom complet.'
+        required: true
+        example: 'Ouédraogo Ibrahim'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      vehicle_type:
+        custom: []
+        name: vehicle_type
+        description: 'Type de véhicule (moto, vélo, voiture).'
+        required: true
+        example: moto
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      vehicle_plate:
+        custom: []
+        name: vehicle_plate
+        description: "Plaque d'immatriculation."
+        required: false
+        example: 12AB3456
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      vehicle_model:
+        custom: []
+        name: vehicle_model
+        description: 'Must not be greater than 100 characters.'
+        required: false
+        example: r
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      email:
+        custom: []
+        name: email
+        description: 'Email optionnel.'
+        required: false
+        example: ibrahim@example.com
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanBodyParameters:
+      phone: '+22670123456'
+      name: 'Ouédraogo Ibrahim'
+      vehicle_type: moto
+      vehicle_plate: 12AB3456
+      vehicle_model: r
+      email: ibrahim@example.com
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 201
+        content: '{"success": true, "message": "Inscription réussie. En attente d''approbation.", "data": {"id": 1, "name": "Ouédraogo Ibrahim", "role": "courier", "status": "pending"}}'
+        headers: []
+        description: ''
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/v1/auth/me
+    metadata:
+      custom: []
+      groupName: Authentification
+      groupDescription: |-
+
+        Endpoints pour l'authentification par OTP et la gestion du profil utilisateur.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Profil utilisateur'
+      description: "Retourne les informations de l'utilisateur connecté."
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer Bearer {VOTRE_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"success": true, "data": {"id": 1, "name": "John", "phone": "+22670123456", "email": null, "role": "client", "wallet_balance": 0}}'
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - PUT
+    uri: api/v1/auth/profile
+    metadata:
+      custom: []
+      groupName: Authentification
+      groupDescription: |-
+
+        Endpoints pour l'authentification par OTP et la gestion du profil utilisateur.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Mettre à jour le profil'
+      description: 'Met à jour les informations du profil utilisateur.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer Bearer {VOTRE_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      name:
+        custom: []
+        name: name
+        description: 'Nouveau nom.'
+        required: false
+        example: 'Jean Dupont'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      email:
+        custom: []
+        name: email
+        description: 'Nouvel email.'
+        required: false
+        example: jean@example.com
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      fcm_token:
+        custom: []
+        name: fcm_token
+        description: ''
+        required: false
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanBodyParameters:
+      name: 'Jean Dupont'
+      email: jean@example.com
+      fcm_token: architecto
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"success": true, "message": "Profil mis à jour.", "data": {"id": 1, "name": "Jean Dupont"}}'
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - PUT
+    uri: api/v1/auth/fcm-token
+    metadata:
+      custom: []
+      groupName: Authentification
+      groupDescription: |-
+
+        Endpoints pour l'authentification par OTP et la gestion du profil utilisateur.
+      subgroup: ''
+      subgroupDescription: ''
+      title: |-
+        Update FCM token for push notifications
+        PUT /api/v1/auth/fcm-token
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer Bearer {VOTRE_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      fcm_token:
+        custom: []
+        name: fcm_token
+        description: 'Must not be greater than 500 characters.'
+        required: true
+        example: b
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      device_type:
+        custom: []
+        name: device_type
+        description: ''
+        required: false
+        example: ios
+        type: string
+        enumValues:
+          - ios
+          - android
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+    cleanBodyParameters:
+      fcm_token: b
+      device_type: ios
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/v1/auth/logout
+    metadata:
+      custom: []
+      groupName: Authentification
+      groupDescription: |-
+
+        Endpoints pour l'authentification par OTP et la gestion du profil utilisateur.
+      subgroup: ''
+      subgroupDescription: ''
+      title: Déconnexion
+      description: "Révoque le token actuel de l'utilisateur."
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer Bearer {VOTRE_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"success": true, "message": "Déconnexion réussie."}'
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/v1/auth/logout-all
+    metadata:
+      custom: []
+      groupName: Authentification
+      groupDescription: |-
+
+        Endpoints pour l'authentification par OTP et la gestion du profil utilisateur.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Déconnexion de tous les appareils'
+      description: "Révoque tous les tokens de l'utilisateur."
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer Bearer {VOTRE_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"success": true, "message": "Déconnexion de tous les appareils réussie."}'
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
