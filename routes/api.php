@@ -199,6 +199,16 @@ Route::prefix('v1')->group(function () {
                 Route::post('/complaints/{complaintId}/messages', [SupportController::class, 'addComplaintMessage']);
             });
 
+            // ==================== SAVED ADDRESSES (CLIENT) ====================
+            Route::prefix('addresses')->group(function () {
+                Route::get('/', [\App\Http\Controllers\Api\SavedAddressController::class, 'index']);
+                Route::post('/', [\App\Http\Controllers\Api\SavedAddressController::class, 'store']);
+                Route::get('/{id}', [\App\Http\Controllers\Api\SavedAddressController::class, 'show']);
+                Route::put('/{id}', [\App\Http\Controllers\Api\SavedAddressController::class, 'update']);
+                Route::delete('/{id}', [\App\Http\Controllers\Api\SavedAddressController::class, 'destroy']);
+                Route::post('/{id}/set-default', [\App\Http\Controllers\Api\SavedAddressController::class, 'setDefault']);
+            });
+
             // ==================== RATINGS (CLIENT) ====================
             Route::prefix('ratings')->group(function () {
                 Route::get('/received', [RatingController::class, 'received']);
