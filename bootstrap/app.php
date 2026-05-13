@@ -1,11 +1,24 @@
 <?php
 
+// Stub for missing dev-only packages (not installed in production vendor)
+if (! class_exists('Knuckles\\Scribe\\ScribeServiceProvider')) {
+    require_once __DIR__.'/../app/Providers/ScribeStub.php';
+}
+
+if (! class_exists('Laravel\\Pail\\PailServiceProvider')) {
+    class_alias('Illuminate\\Support\\ServiceProvider', 'Laravel\\Pail\\PailServiceProvider');
+}
+
 use App\Http\Middleware\EnsureIsAdmin;
 use App\Http\Middleware\EnsureIsClient;
 use App\Http\Middleware\EnsureIsCourier;
+use App\Http\Middleware\EnsureUserActive;
 use App\Http\Middleware\ForceJsonResponse;
 use App\Http\Middleware\LogApiRequests;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\TrackLastSeen;
+use App\Exceptions\Domain\DomainException;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -30,8 +43,9 @@ return Application::configure(basePath: dirname(__DIR__))
             SecurityHeaders::class,
         ]);
 
-        // Append logging (after response is ready)
+        // Append logging and tracking (after response is ready)
         $middleware->api(append: [
+            TrackLastSeen::class,
             LogApiRequests::class,
         ]);
 
@@ -40,18 +54,42 @@ return Application::configure(basePath: dirname(__DIR__))
             'role.client' => EnsureIsClient::class,
             'role.courier' => EnsureIsCourier::class,
             'role.admin' => EnsureIsAdmin::class,
+            'user.active' => EnsureUserActive::class,
+            'auth.api' => \App\Http\Middleware\AuthenticateSanctumApi::class,
         ]);
 
         // Configure trusted proxies for load balancers
         $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions) {
+        // Send exceptions to Sentry before custom rendering
+        $exceptions->reportable(function (Throwable $e) {
+            if (app()->bound('sentry') && app('sentry')->getClient()) {
+                app('sentry')->captureException($e);
+            }
+        });
+
         // Render all exceptions as JSON for API requests
         $exceptions->shouldRenderJsonWhen(function (Request $request, Throwable $e) {
             return $request->is('api/*') || $request->expectsJson();
         });
 
         // Custom renderable exceptions
+        $exceptions->renderable(function (\Illuminate\Http\Exceptions\HttpResponseException $e, Request $request) {
+            // Rate limit custom responses use HttpResponseException — pass through the embedded response
+            return $e->getResponse();
+        });
+
+        $exceptions->renderable(function (AuthenticationException $e, Request $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Non authentifié.',
+                    'code' => 'UNAUTHENTICATED',
+                ], 401);
+            }
+        });
+
         $exceptions->renderable(function (ValidationException $e, Request $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
                 return response()->json([
@@ -80,6 +118,16 @@ return Application::configure(basePath: dirname(__DIR__))
                     'message' => 'Méthode HTTP non autorisée.',
                     'code' => 'METHOD_NOT_ALLOWED',
                 ], 405);
+            }
+        });
+
+        $exceptions->renderable(function (DomainException $e, Request $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage(),
+                    'code'    => $e->getErrorCode(),
+                ], $e->getStatusCode());
             }
         });
 

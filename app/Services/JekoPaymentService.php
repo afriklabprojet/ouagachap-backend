@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\JekoTransaction;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -20,6 +21,10 @@ class JekoPaymentService
     protected string $storeId;
     protected string $currency;
 
+    private const CIRCUIT_BREAKER_KEY = 'jeko:circuit_breaker';
+    private const CIRCUIT_BREAKER_THRESHOLD = 5;
+    private const CIRCUIT_BREAKER_COOLDOWN = 60; // seconds
+
     public function __construct()
     {
         $this->baseUrl = config('jeko.base_url');
@@ -27,6 +32,47 @@ class JekoPaymentService
         $this->apiKeyId = config('jeko.api_key_id');
         $this->storeId = config('jeko.store_id');
         $this->currency = config('jeko.currency');
+    }
+
+    /**
+     * Vérifie si le circuit breaker est ouvert (trop d'erreurs consécutives).
+     */
+    private function isCircuitOpen(): bool
+    {
+        return Cache::get(self::CIRCUIT_BREAKER_KEY, 0) >= self::CIRCUIT_BREAKER_THRESHOLD;
+    }
+
+    /**
+     * Enregistre un échec dans le circuit breaker.
+     */
+    private function recordFailure(): void
+    {
+        $failures = Cache::get(self::CIRCUIT_BREAKER_KEY, 0);
+        Cache::put(self::CIRCUIT_BREAKER_KEY, $failures + 1, self::CIRCUIT_BREAKER_COOLDOWN);
+    }
+
+    /**
+     * Réinitialise le circuit breaker après un succès.
+     */
+    private function recordSuccess(): void
+    {
+        Cache::forget(self::CIRCUIT_BREAKER_KEY);
+    }
+
+    /**
+     * Effectue un appel HTTP à l'API JEKO avec retry et circuit breaker.
+     */
+    private function jekoRequest(string $method, string $url, array $data = []): \Illuminate\Http\Client\Response
+    {
+        return Http::withHeaders([
+            'X-API-KEY' => $this->apiKey,
+            'X-API-KEY-ID' => $this->apiKeyId,
+            'Content-Type' => 'application/json',
+        ])
+        ->timeout(15)
+        ->connectTimeout(5)
+        ->retry(3, 500, fn ($exception) => $exception instanceof \Illuminate\Http\Client\ConnectionException)
+        ->{$method}($url, $data);
     }
 
     /**
@@ -49,14 +95,14 @@ class JekoPaymentService
         // Validation du montant
         $minAmount = config('jeko.min_amount', 100);
         $maxAmount = config('jeko.max_amount', 1000000);
-        
+
         if ($amountFcfa < $minAmount) {
             return [
                 'success' => false,
                 'message' => "Le montant minimum est de {$minAmount} FCFA",
             ];
         }
-        
+
         if ($amountFcfa > $maxAmount) {
             return [
                 'success' => false,
@@ -76,26 +122,39 @@ class JekoPaymentService
         try {
             // Générer une référence unique
             $reference = $this->generateReference($type);
-            
+
             // Construire les URLs de callback
             $appScheme = config('jeko.app_scheme');
             $successUrl = "{$appScheme}://payment/success?reference={$reference}";
             $errorUrl = "{$appScheme}://payment/error?reference={$reference}";
-            
+
+            // Circuit breaker check (protège tous les modes)
+            if ($this->isCircuitOpen()) {
+                Log::warning('Jeko Circuit Breaker OPEN - refusing payment request', [
+                    'user_id' => $user->id,
+                    'amount' => $amountFcfa,
+                ]);
+
+                return [
+                    'success' => false,
+                    'message' => 'Le service de paiement est temporairement indisponible. Réessayez dans quelques instants.',
+                ];
+            }
+
             // Mode Sandbox/Mock pour les tests
             $isMockMode = config('jeko.sandbox') && (
-                empty($this->apiKey) || 
+                empty($this->apiKey) ||
                 str_starts_with($this->apiKey, 'your_') ||
                 $this->apiKey === 'test' ||
                 $this->apiKey === 'mock'
             );
-            
+
             if ($isMockMode) {
                 return $this->mockPaymentRequest(
                     $user, $amountFcfa, $paymentMethod, $type, $reference, $metadata
                 );
             }
-            
+
             // Payload pour l'API JEKO
             $payload = [
                 'storeId' => $this->storeId,
@@ -112,29 +171,27 @@ class JekoPaymentService
                 ],
             ];
 
-            // Appel à l'API JEKO
-            $response = Http::withHeaders([
-                'X-API-KEY' => $this->apiKey,
-                'X-API-KEY-ID' => $this->apiKeyId,
-                'Content-Type' => 'application/json',
-            ])->post("{$this->baseUrl}/partner_api/payment_requests", $payload);
+            $response = $this->jekoRequest('post', "{$this->baseUrl}/partner_api/payment_requests", $payload);
 
             if (!$response->successful()) {
+                // @codeCoverageIgnoreStart
+                $this->recordFailure();
                 Log::error('Jeko API Error', [
                     'status' => $response->status(),
                     'body' => $response->body(),
                     'payload' => $payload,
                 ]);
-                
+
                 return [
                     'success' => false,
                     'message' => 'Erreur lors de la création du paiement. Veuillez réessayer.',
                 ];
+                // @codeCoverageIgnoreEnd
             }
 
             $data = $response->json();
 
-            // Enregistrer la transaction en base
+            $this->recordSuccess();
             $transaction = JekoTransaction::create([
                 'user_id' => $user->id,
                 'jeko_id' => $data['id'],
@@ -175,7 +232,7 @@ class JekoPaymentService
                 'user_id' => $user->id,
                 'amount' => $amountFcfa,
             ]);
-            
+
             return [
                 'success' => false,
                 'message' => 'Une erreur inattendue est survenue. Veuillez réessayer.',
@@ -192,19 +249,28 @@ class JekoPaymentService
     public function getPaymentStatus(string $jekoId): array
     {
         try {
-            $response = Http::withHeaders([
-                'X-API-KEY' => $this->apiKey,
-                'X-API-KEY-ID' => $this->apiKeyId,
-            ])->get("{$this->baseUrl}/partner_api/payment_requests/{$jekoId}");
+            if ($this->isCircuitOpen()) {
+                return [
+                    'success' => false,
+                    'message' => 'Service de paiement temporairement indisponible.',
+                ];
+            }
+
+            $response = $this->jekoRequest('get', "{$this->baseUrl}/partner_api/payment_requests/{$jekoId}");
 
             if (!$response->successful()) {
+                // @codeCoverageIgnoreStart
+                $this->recordFailure();
                 return [
                     'success' => false,
                     'message' => 'Impossible de récupérer le statut du paiement',
                 ];
+                // @codeCoverageIgnoreEnd
             }
 
             $data = $response->json();
+
+            $this->recordSuccess();
 
             return [
                 'success' => true,
@@ -220,7 +286,7 @@ class JekoPaymentService
                 'error' => $e->getMessage(),
                 'jeko_id' => $jekoId,
             ]);
-            
+
             return [
                 'success' => false,
                 'message' => 'Erreur lors de la vérification du statut',
@@ -239,7 +305,7 @@ class JekoPaymentService
         $reference = $payload['transactionDetails']['reference'] ?? null;
         $status = $payload['status'] ?? 'unknown';
         $transactionType = $payload['transactionType'] ?? 'unknown';
-        
+
         if (!$reference) {
             Log::warning('Jeko Webhook: Missing reference', ['payload' => $payload]);
             return ['success' => false, 'message' => 'Reference manquante'];
@@ -247,7 +313,7 @@ class JekoPaymentService
 
         // Trouver la transaction
         $transaction = JekoTransaction::where('reference', $reference)->first();
-        
+
         if (!$transaction) {
             Log::warning('Jeko Webhook: Transaction not found', ['reference' => $reference]);
             return ['success' => false, 'message' => 'Transaction non trouvée'];
@@ -290,22 +356,23 @@ class JekoPaymentService
     protected function processSuccessfulPayment(JekoTransaction $transaction): void
     {
         $user = $transaction->user;
-        
+
         switch ($transaction->type) {
             case 'recharge':
-                // Créditer le wallet du client
-                $user->increment('wallet_balance', $transaction->amount);
-                
+                // Créditer via la méthode unifiée (Wallet + User sync)
+                $user->addToWallet($transaction->amount);
+
                 // Enregistrer l'opération dans l'historique du wallet
                 $user->walletTransactions()->create([
-                    'type' => 'credit',
+                    'type' => 'recharge',
                     'amount' => $transaction->amount,
-                    'balance_after' => $user->wallet_balance,
-                    'description' => "Recharge via {$transaction->payment_method}",
-                    'reference' => $transaction->reference,
-                    'payment_method' => $transaction->payment_method,
+                    'method' => $this->mapJekoMethodToInternal($transaction->payment_method),
+                    'phone_number' => $transaction->counterpart_identifier,
+                    'status' => 'success',
+                    'provider_transaction_id' => $transaction->jeko_transaction_id,
+                    'completed_at' => now(),
                 ]);
-                
+
                 // Envoyer une notification push
                 try {
                     app(PushNotificationService::class)->sendToUser(
@@ -318,16 +385,23 @@ class JekoPaymentService
                     Log::warning('Failed to send recharge notification', ['error' => $e->getMessage()]);
                 }
                 break;
-                
+
             case 'order_payment':
-                // Traiter le paiement d'une commande
+                // Traiter le paiement d'une commande — marquer le Payment comme réussi
+                $paymentId = $transaction->metadata['payment_id'] ?? null;
                 $orderId = $transaction->metadata['order_id'] ?? null;
-                if ($orderId) {
-                    // Marquer la commande comme payée
-                    \App\Models\Order::where('id', $orderId)->update([
-                        'payment_status' => 'paid',
-                        'paid_at' => now(),
-                    ]);
+                if ($paymentId) {
+                    $payment = \App\Models\Payment::find($paymentId);
+                    if ($payment && $payment->isPending()) {
+                        $payment->markAsSuccess(
+                            $transaction->jeko_transaction_id,
+                            json_encode(['jeko_reference' => $transaction->reference, 'method' => $transaction->payment_method])
+                        );
+                        Log::info('Order payment marked as success via Jeko', [
+                            'payment_id' => $paymentId,
+                            'order_id' => $orderId,
+                        ]);
+                    }
                 }
                 break;
         }
@@ -342,37 +416,46 @@ class JekoPaymentService
      */
     public function verifyWebhookSignature(string $payload, ?string $signature): bool
     {
-        // Mode sandbox/test - accepter si pas de secret configuré
-        if (config('jeko.sandbox') && empty(config('jeko.webhook_secret'))) {
-            Log::warning('Jeko: Webhook signature skipped in sandbox mode');
-            return true;
+        // Détection de configuration invalide : sandbox actif en production
+        // → ne jamais laisser passer silencieusement, alerter immédiatement
+        if (app()->isProduction() && config('jeko.sandbox')) {
+            Log::channel('security')->critical('Jeko: SANDBOX mode actif en PRODUCTION — configuration invalide', [
+                'app_env' => app()->environment(),
+            ]);
+            throw new \RuntimeException('Configuration JEKO invalide : JEKO_SANDBOX=true en production.');
         }
-        
+
+        // Fail-closed : si sandbox sans secret, rejeter (ne jamais retourner true)
+        if (config('jeko.sandbox') && empty(config('jeko.webhook_secret'))) {
+            Log::warning('Jeko: Webhook signature verification skipped - sandbox mode without secret. Rejecting for safety.');
+            return false;
+        }
+
         $secret = config('jeko.webhook_secret');
-        
+
         if (empty($secret)) {
             Log::channel('security')->error('Jeko: Webhook secret not configured in production');
             return false;
         }
-        
+
         if (empty($signature)) {
             Log::channel('security')->warning('Jeko: No signature provided');
             return false;
         }
-        
+
         // Calculer la signature attendue avec HMAC-SHA256
         $expectedSignature = hash_hmac('sha256', $payload, $secret);
-        
+
         // Comparaison timing-safe pour éviter les timing attacks
         $isValid = hash_equals($expectedSignature, $signature);
-        
+
         if (!$isValid) {
             Log::channel('security')->warning('Jeko: Signature mismatch', [
                 'expected_prefix' => substr($expectedSignature, 0, 10),
                 'received_prefix' => substr($signature, 0, 10),
             ]);
         }
-        
+
         return $isValid;
     }
 
@@ -386,10 +469,10 @@ class JekoPaymentService
             'order_payment' => 'ORD',
             default => 'PAY',
         };
-        
+
         $timestamp = now()->format('YmdHis');
         $random = strtoupper(Str::random(6));
-        
+
         return "{$prefix}-{$timestamp}-{$random}";
     }
 
@@ -403,12 +486,25 @@ class JekoPaymentService
     }
 
     /**
+     * Map Jeko method code to internal wallet_transactions method enum value
+     */
+    public function mapJekoMethodToInternal(string $jekoCode): string
+    {
+        return match ($jekoCode) {
+            'orange' => 'orange_money',
+            'moov' => 'moov_money',
+            'wave', 'mtn', 'djamo' => $jekoCode,
+            default => 'orange_money',
+        };
+    }
+
+    /**
      * Obtenir la liste des méthodes de paiement disponibles
      */
     public function getAvailablePaymentMethods(string $country = 'BF'): array
     {
         $methods = config('jeko.payment_methods', []);
-        
+
         return collect($methods)
             ->filter(fn($method) => in_array($country, $method['countries'] ?? []))
             ->map(fn($method, $code) => [
@@ -433,7 +529,7 @@ class JekoPaymentService
         array $metadata
     ): array {
         $mockJekoId = 'mock_' . Str::uuid();
-        
+
         // Enregistrer la transaction en base
         $transaction = JekoTransaction::create([
             'user_id' => $user->id,
@@ -477,7 +573,7 @@ class JekoPaymentService
     public function mockConfirmPayment(string $reference): array
     {
         $transaction = JekoTransaction::where('reference', $reference)->first();
-        
+
         if (!$transaction) {
             return ['success' => false, 'message' => 'Transaction non trouvée'];
         }
@@ -495,16 +591,14 @@ class JekoPaymentService
 
         // Créditer le wallet si c'est une recharge
         if ($transaction->type === 'wallet_recharge') {
-            $wallet = \App\Models\Wallet::firstOrCreate(
-                ['user_id' => $transaction->user_id],
-                ['balance' => 0]
-            );
-            $wallet->credit($transaction->amount);
-            
+            $user = \App\Models\User::find($transaction->user_id);
+            if ($user) {
+                $user->addToWallet($transaction->amount);
+            }
+
             Log::info('Wallet crédité (mock)', [
                 'user_id' => $transaction->user_id,
                 'amount' => $transaction->amount,
-                'new_balance' => $wallet->balance,
             ]);
         }
 

@@ -10,6 +10,25 @@ class SiteSetting extends Model
 {
     use HasFactory;
 
+    public const TYPE_TEXT = 'text';
+    public const TYPE_TEXTAREA = 'textarea';
+    public const TYPE_IMAGE = 'image';
+    public const TYPE_NUMBER = 'number';
+    public const TYPE_JSON = 'json';
+    public const TYPE_BOOLEAN = 'boolean';
+
+    public const GROUP_GENERAL = 'general';
+    public const GROUP_HERO = 'hero';
+    public const GROUP_FEATURES = 'features';
+    public const GROUP_PRICING = 'pricing';
+    public const GROUP_TESTIMONIALS = 'testimonials';
+    public const GROUP_CONTACT = 'contact';
+    public const GROUP_SEO = 'seo';
+    public const GROUP_SOCIAL = 'social';
+    public const GROUP_APP_COURIER = 'app_courier';
+    public const GROUP_DISPATCH = 'dispatch';
+    public const GROUP_WALLET = 'wallet';
+
     protected $fillable = [
         'key',
         'value',
@@ -19,147 +38,87 @@ class SiteSetting extends Model
         'description',
     ];
 
-    protected $casts = [
-        'value' => 'string',
-    ];
+    // ==================== SCOPES ====================
 
-    /**
-     * Types de paramètres supportés
-     */
-    const TYPE_TEXT = 'text';
-    const TYPE_TEXTAREA = 'textarea';
-    const TYPE_RICHTEXT = 'richtext';
-    const TYPE_NUMBER = 'number';
-    const TYPE_IMAGE = 'image';
-    const TYPE_BOOLEAN = 'boolean';
-    const TYPE_JSON = 'json';
-
-    /**
-     * Groupes de paramètres
-     */
-    const GROUP_GENERAL = 'general';
-    const GROUP_HERO = 'hero';
-    const GROUP_FEATURES = 'features';
-    const GROUP_PRICING = 'pricing';
-    const GROUP_TESTIMONIALS = 'testimonials';
-    const GROUP_CONTACT = 'contact';
-    const GROUP_SOCIAL = 'social';
-    const GROUP_SEO = 'seo';
-
-    /**
-     * Récupérer une valeur par clé
-     */
-    public static function get(string $key, $default = null)
+    public function scopeOfGroup($query, string $group)
     {
-        return Cache::remember("site_setting_{$key}", 3600, function () use ($key, $default) {
+        return $query->where('group', $group);
+    }
+
+    // ==================== STATIC HELPERS ====================
+
+    /**
+     * Get a setting value by key (cached for 10 minutes).
+     */
+    public static function get(string $key, mixed $default = null): mixed
+    {
+        return Cache::remember("site_setting:{$key}", 600, function () use ($key, $default) {
             $setting = self::where('key', $key)->first();
-            
-            if (!$setting) {
-                return $default;
-            }
-
-            // Convertir selon le type
-            return match($setting->type) {
-                self::TYPE_BOOLEAN => (bool) $setting->value,
-                self::TYPE_NUMBER => (float) $setting->value,
-                self::TYPE_JSON => json_decode($setting->value, true),
-                default => $setting->value,
-            };
+            return $setting ? $setting->getCastValue() : $default;
         });
     }
 
     /**
-     * Définir une valeur
+     * Set a setting value by key.
      */
-    public static function set(string $key, $value, string $type = self::TYPE_TEXT, string $group = self::GROUP_GENERAL, ?string $label = null, ?string $description = null): self
+    public static function set(string $key, mixed $value, string $type = self::TYPE_TEXT, string $group = self::GROUP_GENERAL): void
     {
-        // Convertir la valeur si nécessaire
-        if ($type === self::TYPE_JSON && is_array($value)) {
-            $value = json_encode($value);
-        }
-        
-        $setting = self::updateOrCreate(
+        $storeValue = is_array($value) ? json_encode($value) : (string) $value;
+
+        self::updateOrCreate(
             ['key' => $key],
-            [
-                'value' => $value,
-                'type' => $type,
-                'group' => $group,
-                'label' => $label ?? ucfirst(str_replace('_', ' ', $key)),
-                'description' => $description,
-            ]
+            ['value' => $storeValue, 'type' => $type, 'group' => $group]
         );
-
-        // Invalider le cache
-        Cache::forget("site_setting_{$key}");
-        Cache::forget('site_settings_all');
-
-        return $setting;
+        Cache::forget("site_setting:{$key}");
     }
 
     /**
-     * Récupérer tous les paramètres d'un groupe
-     */
-    public static function getGroup(string $group): array
-    {
-        return Cache::remember("site_settings_group_{$group}", 3600, function () use ($group) {
-            $settings = self::where('group', $group)->get();
-            $result = [];
-            
-            foreach ($settings as $setting) {
-                $result[$setting->key] = match($setting->type) {
-                    self::TYPE_BOOLEAN => (bool) $setting->value,
-                    self::TYPE_NUMBER => (float) $setting->value,
-                    self::TYPE_JSON => json_decode($setting->value, true),
-                    default => $setting->value,
-                };
-            }
-            
-            return $result;
-        });
-    }
-
-    /**
-     * Récupérer tous les paramètres
-     */
-    public static function getAll(): array
-    {
-        return Cache::remember('site_settings_all', 3600, function () {
-            $settings = self::all();
-            $result = [];
-            
-            foreach ($settings as $setting) {
-                $result[$setting->key] = match($setting->type) {
-                    self::TYPE_BOOLEAN => (bool) $setting->value,
-                    self::TYPE_NUMBER => (float) $setting->value,
-                    self::TYPE_JSON => json_decode($setting->value, true),
-                    default => $setting->value,
-                };
-            }
-            
-            return $result;
-        });
-    }
-
-    /**
-     * Vider le cache des paramètres
+     * Clear all site setting caches.
      */
     public static function clearCache(): void
     {
         $settings = self::all();
-        
         foreach ($settings as $setting) {
-            Cache::forget("site_setting_{$setting->key}");
-        }
-        
-        Cache::forget('site_settings_all');
-        
-        foreach ([self::GROUP_GENERAL, self::GROUP_HERO, self::GROUP_FEATURES, self::GROUP_PRICING, self::GROUP_TESTIMONIALS, self::GROUP_CONTACT, self::GROUP_SOCIAL, self::GROUP_SEO] as $group) {
-            Cache::forget("site_settings_group_{$group}");
+            Cache::forget("site_setting:{$setting->key}");
         }
     }
 
     /**
-     * Labels des groupes pour l'affichage
+     * Get all settings as a key=>value array.
+     */
+    public static function getAll(): array
+    {
+        return self::all()->mapWithKeys(function ($item) {
+            return [$item->key => $item->getCastValue()];
+        })->toArray();
+    }
+
+    /**
+     * Get all settings as a key=>value array for a given group.
+     */
+    public static function getGroup(string $group): array
+    {
+        return self::ofGroup($group)->get()->mapWithKeys(function ($item) {
+            return [$item->key => $item->getCastValue()];
+        })->toArray();
+    }
+
+    /**
+     * Return value cast to the appropriate PHP type.
+     */
+    public function getCastValue(): mixed
+    {
+        return match ($this->type) {
+            'boolean' => (bool) $this->value,
+            'integer' => (int) $this->value,
+            'float', 'number' => (float) $this->value,
+            'json', 'array' => json_decode($this->value, true),
+            default => $this->value,
+        };
+    }
+
+    /**
+     * Get group labels.
      */
     public static function getGroupLabels(): array
     {
@@ -167,11 +126,14 @@ class SiteSetting extends Model
             self::GROUP_GENERAL => 'Général',
             self::GROUP_HERO => 'Section Hero',
             self::GROUP_FEATURES => 'Fonctionnalités',
-            self::GROUP_PRICING => 'Tarifs',
+            self::GROUP_PRICING => 'Tarification',
             self::GROUP_TESTIMONIALS => 'Témoignages',
             self::GROUP_CONTACT => 'Contact',
-            self::GROUP_SOCIAL => 'Réseaux Sociaux',
             self::GROUP_SEO => 'SEO',
+            self::GROUP_SOCIAL => 'Réseaux sociaux',
+            self::GROUP_APP_COURIER => 'App Coursier',
+            self::GROUP_DISPATCH => 'Dispatch & Affectation',
+            self::GROUP_WALLET => 'Portefeuille & Retraits',
         ];
     }
 }

@@ -6,387 +6,464 @@ use App\Enums\UserRole;
 use App\Enums\UserStatus;
 use App\Models\OtpCode;
 use App\Models\User;
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\RequestException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Kreait\Firebase\Contract\Auth as FirebaseAuth;
 use Kreait\Firebase\Exception\Auth\FailedToVerifyToken;
 
 class AuthService
 {
-    protected ?FirebaseAuth $firebaseAuth = null;
+    private mixed $firebaseAuth = null;
 
-    public function __construct(
-        protected SmsService $smsService
-    ) {
-        // Initialiser Firebase Auth si disponible
+    public function __construct()
+    {
         try {
             $this->firebaseAuth = app('firebase.auth');
-        } catch (\Exception $e) {
-            Log::warning('Firebase Auth not configured: ' . $e->getMessage());
+        } catch (\Throwable) {
+            $this->firebaseAuth = null;
         }
     }
 
-    /**
-     * Normalize phone number to standard format
-     */
+    // ==================== PHONE NORMALIZATION ====================
+
     public function normalizePhone(string $phone): string
     {
-        // Remove spaces and dashes
         $phone = preg_replace('/[\s\-]/', '', $phone);
-        
-        // Convert to standard format without prefix
-        if (str_starts_with($phone, '+226')) {
-            $phone = substr($phone, 4);
-        } elseif (str_starts_with($phone, '00226')) {
-            $phone = substr($phone, 5);
-        }
-        
+        $phone = preg_replace('/^(\+226|00226)/', '', $phone);
         return $phone;
     }
 
-    /**
-     * Check if we should use Firebase for OTP
-     */
-    protected function useFirebaseOtp(): bool
+    public function formatPhone(string $phone): string
     {
-        return $this->firebaseAuth !== null && config('otp.driver', 'firebase') === 'firebase';
+        return '+226' . $this->normalizePhone($phone);
     }
 
-    /**
-     * Check if demo mode is enabled
-     */
-    protected function isDemoMode(): bool
+    // ==================== DEMO MODE ====================
+
+    private function isDemoMode(): bool
     {
-        return config('otp.demo_mode', false) || app()->environment('local');
+        if (app()->environment('production')) {
+            return false;
+        }
+        return (bool) config('otp.demo_mode', false);
     }
 
-    /**
-     * Send OTP code to phone number (fallback mode)
-     * Note: En mode Firebase, l'OTP est envoyé directement par Firebase SDK côté client
-     */
-    public function sendOtp(string $phone): array
-    {
-        $phone = $this->normalizePhone($phone);
-        
-        // Vérifier le pays autorisé
-        $allowedCountries = config('otp.allowed_countries', []);
-        if (!empty($allowedCountries) && !in_array('226', $allowedCountries)) {
-            return [
-                'success' => false,
-                'message' => 'Ce pays n\'est pas supporté.',
-            ];
-        }
-        
-        // Si Firebase est configuré, indiquer que l'OTP sera envoyé via Firebase
-        if ($this->useFirebaseOtp()) {
-            Log::info('OTP request - Firebase mode', ['phone' => substr($phone, 0, 4) . '****']);
-            return [
-                'success' => true,
-                'message' => 'Utilisez Firebase Phone Auth côté client.',
-                'method' => 'firebase',
-                'phone' => '+226' . $phone,
-            ];
-        }
-        
-        // Fallback: OTP manuel via SMS
-        $otp = OtpCode::generate($phone);
-        
-        // Send SMS via configured driver (Twilio or log)
-        $smsResult = $this->smsService->sendOtp($phone, $otp->code);
-        
-        if (!$smsResult['success']) {
-            Log::error('Failed to send OTP SMS', [
-                'phone' => substr($phone, 0, 4) . '****',
-                'error' => $smsResult['error'] ?? 'Unknown error',
-            ]);
-        }
-        
-        return [
-            'success' => true,
-            'message' => 'Code OTP envoyé avec succès.',
-            'method' => 'sms',
-            'expires_at' => $otp->expires_at->toIso8601String(),
-            // Only include debug info in development with log driver
-            'debug_code' => (config('app.debug') && config('sms.default') === 'log') 
-                ? $otp->code 
-                : null,
-        ];
-    }
+    // ==================== COUNTRY CHECK ====================
 
-    /**
-     * Verify OTP using Firebase ID Token or manual code
-     * 
-     * @param string $phone
-     * @param string $code Code OTP ou Firebase ID Token
-     * @param string $deviceName
-     * @param string|null $appType Type d'application (client, courier)
-     * @param bool $useFirebase Si true, traite $code comme un Firebase ID Token
-     */
-    public function verifyOtp(
-        string $phone, 
-        string $code, 
-        string $deviceName = 'mobile', 
-        ?string $appType = null,
-        bool $useFirebase = false
-    ): array {
-        $phone = $this->normalizePhone($phone);
-        
-        // Mode Firebase: vérifier le ID Token
-        if ($useFirebase || $this->isFirebaseToken($code)) {
-            Log::info('OTP verification - Firebase mode', ['phone' => substr($phone, 0, 4) . '****']);
-            return $this->verifyFirebaseToken($code, $phone, $deviceName, $appType);
+    private function isCountryAllowed(string $phone): bool
+    {
+        // After normalizePhone(), a Burkina Faso number is exactly 8 digits
+        // If the number still has a country prefix (e.g. +33...), it's not Burkina
+        $digitsOnly = preg_replace('/\D/', '', $phone);
+        if (strlen($digitsOnly) !== 8) {
+            return false;
         }
-        
-        // Mode démo : accepter le code configuré
-        $demoCode = config('otp.demo_code', '123456');
-        $isDemoCode = $code === $demoCode && $this->isDemoMode();
-        
-        if ($isDemoCode) {
-            Log::info('OTP verification - Demo mode', ['phone' => substr($phone, 0, 4) . '****']);
+
+        $allowed = config('otp.allowed_countries');
+        if (empty($allowed)) {
+            return true;
         }
-        
-        if (!$isDemoCode) {
-            $verification = OtpCode::verify($phone, $code);
-            
-            if (!$verification['success']) {
-                return [
-                    'success' => false,
-                    'message' => $verification['message'] ?? 'Code OTP invalide ou expiré.',
-                ];
+        foreach ($allowed as $code) {
+            if ($code === '226') {
+                return true;
             }
         }
-        
-        return $this->authenticateUser($phone, $deviceName, $appType);
+        return false;
     }
 
-    /**
-     * Vérifie si le code ressemble à un Firebase ID Token (JWT)
-     */
-    protected function isFirebaseToken(string $code): bool
-    {
-        // Firebase ID Tokens sont des JWT longs (>100 caractères)
-        // et contiennent des points (header.payload.signature)
-        return strlen($code) > 100 && substr_count($code, '.') === 2;
-    }
+    // ==================== OTP ====================
 
-    /**
-     * Verify Firebase ID Token and authenticate user
-     */
-    public function verifyFirebaseToken(
-        string $idToken, 
-        ?string $expectedPhone = null,
-        string $deviceName = 'mobile',
-        ?string $appType = null
+    public function sendOtp(
+        string $phone,
+        string $purpose    = OtpCode::PURPOSE_LOGIN,
+        ?string $ipAddress = null,
+        ?string $userAgent = null
     ): array {
-        if ($this->firebaseAuth === null) {
-            Log::error('Firebase Auth not available for token verification');
+        $normalized  = $this->normalizePhone($phone);
+        $formatted   = $this->formatPhone($phone);
+        $driver      = config('otp.driver', 'sms');
+
+        // Country check
+        if (! $this->isCountryAllowed($normalized)) {
             return [
                 'success' => false,
-                'message' => 'Firebase Auth non configuré sur le serveur.',
+                'message' => 'Votre pays n\'est pas encore supporté.',
+            ];
+        }
+
+        if ($driver === 'firebase') {
+            // Firebase Phone Auth — client handles OTP itself; we just store a backup
+            try {
+                OtpCode::generate($normalized, $purpose, $ipAddress, $userAgent);
+            } catch (\Exception) {
+                // Non-blocking
+            }
+            return [
+                'success' => true,
+                'method'  => 'firebase',
+                'phone'   => $formatted,
+            ];
+        }
+
+        // SMS mode
+        try {
+            $otp = OtpCode::generate($normalized, $purpose, $ipAddress, $userAgent);
+            Log::info('OTP generated', ['phone' => $normalized]);
+
+            return [
+                'success'    => true,
+                'method'     => 'sms',
+                'phone'      => $formatted,
+                'expires_at' => $otp->expires_at->toIso8601String(),
+            ];
+        } catch (\Exception $e) {
+            if ($e->getMessage() === 'OTP_RATE_LIMIT_EXCEEDED') {
+                return [
+                    'success'   => false,
+                    'code'      => 'OTP_RATE_LIMIT_EXCEEDED',
+                    'message'   => 'Trop de demandes OTP. Veuillez patienter.',
+                ];
+            }
+            return [
+                'success' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    // ==================== FIREBASE TOKEN ====================
+
+    public function verifyFirebaseToken(string $idToken, string $phone): array
+    {
+        if ($this->firebaseAuth === null) {
+            return [
+                'success'        => false,
+                'message'        => 'Firebase Auth non configuré.',
+                'fallback_to_otp' => false,
             ];
         }
 
         try {
-            // Vérifier le token Firebase
-            $verifiedIdToken = $this->firebaseAuth->verifyIdToken($idToken);
-            
-            // Extraire les claims
-            $claims = $verifiedIdToken->claims();
-            $firebaseUid = $claims->get('sub');
-            $phoneNumber = $claims->get('phone_number');
-            
-            if (empty($phoneNumber)) {
+            $verifiedToken = $this->firebaseAuth->verifyIdToken($idToken);
+            $claims        = $verifiedToken->claims();
+            $uid           = $claims->get('sub');
+
+            return [
+                'success'     => true,
+                'firebase_uid' => $uid,
+                'phone'       => $phone,
+            ];
+        } catch (FailedToVerifyToken $e) {
+            return [
+                'success'        => false,
+                'message'        => 'Token Firebase invalide.',
+                'fallback_to_otp' => false,
+            ];
+        } catch (ConnectException | RequestException $e) {
+            return [
+                'success'        => false,
+                'message'        => 'Erreur réseau Firebase.',
+                'fallback_to_otp' => true,
+            ];
+        } catch (\Throwable $e) {
+            return [
+                'success'        => false,
+                'message'        => 'Erreur Firebase: ' . $e->getMessage(),
+                'fallback_to_otp' => false,
+            ];
+        }
+    }
+
+    // ==================== OTP VERIFY ====================
+
+    public function verifyOtp(
+        string $phone,
+        string $code,
+        string $platform  = 'mobile',
+        ?string $appType  = null,
+        bool $createToken = true
+    ): array {
+        $phone = $this->normalizePhone($phone);
+
+        // Detect Firebase JWT token (3-part dot-separated, >100 chars)
+        if ($this->isFirebaseToken($code)) {
+            if ($this->firebaseAuth === null) {
                 return [
                     'success' => false,
-                    'message' => 'Le token Firebase ne contient pas de numéro de téléphone.',
+                    'message' => 'Firebase Auth non configuré pour ce type de token.',
                 ];
             }
-
-            // Normaliser le numéro de Firebase (+226XXXXXXXX -> XXXXXXXX)
-            $normalizedPhone = $this->normalizePhone($phoneNumber);
-            
-            // Si un numéro attendu est fourni, vérifier qu'il correspond
-            if ($expectedPhone !== null) {
-                $expectedNormalized = $this->normalizePhone($expectedPhone);
-                if ($normalizedPhone !== $expectedNormalized) {
-                    Log::warning('Phone mismatch in Firebase token', [
-                        'expected' => substr($expectedNormalized, 0, 4) . '****',
-                        'received' => substr($normalizedPhone, 0, 4) . '****',
-                    ]);
-                    return [
-                        'success' => false,
-                        'message' => 'Le numéro de téléphone ne correspond pas.',
-                    ];
-                }
+            $fbResult = $this->verifyFirebaseToken($code, $phone);
+            if (! $fbResult['success']) {
+                return $fbResult;
             }
-
-            Log::info('Firebase token verified', [
-                'firebase_uid' => $firebaseUid,
-                'phone' => substr($normalizedPhone, 0, 4) . '****',
-            ]);
-
-            return $this->authenticateUser($normalizedPhone, $deviceName, $appType, $firebaseUid);
-
-        } catch (FailedToVerifyToken $e) {
-            Log::error('Firebase token verification failed', [
-                'error' => $e->getMessage(),
-            ]);
-            return [
-                'success' => false,
-                'message' => 'Token Firebase invalide ou expiré.',
-            ];
-        } catch (\Exception $e) {
-            Log::error('Firebase verification error', [
-                'error' => $e->getMessage(),
-            ]);
-            return [
-                'success' => false,
-                'message' => 'Erreur lors de la vérification Firebase.',
-            ];
-        }
-    }
-
-    /**
-     * Authenticate or create user and return token
-     */
-    protected function authenticateUser(
-        string $phone, 
-        string $deviceName, 
-        ?string $appType,
-        ?string $firebaseUid = null
-    ): array {
-        // Find or create user
-        $user = User::firstOrCreate(
-            ['phone' => $phone],
-            [
-                'role' => UserRole::CLIENT,
-                'status' => UserStatus::ACTIVE,
-                'firebase_uid' => $firebaseUid,
-            ]
-        );
-
-        // Mettre à jour le Firebase UID si nouveau
-        if ($firebaseUid && $user->firebase_uid !== $firebaseUid) {
-            $user->update(['firebase_uid' => $firebaseUid]);
+            // Continue to authenticate user
+            return $this->authenticateUser($phone, $platform, $appType, $fbResult['firebase_uid'] ?? null, $createToken);
         }
 
-        // Validation du rôle selon l'application
-        if ($appType !== null) {
-            $roleValidation = $this->validateUserRoleForApp($user, $appType);
-            if (!$roleValidation['success']) {
-                return $roleValidation;
+        // Demo mode
+        $demoCode = config('otp.demo_code', '');
+        $isDemoLogin = $this->isDemoMode() && $code === $demoCode && !empty($demoCode);
+
+        if (! $isDemoLogin) {
+            $result = OtpCode::verify($phone, $code);
+            if (! $result['success']) {
+                return $result;
             }
         }
-        
-        // Check if user is suspended
-        if ($user->status === UserStatus::SUSPENDED) {
-            return [
-                'success' => false,
-                'message' => 'Votre compte est suspendu. Contactez le support.',
-            ];
-        }
-        
-        // Check if courier is pending approval
-        if ($user->role === UserRole::COURIER && $user->status === UserStatus::PENDING) {
-            return [
-                'success' => false,
-                'message' => 'Votre compte coursier est en attente de validation par un administrateur.',
-            ];
-        }
-        
-        // Create token
-        $token = $user->createToken($deviceName)->plainTextToken;
-        
-        return [
-            'success' => true,
-            'message' => 'Connexion réussie.',
-            'user' => $user,
-            'token' => $token,
-        ];
+
+        return $this->authenticateUser($phone, $platform, $appType, null, $createToken);
     }
 
-    /**
-     * Valide que le rôle de l'utilisateur correspond à l'application utilisée
-     * 
-     * @param User $user
-     * @param string $appType Type d'application (client, courier)
-     * @return array
-     */
-    protected function validateUserRoleForApp(User $user, string $appType): array
+    private function isFirebaseToken(string $code): bool
     {
-        // Un admin ne peut pas se connecter aux apps mobiles
-        if ($user->role === UserRole::ADMIN) {
-            return [
-                'success' => false,
-                'message' => 'Les comptes administrateurs ne peuvent pas se connecter aux applications mobiles.',
-            ];
-        }
-
-        // Validation selon le type d'app
-        if ($appType === 'client' && $user->role !== UserRole::CLIENT) {
-            return [
-                'success' => false,
-                'message' => 'Ce compte est un compte coursier. Veuillez utiliser l\'application OUAGA CHAP Coursier.',
-            ];
-        }
-
-        if ($appType === 'courier' && $user->role !== UserRole::COURIER) {
-            return [
-                'success' => false,
-                'message' => 'Ce compte est un compte client. Veuillez utiliser l\'application OUAGA CHAP Client.',
-            ];
-        }
-
-        return ['success' => true];
+        return substr_count($code, '.') === 2 && strlen($code) > 100;
     }
 
-    /**
-     * Register a new courier
-     */
-    public function registerCourier(array $data): array
-    {
-        $data['phone'] = $this->normalizePhone($data['phone']);
-        
-        $user = User::create([
-            'phone' => $data['phone'],
-            'name' => $data['name'],
-            'role' => UserRole::COURIER,
-            'status' => UserStatus::PENDING, // Needs admin approval
-            'vehicle_type' => $data['vehicle_type'],
-            'vehicle_plate' => $data['vehicle_plate'],
-            'vehicle_model' => $data['vehicle_model'] ?? null,
-            'is_available' => false,
-        ]);
-        
-        return [
-            'success' => true,
-            'message' => 'Inscription réussie. Votre compte est en attente de validation.',
-            'user' => $user,
-        ];
-    }
+    // ==================== LOGOUT ====================
 
-    /**
-     * Logout user (revoke current token)
-     */
     public function logout(User $user): array
     {
-        $user->currentAccessToken()->delete();
-        
-        return [
-            'success' => true,
-            'message' => 'Déconnexion réussie.',
-        ];
+        $user->currentAccessToken()?->delete();
+
+        return ['success' => true, 'message' => 'Déconnexion réussie.'];
     }
 
-    /**
-     * Logout from all devices
-     */
     public function logoutAll(User $user): array
     {
         $user->tokens()->delete();
-        
+
+        return ['success' => true, 'message' => 'Déconnexion de tous les appareils réussie.'];
+    }
+
+    // ==================== REFRESH TOKEN ====================
+
+    public function refreshToken(User $user): array
+    {
+        if ($user->status !== UserStatus::ACTIVE) {
+            return [
+                'success' => false,
+                'message' => 'Votre compte est suspendu.',
+            ];
+        }
+
+        // Revoke current token if any
+        if ($user->currentAccessToken()) {
+            $user->currentAccessToken()->delete();
+        }
+
+        $abilities = match ($user->role) {
+            UserRole::COURIER => ['courier:*'],
+            UserRole::ADMIN   => ['admin:*'],
+            default           => ['client:*'],
+        };
+
+        $token = $user->createToken('auth_token', $abilities);
+
         return [
             'success' => true,
-            'message' => 'Déconnexion de tous les appareils réussie.',
+            'token'   => $token->plainTextToken,
+        ];
+    }
+
+    // ==================== DELETE ACCOUNT ====================
+
+    public function deleteAccount(User $user): array
+    {
+        // Courier cannot delete if has active deliveries
+        if ($user->role === UserRole::COURIER) {
+            $activeOrders = \App\Models\Order::where('courier_id', $user->id)
+                ->whereIn('status', ['assigned', 'picked_up', 'in_transit'])
+                ->exists();
+
+            if ($activeOrders) {
+                return [
+                    'success' => false,
+                    'message' => 'Impossible de supprimer votre compte : vous avez des livraisons en cours.',
+                ];
+            }
+        }
+
+        // Revoke all tokens
+        $user->tokens()->delete();
+
+        // Anonymize data before soft-delete
+        $user->update([
+            'phone'     => 'deleted_' . $user->id,
+            'name'      => 'Compte supprimé',
+            'email'     => null,
+            'fcm_token' => null,
+            'firebase_uid' => null,
+        ]);
+
+        $user->delete();
+
+        return [
+            'success' => true,
+            'message' => 'Votre compte a été supprimé.',
+        ];
+    }
+
+    // ==================== VALIDATE ROLE ====================
+
+    private function validateUserRoleForApp(User $user, ?string $appType): array
+    {
+        if ($appType === null) {
+            return ['success' => true];
+        }
+        if ($user->role === UserRole::ADMIN) {
+            return ['success' => false, 'message' => 'Cette application n\'est pas disponible pour les administrateurs.'];
+        }
+        if ($appType === 'courier' && $user->role === UserRole::CLIENT) {
+            return ['success' => false, 'message' => 'Votre compte client n\'est pas valide pour cette application. Utilisez l\'application OUAGA CHAP Client.'];
+        }
+        if ($appType === 'client' && $user->role === UserRole::COURIER) {
+            return ['success' => false, 'message' => 'Votre compte coursier n\'est pas valide pour cette application. Utilisez l\'application OUAGA CHAP Coursier.'];
+        }
+        return ['success' => true];
+    }
+
+    // ==================== AUTHENTICATE USER ====================
+
+    private function authenticateUser(string $phone, string $platform = 'mobile', ?string $appType = null, ?string $firebaseUid = null, bool $createToken = true): array
+    {
+        $registrationData = Cache::pull("registration:{$phone}");
+
+        $user = User::where('phone', $phone)->first();
+
+        if (! $user) {
+            $roleFromApp = ($appType === 'courier') ? UserRole::COURIER : UserRole::CLIENT;
+            $user = User::create([
+                'phone'        => $phone,
+                'name'         => $registrationData['name'] ?? null,
+                'email'        => $registrationData['email'] ?? null,
+                'role'         => $roleFromApp,
+                'status'       => ($roleFromApp === UserRole::COURIER) ? UserStatus::PENDING : UserStatus::ACTIVE,
+                'firebase_uid' => $firebaseUid,
+            ]);
+        } else {
+            $updates = [];
+            if ($firebaseUid) {
+                $updates['firebase_uid'] = $firebaseUid;
+            }
+            if ($registrationData) {
+                if (empty($user->name) && ! empty($registrationData['name'])) {
+                    $updates['name'] = $registrationData['name'];
+                }
+                if (empty($user->email) && ! empty($registrationData['email'])) {
+                    $updates['email'] = $registrationData['email'];
+                }
+            }
+            if (! empty($updates)) {
+                $user->update($updates);
+                $user->refresh();
+            }
+        }
+
+        // Status checks
+        if ($user->status === UserStatus::SUSPENDED) {
+            return ['success' => false, 'message' => 'Votre compte est suspendu. Contactez le support.'];
+        }
+
+        if ($user->status === UserStatus::PENDING) {
+            return ['success' => false, 'message' => 'Votre compte est en attente de validation.'];
+        }
+
+        if ($user->status === UserStatus::REJECTED) {
+            return ['success' => false, 'message' => 'Votre compte a été rejeté. Contactez le support.'];
+        }
+
+        // App type validation
+        $roleCheck = $this->validateUserRoleForApp($user, $appType);
+        if (! $roleCheck['success']) {
+            return $roleCheck;
+        }
+
+        $abilities = match ($user->role) {
+            UserRole::COURIER => ['courier:*'],
+            UserRole::ADMIN   => ['admin:*'],
+            default           => ['client:*'],
+        };
+
+        $token = $user->createToken('api-token', $abilities)->plainTextToken;
+
+        return [
+            'success' => true,
+            'message' => 'Connexion réussie.',
+            'user'    => $user,
+            'token'   => $token,
+        ];
+    }
+
+    public function registerClient(array $data): array
+    {
+        $phone = $this->normalizePhone($data['phone']);
+
+        $existing = User::where('phone', $phone)->first();
+        if ($existing) {
+            return ['success' => false, 'message' => 'Ce numéro est déjà inscrit.'];
+        }
+
+        // Store in cache for use when user authenticates via Firebase
+        \Illuminate\Support\Facades\Cache::put("registration:{$phone}", [
+            'name'  => $data['name'] ?? null,
+            'email' => $data['email'] ?? null,
+        ], now()->addMinutes(30));
+
+        return [
+            'success' => true,
+            'message' => 'Informations enregistrées. Veuillez vous connecter via Firebase.',
+        ];
+    }
+
+    // ==================== REGISTRATION ====================
+
+    public function registerCourier(array $data): array
+    {
+        $phone = $this->normalizePhone($data['phone']);
+
+        $existing = User::where('phone', $phone)
+            ->where('role', UserRole::COURIER)
+            ->first();
+
+        if ($existing) {
+            return ['success' => false, 'message' => 'Ce numéro est déjà inscrit comme coursier.'];
+        }
+
+        // Convert existing client to courier
+        $client = User::where('phone', $phone)->first();
+        if ($client) {
+            $client->update([
+                'role'          => UserRole::COURIER,
+                'status'        => UserStatus::PENDING,
+                'name'          => $data['name'] ?? $client->name,
+                'vehicle_type'  => $data['vehicle_type'] ?? null,
+                'vehicle_plate' => $data['vehicle_plate'] ?? null,
+                'vehicle_model' => $data['vehicle_model'] ?? null,
+            ]);
+            $client->refresh();
+            return [
+                'success' => true,
+                'message' => 'Inscription réussie. Votre compte est en attente de validation.',
+                'user'    => $client,
+            ];
+        }
+
+        $user = User::create([
+            'phone'         => $phone,
+            'name'          => $data['name'] ?? null,
+            'role'          => UserRole::COURIER,
+            'status'        => UserStatus::PENDING,
+            'vehicle_type'  => $data['vehicle_type'] ?? null,
+            'vehicle_plate' => $data['vehicle_plate'] ?? null,
+            'vehicle_model' => $data['vehicle_model'] ?? null,
+        ]);
+
+        return [
+            'success' => true,
+            'message' => 'Inscription réussie. Votre compte est en attente de validation.',
+            'user'    => $user,
         ];
     }
 }

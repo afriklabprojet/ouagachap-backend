@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 
 abstract class BaseController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Success response
      */
@@ -58,6 +60,18 @@ abstract class BaseController extends Controller
     protected function forbidden(string $message = 'Forbidden'): JsonResponse
     {
         return $this->error($message, 403);
+    }
+
+    /**
+     * Validation error response
+     */
+    protected function validationError(mixed $errors, string $message = 'Validation failed'): JsonResponse
+    {
+        return response()->json([
+            'success' => false,
+            'message' => $message,
+            'errors' => $errors,
+        ], 422);
     }
 
     /**

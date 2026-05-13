@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <title>Dashboard for /Users/teya2023/Downloads/OUAGA_CHAP/api/app/Services</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="../_css/bootstrap.min.css?v=11.0.12" rel="stylesheet" type="text/css">
+  <link href="../_css/nv.d3.min.css?v=11.0.12" rel="stylesheet" type="text/css">
+  <link href="../_css/style.css?v=11.0.12" rel="stylesheet" type="text/css">
+  <link href="../_css/custom.css" rel="stylesheet" type="text/css">
+ </head>
+ <body>
+  <header>
+   <div class="container-fluid">
+    <div class="row">
+     <div class="col-md-12">
+      <nav aria-label="breadcrumb">
+       <ol class="breadcrumb">
+         <li class="breadcrumb-item"><a href="../index.html">/Users/teya2023/Downloads/OUAGA_CHAP/api/app</a></li>
+         <li class="breadcrumb-item"><a href="index.html">Services</a></li>
+         <li class="breadcrumb-item active">(Dashboard)</li>
+
+       </ol>
+      </nav>
+     </div>
+    </div>
+   </div>
+  </header>
+  <div class="container-fluid">
+   <div class="row">
+    <div class="col-md-12">
+     <h2>Classes</h2>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Coverage Distribution</h3>
+     <div id="classCoverageDistribution" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Complexity</h3>
+     <div id="classComplexity" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Insufficient Coverage</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Class</th>
+         <th class="text-right">Coverage</th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="DelayPredictorService.php.html#17">App\Services\DelayPredictorService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#30">App\Services\EnhancedPushNotificationService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GamificationService.php.html#13">App\Services\GamificationService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GeofenceService.php.html#12">App\Services\GeofenceService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="RouteOptimizerService.php.html#20">App\Services\RouteOptimizerService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="SmartDispatcherService.php.html#17">App\Services\SmartDispatcherService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="SubscriptionService.php.html#10">App\Services\SubscriptionService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TrafficAnalysisService.php.html#15">App\Services\TrafficAnalysisService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CourierService.php.html#20">App\Services\CourierService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PushNotificationService.php.html#17">App\Services\PushNotificationService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OrderService.php.html#21">App\Services\OrderService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FirebaseAuthService.php.html#23">App\Services\FirebaseAuthService</a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="WeatherService.php.html#16">App\Services\WeatherService</a></td><td class="text-right">1%</td></tr>
+       <tr><td><a href="JekoPaymentService.php.html#16">App\Services\JekoPaymentService</a></td><td class="text-right">1%</td></tr>
+       <tr><td><a href="GoogleMapsService.php.html#13">App\Services\GoogleMapsService</a></td><td class="text-right">2%</td></tr>
+       <tr><td><a href="ExportService.php.html#13">App\Services\ExportService</a></td><td class="text-right">4%</td></tr>
+       <tr><td><a href="CacheService.php.html#13">App\Services\CacheService</a></td><td class="text-right">6%</td></tr>
+       <tr><td><a href="WalletService.php.html#11">App\Services\WalletService</a></td><td class="text-right">20%</td></tr>
+       <tr><td><a href="PaymentService.php.html#15">App\Services\PaymentService</a></td><td class="text-right">21%</td></tr>
+       <tr><td><a href="NotificationService.php.html#9">App\Services\NotificationService</a></td><td class="text-right">22%</td></tr>
+       <tr><td><a href="SmsService.php.html#8">App\Services\SmsService</a></td><td class="text-right">26%</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Project Risks</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Class</th>
+         <th class="text-right"><abbr title="Change Risk Anti-Patterns (CRAP) Index">CRAP</abbr></th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#30">App\Services\EnhancedPushNotificationService</a></td><td class="text-right">5550</td></tr>
+       <tr><td><a href="CourierService.php.html#20">App\Services\CourierService</a></td><td class="text-right">5062</td></tr>
+       <tr><td><a href="JekoPaymentService.php.html#16">App\Services\JekoPaymentService</a></td><td class="text-right">3378</td></tr>
+       <tr><td><a href="WeatherService.php.html#16">App\Services\WeatherService</a></td><td class="text-right">2370</td></tr>
+       <tr><td><a href="ExportService.php.html#13">App\Services\ExportService</a></td><td class="text-right">1804</td></tr>
+       <tr><td><a href="PushNotificationService.php.html#17">App\Services\PushNotificationService</a></td><td class="text-right">1783</td></tr>
+       <tr><td><a href="OrderService.php.html#21">App\Services\OrderService</a></td><td class="text-right">1697</td></tr>
+       <tr><td><a href="DelayPredictorService.php.html#17">App\Services\DelayPredictorService</a></td><td class="text-right">1482</td></tr>
+       <tr><td><a href="SmartDispatcherService.php.html#17">App\Services\SmartDispatcherService</a></td><td class="text-right">1190</td></tr>
+       <tr><td><a href="FirebaseAuthService.php.html#23">App\Services\FirebaseAuthService</a></td><td class="text-right">1094</td></tr>
+       <tr><td><a href="PaymentService.php.html#15">App\Services\PaymentService</a></td><td class="text-right">780</td></tr>
+       <tr><td><a href="GamificationService.php.html#13">App\Services\GamificationService</a></td><td class="text-right">552</td></tr>
+       <tr><td><a href="GeofenceService.php.html#12">App\Services\GeofenceService</a></td><td class="text-right">552</td></tr>
+       <tr><td><a href="RouteOptimizerService.php.html#20">App\Services\RouteOptimizerService</a></td><td class="text-right">506</td></tr>
+       <tr><td><a href="SmsService.php.html#8">App\Services\SmsService</a></td><td class="text-right">460</td></tr>
+       <tr><td><a href="NotificationService.php.html#9">App\Services\NotificationService</a></td><td class="text-right">424</td></tr>
+       <tr><td><a href="CacheService.php.html#13">App\Services\CacheService</a></td><td class="text-right">278</td></tr>
+       <tr><td><a href="TrafficAnalysisService.php.html#15">App\Services\TrafficAnalysisService</a></td><td class="text-right">182</td></tr>
+       <tr><td><a href="WalletService.php.html#11">App\Services\WalletService</a></td><td class="text-right">111</td></tr>
+       <tr><td><a href="GoogleMapsService.php.html#13">App\Services\GoogleMapsService</a></td><td class="text-right">52</td></tr>
+       <tr><td><a href="SubscriptionService.php.html#10">App\Services\SubscriptionService</a></td><td class="text-right">42</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-12">
+     <h2>Methods</h2>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Coverage Distribution</h3>
+     <div id="methodCoverageDistribution" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Complexity</h3>
+     <div id="methodComplexity" style="height: 300px;">
+       <svg></svg>
+     </div>
+    </div>
+   </div>
+   <div class="row">
+    <div class="col-md-6">
+     <h3>Insufficient Coverage</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Method</th>
+         <th class="text-right">Coverage</th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="CacheService.php.html#27"><abbr title="App\Services\CacheService::getActiveZones">getActiveZones</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CacheService.php.html#39"><abbr title="App\Services\CacheService::getZone">getZone</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CacheService.php.html#49"><abbr title="App\Services\CacheService::getActiveFaqs">getActiveFaqs</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CacheService.php.html#62"><abbr title="App\Services\CacheService::getFaqsByCategory">getFaqsByCategory</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CacheService.php.html#75"><abbr title="App\Services\CacheService::getGeneralConfig">getGeneralConfig</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CacheService.php.html#99"><abbr title="App\Services\CacheService::getContactInfo">getContactInfo</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CacheService.php.html#130"><abbr title="App\Services\CacheService::clearFaqsCache">clearFaqsCache</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CacheService.php.html#142"><abbr title="App\Services\CacheService::clearConfigCache">clearConfigCache</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CacheService.php.html#153"><abbr title="App\Services\CacheService::getSiteSettings">getSiteSettings</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CacheService.php.html#163"><abbr title="App\Services\CacheService::getLandingSettings">getLandingSettings</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CacheService.php.html#182"><abbr title="App\Services\CacheService::clearSiteSettingsCache">clearSiteSettingsCache</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CacheService.php.html#207"><abbr title="App\Services\CacheService::clearAll">clearAll</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CacheService.php.html#219"><abbr title="App\Services\CacheService::warmUp">warmUp</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CourierService.php.html#36"><abbr title="App\Services\CourierService::updateLocation">updateLocation</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CourierService.php.html#72"><abbr title="App\Services\CourierService::broadcastTrackingUpdate">broadcastTrackingUpdate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CourierService.php.html#100"><abbr title="App\Services\CourierService::calculateDistance">calculateDistance</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CourierService.php.html#109"><abbr title="App\Services\CourierService::validateAvailabilityToggle">validateAvailabilityToggle</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CourierService.php.html#146"><abbr title="App\Services\CourierService::updateAvailability">updateAvailability</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CourierService.php.html#171"><abbr title="App\Services\CourierService::getAvailableCouriers">getAvailableCouriers</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CourierService.php.html#259"><abbr title="App\Services\CourierService::calculateCourierScore">calculateCourierScore</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CourierService.php.html#397"><abbr title="App\Services\CourierService::calculateBatteryScore">calculateBatteryScore</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CourierService.php.html#414"><abbr title="App\Services\CourierService::calculateResponseScore">calculateResponseScore</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CourierService.php.html#441"><abbr title="App\Services\CourierService::calculateVehicleScore">calculateVehicleScore</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CourierService.php.html#452"><abbr title="App\Services\CourierService::getVehicleAdjustment">getVehicleAdjustment</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CourierService.php.html#471"><abbr title="App\Services\CourierService::motoAdjustment">motoAdjustment</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CourierService.php.html#480"><abbr title="App\Services\CourierService::tricycleAdjustment">tricycleAdjustment</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CourierService.php.html#489"><abbr title="App\Services\CourierService::carAdjustment">carAdjustment</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CourierService.php.html#500"><abbr title="App\Services\CourierService::vanAdjustment">vanAdjustment</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CourierService.php.html#536"><abbr title="App\Services\CourierService::getCourierStats">getCourierStats</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CourierService.php.html#590"><abbr title="App\Services\CourierService::getEarningsHistory">getEarningsHistory</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CourierService.php.html#602"><abbr title="App\Services\CourierService::getAllCouriers">getAllCouriers</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CourierService.php.html#616"><abbr title="App\Services\CourierService::approveCourier">approveCourier</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="CourierService.php.html#637"><abbr title="App\Services\CourierService::suspendCourier">suspendCourier</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DelayPredictorService.php.html#46"><abbr title="App\Services\DelayPredictorService::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DelayPredictorService.php.html#63"><abbr title="App\Services\DelayPredictorService::predictETA">predictETA</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DelayPredictorService.php.html#144"><abbr title="App\Services\DelayPredictorService::isCurrentlyPeakHour">isCurrentlyPeakHour</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DelayPredictorService.php.html#158"><abbr title="App\Services\DelayPredictorService::minutesToNextPeakHour">minutesToNextPeakHour</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DelayPredictorService.php.html#180"><abbr title="App\Services\DelayPredictorService::getCourierToPickupDistance">getCourierToPickupDistance</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DelayPredictorService.php.html#199"><abbr title="App\Services\DelayPredictorService::getRouteTrafficScore">getRouteTrafficScore</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DelayPredictorService.php.html#220"><abbr title="App\Services\DelayPredictorService::getPeakHourMultiplier">getPeakHourMultiplier</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DelayPredictorService.php.html#241"><abbr title="App\Services\DelayPredictorService::getWeatherMultiplier">getWeatherMultiplier</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DelayPredictorService.php.html#253"><abbr title="App\Services\DelayPredictorService::getTrafficMultiplier">getTrafficMultiplier</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="DelayPredictorService.php.html#265"><abbr title="App\Services\DelayPredictorService::defaultETA">defaultETA</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#43"><abbr title="App\Services\EnhancedPushNotificationService::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#60"><abbr title="App\Services\EnhancedPushNotificationService::sendToUser">sendToUser</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#73"><abbr title="App\Services\EnhancedPushNotificationService::sendToUsers">sendToUsers</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#92"><abbr title="App\Services\EnhancedPushNotificationService::sendToTopic">sendToTopic</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#118"><abbr title="App\Services\EnhancedPushNotificationService::notifyOrderCreated">notifyOrderCreated</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#137"><abbr title="App\Services\EnhancedPushNotificationService::notifyOrderAssigned">notifyOrderAssigned</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#155"><abbr title="App\Services\EnhancedPushNotificationService::notifyNewOrderAvailable">notifyNewOrderAvailable</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#171"><abbr title="App\Services\EnhancedPushNotificationService::broadcastNewOrder">broadcastNewOrder</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#198"><abbr title="App\Services\EnhancedPushNotificationService::notifyOrderPickedUp">notifyOrderPickedUp</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#211"><abbr title="App\Services\EnhancedPushNotificationService::notifyOrderDelivered">notifyOrderDelivered</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#225"><abbr title="App\Services\EnhancedPushNotificationService::notifyOrderCancelled">notifyOrderCancelled</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#250"><abbr title="App\Services\EnhancedPushNotificationService::notifyPaymentReceived">notifyPaymentReceived</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#264"><abbr title="App\Services\EnhancedPushNotificationService::notifyCourierEarnings">notifyCourierEarnings</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#289"><abbr title="App\Services\EnhancedPushNotificationService::notifyChatMessage">notifyChatMessage</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#315"><abbr title="App\Services\EnhancedPushNotificationService::notifyCourierArriving">notifyCourierArriving</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#339"><abbr title="App\Services\EnhancedPushNotificationService::notifyNewRating">notifyNewRating</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#360"><abbr title="App\Services\EnhancedPushNotificationService::sendWithRetry">sendWithRetry</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#397"><abbr title="App\Services\EnhancedPushNotificationService::sendMulticast">sendMulticast</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#454"><abbr title="App\Services\EnhancedPushNotificationService::buildMessage">buildMessage</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#475"><abbr title="App\Services\EnhancedPushNotificationService::buildMulticastMessage">buildMulticastMessage</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#496"><abbr title="App\Services\EnhancedPushNotificationService::buildTopicMessage">buildTopicMessage</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#519"><abbr title="App\Services\EnhancedPushNotificationService::buildDataPayload">buildDataPayload</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#539"><abbr title="App\Services\EnhancedPushNotificationService::buildAndroidConfig">buildAndroidConfig</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#570"><abbr title="App\Services\EnhancedPushNotificationService::buildApnsConfig">buildApnsConfig</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#624"><abbr title="App\Services\EnhancedPushNotificationService::sanitizeData">sanitizeData</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#632"><abbr title="App\Services\EnhancedPushNotificationService::shortenAddress">shortenAddress</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#643"><abbr title="App\Services\EnhancedPushNotificationService::isInvalidToken">isInvalidToken</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#654"><abbr title="App\Services\EnhancedPushNotificationService::isRetryable">isRetryable</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#665"><abbr title="App\Services\EnhancedPushNotificationService::isInvalidTokenError">isInvalidTokenError</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#677"><abbr title="App\Services\EnhancedPushNotificationService::clearInvalidToken">clearInvalidToken</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#689"><abbr title="App\Services\EnhancedPushNotificationService::clearInvalidTokens">clearInvalidTokens</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#701"><abbr title="App\Services\EnhancedPushNotificationService::logNotification">logNotification</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#714"><abbr title="App\Services\EnhancedPushNotificationService::logSuccess">logSuccess</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#727"><abbr title="App\Services\EnhancedPushNotificationService::logError">logError</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ExportService.php.html#18"><abbr title="App\Services\ExportService::ordersToCSV">ordersToCSV</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ExportService.php.html#43"><abbr title="App\Services\ExportService::ordersToPDF">ordersToPDF</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ExportService.php.html#65"><abbr title="App\Services\ExportService::paymentsToCSV">paymentsToCSV</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ExportService.php.html#89"><abbr title="App\Services\ExportService::withdrawalsToCSV">withdrawalsToCSV</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ExportService.php.html#114"><abbr title="App\Services\ExportService::couriersToCSV">couriersToCSV</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ExportService.php.html#141"><abbr title="App\Services\ExportService::revenueReportPDF">revenueReportPDF</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ExportService.php.html#192"><abbr title="App\Services\ExportService::getPaymentsQuery">getPaymentsQuery</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ExportService.php.html#211"><abbr title="App\Services\ExportService::getWithdrawalsQuery">getWithdrawalsQuery</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ExportService.php.html#230"><abbr title="App\Services\ExportService::translateStatus">translateStatus</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ExportService.php.html#244"><abbr title="App\Services\ExportService::translatePaymentStatus">translatePaymentStatus</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="ExportService.php.html#255"><abbr title="App\Services\ExportService::translateWithdrawalStatus">translateWithdrawalStatus</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FirebaseAuthService.php.html#43"><abbr title="App\Services\FirebaseAuthService::authenticateWithToken">authenticateWithToken</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FirebaseAuthService.php.html#103"><abbr title="App\Services\FirebaseAuthService::findOrCreateUser">findOrCreateUser</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FirebaseAuthService.php.html#195"><abbr title="App\Services\FirebaseAuthService::validateRole">validateRole</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="FirebaseAuthService.php.html#224"><abbr title="App\Services\FirebaseAuthService::normalizePhone">normalizePhone</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GamificationService.php.html#19"><abbr title="App\Services\GamificationService::onOrderDelivered">onOrderDelivered</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GamificationService.php.html#42"><abbr title="App\Services\GamificationService::processQuestForDelivery">processQuestForDelivery</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GamificationService.php.html#79"><abbr title="App\Services\GamificationService::computeStreakValue">computeStreakValue</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GamificationService.php.html#114"><abbr title="App\Services\GamificationService::claimReward">claimReward</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GamificationService.php.html#143"><abbr title="App\Services\GamificationService::getCourierQuestsWithProgress">getCourierQuestsWithProgress</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GeofenceService.php.html#22"><abbr title="App\Services\GeofenceService::checkPosition">checkPosition</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GeofenceService.php.html#98"><abbr title="App\Services\GeofenceService::isInAnyZone">isInAnyZone</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GeofenceService.php.html#116"><abbr title="App\Services\GeofenceService::isInZone">isInZone</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GeofenceService.php.html#139"><abbr title="App\Services\GeofenceService::getDynamicPricing">getDynamicPricing</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GeofenceService.php.html#157"><abbr title="App\Services\GeofenceService::calculateDeliveryFee">calculateDeliveryFee</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GeofenceService.php.html#174"><abbr title="App\Services\GeofenceService::calculateDistance">calculateDistance</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GeofenceService.php.html#182"><abbr title="App\Services\GeofenceService::getUnreadAlerts">getUnreadAlerts</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GeofenceService.php.html#196"><abbr title="App\Services\GeofenceService::markAlertsAsRead">markAlertsAsRead</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="GoogleMapsService.php.html#33"><abbr title="App\Services\GoogleMapsService::getDirections">getDirections</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="JekoPaymentService.php.html#40"><abbr title="App\Services\JekoPaymentService::isCircuitOpen">isCircuitOpen</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="JekoPaymentService.php.html#48"><abbr title="App\Services\JekoPaymentService::recordFailure">recordFailure</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="JekoPaymentService.php.html#57"><abbr title="App\Services\JekoPaymentService::recordSuccess">recordSuccess</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="JekoPaymentService.php.html#65"><abbr title="App\Services\JekoPaymentService::jekoRequest">jekoRequest</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="JekoPaymentService.php.html#88"><abbr title="App\Services\JekoPaymentService::createPaymentRequest">createPaymentRequest</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="JekoPaymentService.php.html#249"><abbr title="App\Services\JekoPaymentService::getPaymentStatus">getPaymentStatus</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="JekoPaymentService.php.html#303"><abbr title="App\Services\JekoPaymentService::handleWebhook">handleWebhook</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="JekoPaymentService.php.html#356"><abbr title="App\Services\JekoPaymentService::processSuccessfulPayment">processSuccessfulPayment</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="JekoPaymentService.php.html#417"><abbr title="App\Services\JekoPaymentService::verifyWebhookSignature">verifyWebhookSignature</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="JekoPaymentService.php.html#465"><abbr title="App\Services\JekoPaymentService::generateReference">generateReference</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="JekoPaymentService.php.html#482"><abbr title="App\Services\JekoPaymentService::getPaymentMethodName">getPaymentMethodName</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="JekoPaymentService.php.html#491"><abbr title="App\Services\JekoPaymentService::mapJekoMethodToInternal">mapJekoMethodToInternal</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="JekoPaymentService.php.html#504"><abbr title="App\Services\JekoPaymentService::getAvailablePaymentMethods">getAvailablePaymentMethods</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="JekoPaymentService.php.html#523"><abbr title="App\Services\JekoPaymentService::mockPaymentRequest">mockPaymentRequest</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="JekoPaymentService.php.html#573"><abbr title="App\Services\JekoPaymentService::mockConfirmPayment">mockConfirmPayment</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationService.php.html#91"><abbr title="App\Services\NotificationService::sendToUser">sendToUser</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationService.php.html#126"><abbr title="App\Services\NotificationService::getDefaultPreferences">getDefaultPreferences</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationService.php.html#161"><abbr title="App\Services\NotificationService::updatePreferences">updatePreferences</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationService.php.html#179"><abbr title="App\Services\NotificationService::sendToMany">sendToMany</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="NotificationService.php.html#200"><abbr title="App\Services\NotificationService::notifyActiveCouriers">notifyActiveCouriers</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OrderService.php.html#35"><abbr title="App\Services\OrderService::calculateDistance">calculateDistance</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OrderService.php.html#47"><abbr title="App\Services\OrderService::getEstimate">getEstimate</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OrderService.php.html#104"><abbr title="App\Services\OrderService::createOrder">createOrder</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OrderService.php.html#182"><abbr title="App\Services\OrderService::normalizePhone">normalizePhone</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OrderService.php.html#194"><abbr title="App\Services\OrderService::notifyRecipient">notifyRecipient</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OrderService.php.html#220"><abbr title="App\Services\OrderService::getClientOrders">getClientOrders</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OrderService.php.html#236"><abbr title="App\Services\OrderService::getCourierOrders">getCourierOrders</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OrderService.php.html#252"><abbr title="App\Services\OrderService::getAvailableOrders">getAvailableOrders</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OrderService.php.html#263"><abbr title="App\Services\OrderService::getAvailableOrdersForCourier">getAvailableOrdersForCourier</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OrderService.php.html#293"><abbr title="App\Services\OrderService::assignCourier">assignCourier</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OrderService.php.html#317"><abbr title="App\Services\OrderService::assignOrder">assignOrder</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OrderService.php.html#370"><abbr title="App\Services\OrderService::updateStatus">updateStatus</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="OrderService.php.html#419"><abbr title="App\Services\OrderService::getOrderDetails">getOrderDetails</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentService.php.html#24"><abbr title="App\Services\PaymentService::initiatePayment">initiatePayment</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentService.php.html#155"><abbr title="App\Services\PaymentService::mapPaymentMethodToJeko">mapPaymentMethodToJeko</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentService.php.html#250"><abbr title="App\Services\PaymentService::checkStatus">checkStatus</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentService.php.html#323"><abbr title="App\Services\PaymentService::handleWebhook">handleWebhook</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentService.php.html#383"><abbr title="App\Services\PaymentService::verifyWebhookSignature">verifyWebhookSignature</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PaymentService.php.html#405"><abbr title="App\Services\PaymentService::getUserPayments">getUserPayments</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PushNotificationService.php.html#37"><abbr title="App\Services\PushNotificationService::sendToUser">sendToUser</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PushNotificationService.php.html#50"><abbr title="App\Services\PushNotificationService::sendToUsers">sendToUsers</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PushNotificationService.php.html#68"><abbr title="App\Services\PushNotificationService::sendToTopic">sendToTopic</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PushNotificationService.php.html#97"><abbr title="App\Services\PushNotificationService::send">send</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PushNotificationService.php.html#141"><abbr title="App\Services\PushNotificationService::androidConfig">androidConfig</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PushNotificationService.php.html#155"><abbr title="App\Services\PushNotificationService::apnsConfig">apnsConfig</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PushNotificationService.php.html#173"><abbr title="App\Services\PushNotificationService::sanitizeData">sanitizeData</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PushNotificationService.php.html#181"><abbr title="App\Services\PushNotificationService::clearInvalidToken">clearInvalidToken</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PushNotificationService.php.html#196"><abbr title="App\Services\PushNotificationService::notifyOrderCreated">notifyOrderCreated</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PushNotificationService.php.html#213"><abbr title="App\Services\PushNotificationService::notifyOrderAssigned">notifyOrderAssigned</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PushNotificationService.php.html#234"><abbr title="App\Services\PushNotificationService::notifyNewOrderAvailable">notifyNewOrderAvailable</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PushNotificationService.php.html#283"><abbr title="App\Services\PushNotificationService::notifyOrderPickedUp">notifyOrderPickedUp</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PushNotificationService.php.html#299"><abbr title="App\Services\PushNotificationService::notifyOrderDelivered">notifyOrderDelivered</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PushNotificationService.php.html#315"><abbr title="App\Services\PushNotificationService::notifyOrderCancelled">notifyOrderCancelled</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PushNotificationService.php.html#339"><abbr title="App\Services\PushNotificationService::notifyPaymentReceived">notifyPaymentReceived</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PushNotificationService.php.html#356"><abbr title="App\Services\PushNotificationService::notifyCourierEarnings">notifyCourierEarnings</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PushNotificationService.php.html#381"><abbr title="App\Services\PushNotificationService::notifyCourierArriving">notifyCourierArriving</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="PushNotificationService.php.html#403"><abbr title="App\Services\PushNotificationService::broadcastToAvailableCouriers">broadcastToAvailableCouriers</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="RouteOptimizerService.php.html#33"><abbr title="App\Services\RouteOptimizerService::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="RouteOptimizerService.php.html#49"><abbr title="App\Services\RouteOptimizerService::optimizeRoute">optimizeRoute</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="RouteOptimizerService.php.html#73"><abbr title="App\Services\RouteOptimizerService::estimateTotalCompletion">estimateTotalCompletion</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="RouteOptimizerService.php.html#87"><abbr title="App\Services\RouteOptimizerService::needsReOptimization">needsReOptimization</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="RouteOptimizerService.php.html#103"><abbr title="App\Services\RouteOptimizerService::nearestNeighborRoute">nearestNeighborRoute</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="RouteOptimizerService.php.html#197"><abbr title="App\Services\RouteOptimizerService::buildStopsFromOrders">buildStopsFromOrders</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="RouteOptimizerService.php.html#243"><abbr title="App\Services\RouteOptimizerService::getActiveOrders">getActiveOrders</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="RouteOptimizerService.php.html#252"><abbr title="App\Services\RouteOptimizerService::singleOrderRoute">singleOrderRoute</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="RouteOptimizerService.php.html#267"><abbr title="App\Services\RouteOptimizerService::emptyRoute">emptyRoute</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="SmartDispatcherService.php.html#28"><abbr title="App\Services\SmartDispatcherService::__construct">__construct</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="SmartDispatcherService.php.html#51"><abbr title="App\Services\SmartDispatcherService::dispatchOrder">dispatchOrder</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="SmartDispatcherService.php.html#130"><abbr title="App\Services\SmartDispatcherService::autoDispatchPending">autoDispatchPending</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="SmartDispatcherService.php.html#206"><abbr title="App\Services\SmartDispatcherService::getDispatchSuggestions">getDispatchSuggestions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="SmartDispatcherService.php.html#215"><abbr title="App\Services\SmartDispatcherService::getDispatchContext">getDispatchContext</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="SmartDispatcherService.php.html#273"><abbr title="App\Services\SmartDispatcherService::getScoredCandidates">getScoredCandidates</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="SmartDispatcherService.php.html#303"><abbr title="App\Services\SmartDispatcherService::weatherScoreLabel">weatherScoreLabel</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="SmartDispatcherService.php.html#314"><abbr title="App\Services\SmartDispatcherService::trafficScoreLabel">trafficScoreLabel</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="SmsService.php.html#135"><abbr title="App\Services\SmsService::sendViaBrevo">sendViaBrevo</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="SmsService.php.html#251"><abbr title="App\Services\SmsService::logSms">logSms</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="SubscriptionService.php.html#18"><abbr title="App\Services\SubscriptionService::subscribe">subscribe</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="SubscriptionService.php.html#41"><abbr title="App\Services\SubscriptionService::getActiveSubscription">getActiveSubscription</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="SubscriptionService.php.html#52"><abbr title="App\Services\SubscriptionService::getDiscountForUser">getDiscountForUser</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="SubscriptionService.php.html#64"><abbr title="App\Services\SubscriptionService::cancelActiveSubscription">cancelActiveSubscription</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TrafficAnalysisService.php.html#39"><abbr title="App\Services\TrafficAnalysisService::getTrafficImpactScore">getTrafficImpactScore</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TrafficAnalysisService.php.html#88"><abbr title="App\Services\TrafficAnalysisService::getNearbyIncidents">getNearbyIncidents</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="TrafficAnalysisService.php.html#123"><abbr title="App\Services\TrafficAnalysisService::isRouteSeverelyImpacted">isRouteSeverelyImpacted</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="WalletService.php.html#46"><abbr title="App\Services\WalletService::requestWithdrawal">requestWithdrawal</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="WalletService.php.html#90"><abbr title="App\Services\WalletService::approveWithdrawal">approveWithdrawal</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="WalletService.php.html#102"><abbr title="App\Services\WalletService::rejectWithdrawal">rejectWithdrawal</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="WalletService.php.html#114"><abbr title="App\Services\WalletService::completeWithdrawal">completeWithdrawal</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="WalletService.php.html#126"><abbr title="App\Services\WalletService::getWithdrawalHistory">getWithdrawalHistory</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="WalletService.php.html#141"><abbr title="App\Services\WalletService::getWalletStats">getWalletStats</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="WeatherService.php.html#104"><abbr title="App\Services\WeatherService::fetchScoreFromApi">fetchScoreFromApi</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="WeatherService.php.html#132"><abbr title="App\Services\WeatherService::fetchConditionsFromApi">fetchConditionsFromApi</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="WeatherService.php.html#171"><abbr title="App\Services\WeatherService::computeScoreFromData">computeScoreFromData</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="WeatherService.php.html#193"><abbr title="App\Services\WeatherService::scoreFromWeatherId">scoreFromWeatherId</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="WeatherService.php.html#214"><abbr title="App\Services\WeatherService::isRaining">isRaining</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="WeatherService.php.html#219"><abbr title="App\Services\WeatherService::isHarmattan">isHarmattan</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="WeatherService.php.html#233"><abbr title="App\Services\WeatherService::fallbackConditions">fallbackConditions</abbr></a></td><td class="text-right">0%</td></tr>
+       <tr><td><a href="SmsService.php.html#48"><abbr title="App\Services\SmsService::sendViaInfobip">sendViaInfobip</abbr></a></td><td class="text-right">10%</td></tr>
+       <tr><td><a href="PushNotificationService.php.html#23"><abbr title="App\Services\PushNotificationService::__construct">__construct</abbr></a></td><td class="text-right">25%</td></tr>
+       <tr><td><a href="FirebaseAuthService.php.html#27"><abbr title="App\Services\FirebaseAuthService::__construct">__construct</abbr></a></td><td class="text-right">33%</td></tr>
+       <tr><td><a href="NotificationService.php.html#54"><abbr title="App\Services\NotificationService::sendPush">sendPush</abbr></a></td><td class="text-right">42%</td></tr>
+       <tr><td><a href="NotificationService.php.html#72"><abbr title="App\Services\NotificationService::sendSms">sendSms</abbr></a></td><td class="text-right">42%</td></tr>
+       <tr><td><a href="NotificationService.php.html#111"><abbr title="App\Services\NotificationService::shouldNotify">shouldNotify</abbr></a></td><td class="text-right">50%</td></tr>
+       <tr><td><a href="SmsService.php.html#12"><abbr title="App\Services\SmsService::__construct">__construct</abbr></a></td><td class="text-right">50%</td></tr>
+       <tr><td><a href="ExportService.php.html#173"><abbr title="App\Services\ExportService::getOrdersQuery">getOrdersQuery</abbr></a></td><td class="text-right">75%</td></tr>
+       <tr><td><a href="NotificationService.php.html#19"><abbr title="App\Services\NotificationService::send">send</abbr></a></td><td class="text-right">77%</td></tr>
+       <tr><td><a href="SmsService.php.html#36"><abbr title="App\Services\SmsService::send">send</abbr></a></td><td class="text-right">85%</td></tr>
+       <tr><td><a href="SmsService.php.html#231"><abbr title="App\Services\SmsService::normalizePhone">normalizePhone</abbr></a></td><td class="text-right">87%</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+    <div class="col-md-6">
+     <h3>Project Risks</h3>
+     <div class="scrollbox">
+      <table class="table">
+       <thead>
+        <tr>
+         <th>Method</th>
+         <th class="text-right"><abbr title="Change Risk Anti-Patterns (CRAP) Index">CRAP</abbr></th>
+        </tr>
+       </thead>
+       <tbody>
+       <tr><td><a href="WeatherService.php.html#193"><abbr title="App\Services\WeatherService::scoreFromWeatherId">scoreFromWeatherId</abbr></a></td><td class="text-right">600</td></tr>
+       <tr><td><a href="FirebaseAuthService.php.html#103"><abbr title="App\Services\FirebaseAuthService::findOrCreateUser">findOrCreateUser</abbr></a></td><td class="text-right">306</td></tr>
+       <tr><td><a href="JekoPaymentService.php.html#88"><abbr title="App\Services\JekoPaymentService::createPaymentRequest">createPaymentRequest</abbr></a></td><td class="text-right">156</td></tr>
+       <tr><td><a href="GamificationService.php.html#42"><abbr title="App\Services\GamificationService::processQuestForDelivery">processQuestForDelivery</abbr></a></td><td class="text-right">110</td></tr>
+       <tr><td><a href="DelayPredictorService.php.html#220"><abbr title="App\Services\DelayPredictorService::getPeakHourMultiplier">getPeakHourMultiplier</abbr></a></td><td class="text-right">90</td></tr>
+       <tr><td><a href="ExportService.php.html#230"><abbr title="App\Services\ExportService::translateStatus">translateStatus</abbr></a></td><td class="text-right">90</td></tr>
+       <tr><td><a href="GeofenceService.php.html#22"><abbr title="App\Services\GeofenceService::checkPosition">checkPosition</abbr></a></td><td class="text-right">90</td></tr>
+       <tr><td><a href="OrderService.php.html#370"><abbr title="App\Services\OrderService::updateStatus">updateStatus</abbr></a></td><td class="text-right">90</td></tr>
+       <tr><td><a href="PaymentService.php.html#24"><abbr title="App\Services\PaymentService::initiatePayment">initiatePayment</abbr></a></td><td class="text-right">90</td></tr>
+       <tr><td><a href="PaymentService.php.html#250"><abbr title="App\Services\PaymentService::checkStatus">checkStatus</abbr></a></td><td class="text-right">90</td></tr>
+       <tr><td><a href="SmsService.php.html#48"><abbr title="App\Services\SmsService::sendViaInfobip">sendViaInfobip</abbr></a></td><td class="text-right">82</td></tr>
+       <tr><td><a href="CourierService.php.html#452"><abbr title="App\Services\CourierService::getVehicleAdjustment">getVehicleAdjustment</abbr></a></td><td class="text-right">72</td></tr>
+       <tr><td><a href="JekoPaymentService.php.html#417"><abbr title="App\Services\JekoPaymentService::verifyWebhookSignature">verifyWebhookSignature</abbr></a></td><td class="text-right">72</td></tr>
+       <tr><td><a href="PushNotificationService.php.html#234"><abbr title="App\Services\PushNotificationService::notifyNewOrderAvailable">notifyNewOrderAvailable</abbr></a></td><td class="text-right">72</td></tr>
+       <tr><td><a href="RouteOptimizerService.php.html#103"><abbr title="App\Services\RouteOptimizerService::nearestNeighborRoute">nearestNeighborRoute</abbr></a></td><td class="text-right">72</td></tr>
+       <tr><td><a href="SmartDispatcherService.php.html#51"><abbr title="App\Services\SmartDispatcherService::dispatchOrder">dispatchOrder</abbr></a></td><td class="text-right">72</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#397"><abbr title="App\Services\EnhancedPushNotificationService::sendMulticast">sendMulticast</abbr></a></td><td class="text-right">56</td></tr>
+       <tr><td><a href="JekoPaymentService.php.html#356"><abbr title="App\Services\JekoPaymentService::processSuccessfulPayment">processSuccessfulPayment</abbr></a></td><td class="text-right">56</td></tr>
+       <tr><td><a href="PaymentService.php.html#155"><abbr title="App\Services\PaymentService::mapPaymentMethodToJeko">mapPaymentMethodToJeko</abbr></a></td><td class="text-right">56</td></tr>
+       <tr><td><a href="SmartDispatcherService.php.html#215"><abbr title="App\Services\SmartDispatcherService::getDispatchContext">getDispatchContext</abbr></a></td><td class="text-right">56</td></tr>
+       <tr><td><a href="TrafficAnalysisService.php.html#39"><abbr title="App\Services\TrafficAnalysisService::getTrafficImpactScore">getTrafficImpactScore</abbr></a></td><td class="text-right">56</td></tr>
+       <tr><td><a href="CourierService.php.html#109"><abbr title="App\Services\CourierService::validateAvailabilityToggle">validateAvailabilityToggle</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="CourierService.php.html#259"><abbr title="App\Services\CourierService::calculateCourierScore">calculateCourierScore</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="CourierService.php.html#397"><abbr title="App\Services\CourierService::calculateBatteryScore">calculateBatteryScore</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="DelayPredictorService.php.html#241"><abbr title="App\Services\DelayPredictorService::getWeatherMultiplier">getWeatherMultiplier</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="DelayPredictorService.php.html#253"><abbr title="App\Services\DelayPredictorService::getTrafficMultiplier">getTrafficMultiplier</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#360"><abbr title="App\Services\EnhancedPushNotificationService::sendWithRetry">sendWithRetry</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="ExportService.php.html#244"><abbr title="App\Services\ExportService::translatePaymentStatus">translatePaymentStatus</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="ExportService.php.html#255"><abbr title="App\Services\ExportService::translateWithdrawalStatus">translateWithdrawalStatus</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="FirebaseAuthService.php.html#195"><abbr title="App\Services\FirebaseAuthService::validateRole">validateRole</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="GoogleMapsService.php.html#33"><abbr title="App\Services\GoogleMapsService::getDirections">getDirections</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="JekoPaymentService.php.html#303"><abbr title="App\Services\JekoPaymentService::handleWebhook">handleWebhook</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="OrderService.php.html#47"><abbr title="App\Services\OrderService::getEstimate">getEstimate</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="OrderService.php.html#317"><abbr title="App\Services\OrderService::assignOrder">assignOrder</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="PaymentService.php.html#323"><abbr title="App\Services\PaymentService::handleWebhook">handleWebhook</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="PushNotificationService.php.html#403"><abbr title="App\Services\PushNotificationService::broadcastToAvailableCouriers">broadcastToAvailableCouriers</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="SmartDispatcherService.php.html#303"><abbr title="App\Services\SmartDispatcherService::weatherScoreLabel">weatherScoreLabel</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="WeatherService.php.html#219"><abbr title="App\Services\WeatherService::isHarmattan">isHarmattan</abbr></a></td><td class="text-right">42</td></tr>
+       <tr><td><a href="CourierService.php.html#146"><abbr title="App\Services\CourierService::updateAvailability">updateAvailability</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="CourierService.php.html#489"><abbr title="App\Services\CourierService::carAdjustment">carAdjustment</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="CourierService.php.html#500"><abbr title="App\Services\CourierService::vanAdjustment">vanAdjustment</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#570"><abbr title="App\Services\EnhancedPushNotificationService::buildApnsConfig">buildApnsConfig</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="FirebaseAuthService.php.html#43"><abbr title="App\Services\FirebaseAuthService::authenticateWithToken">authenticateWithToken</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="GamificationService.php.html#79"><abbr title="App\Services\GamificationService::computeStreakValue">computeStreakValue</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="JekoPaymentService.php.html#491"><abbr title="App\Services\JekoPaymentService::mapJekoMethodToInternal">mapJekoMethodToInternal</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="JekoPaymentService.php.html#573"><abbr title="App\Services\JekoPaymentService::mockConfirmPayment">mockConfirmPayment</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="RouteOptimizerService.php.html#49"><abbr title="App\Services\RouteOptimizerService::optimizeRoute">optimizeRoute</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="SmartDispatcherService.php.html#130"><abbr title="App\Services\SmartDispatcherService::autoDispatchPending">autoDispatchPending</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="SmartDispatcherService.php.html#314"><abbr title="App\Services\SmartDispatcherService::trafficScoreLabel">trafficScoreLabel</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="TrafficAnalysisService.php.html#88"><abbr title="App\Services\TrafficAnalysisService::getNearbyIncidents">getNearbyIncidents</abbr></a></td><td class="text-right">30</td></tr>
+       <tr><td><a href="CacheService.php.html#163"><abbr title="App\Services\CacheService::getLandingSettings">getLandingSettings</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="CourierService.php.html#471"><abbr title="App\Services\CourierService::motoAdjustment">motoAdjustment</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="CourierService.php.html#480"><abbr title="App\Services\CourierService::tricycleAdjustment">tricycleAdjustment</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="DelayPredictorService.php.html#144"><abbr title="App\Services\DelayPredictorService::isCurrentlyPeakHour">isCurrentlyPeakHour</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="DelayPredictorService.php.html#180"><abbr title="App\Services\DelayPredictorService::getCourierToPickupDistance">getCourierToPickupDistance</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="ExportService.php.html#192"><abbr title="App\Services\ExportService::getPaymentsQuery">getPaymentsQuery</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="ExportService.php.html#211"><abbr title="App\Services\ExportService::getWithdrawalsQuery">getWithdrawalsQuery</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="GeofenceService.php.html#139"><abbr title="App\Services\GeofenceService::getDynamicPricing">getDynamicPricing</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="JekoPaymentService.php.html#249"><abbr title="App\Services\JekoPaymentService::getPaymentStatus">getPaymentStatus</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="JekoPaymentService.php.html#465"><abbr title="App\Services\JekoPaymentService::generateReference">generateReference</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="NotificationService.php.html#161"><abbr title="App\Services\NotificationService::updatePreferences">updatePreferences</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="PushNotificationService.php.html#97"><abbr title="App\Services\PushNotificationService::send">send</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="SmsService.php.html#135"><abbr title="App\Services\SmsService::sendViaBrevo">sendViaBrevo</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="WeatherService.php.html#132"><abbr title="App\Services\WeatherService::fetchConditionsFromApi">fetchConditionsFromApi</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="WeatherService.php.html#171"><abbr title="App\Services\WeatherService::computeScoreFromData">computeScoreFromData</abbr></a></td><td class="text-right">20</td></tr>
+       <tr><td><a href="CourierService.php.html#72"><abbr title="App\Services\CourierService::broadcastTrackingUpdate">broadcastTrackingUpdate</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="DelayPredictorService.php.html#63"><abbr title="App\Services\DelayPredictorService::predictETA">predictETA</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="DelayPredictorService.php.html#158"><abbr title="App\Services\DelayPredictorService::minutesToNextPeakHour">minutesToNextPeakHour</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#92"><abbr title="App\Services\EnhancedPushNotificationService::sendToTopic">sendToTopic</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#539"><abbr title="App\Services\EnhancedPushNotificationService::buildAndroidConfig">buildAndroidConfig</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#643"><abbr title="App\Services\EnhancedPushNotificationService::isInvalidToken">isInvalidToken</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#654"><abbr title="App\Services\EnhancedPushNotificationService::isRetryable">isRetryable</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#665"><abbr title="App\Services\EnhancedPushNotificationService::isInvalidTokenError">isInvalidTokenError</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="ExportService.php.html#89"><abbr title="App\Services\ExportService::withdrawalsToCSV">withdrawalsToCSV</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="ExportService.php.html#114"><abbr title="App\Services\ExportService::couriersToCSV">couriersToCSV</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="FirebaseAuthService.php.html#224"><abbr title="App\Services\FirebaseAuthService::normalizePhone">normalizePhone</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="GamificationService.php.html#19"><abbr title="App\Services\GamificationService::onOrderDelivered">onOrderDelivered</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="GamificationService.php.html#114"><abbr title="App\Services\GamificationService::claimReward">claimReward</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="GeofenceService.php.html#98"><abbr title="App\Services\GeofenceService::isInAnyZone">isInAnyZone</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="NotificationService.php.html#91"><abbr title="App\Services\NotificationService::sendToUser">sendToUser</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="NotificationService.php.html#179"><abbr title="App\Services\NotificationService::sendToMany">sendToMany</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="OrderService.php.html#263"><abbr title="App\Services\OrderService::getAvailableOrdersForCourier">getAvailableOrdersForCourier</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="OrderService.php.html#293"><abbr title="App\Services\OrderService::assignCourier">assignCourier</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="PaymentService.php.html#383"><abbr title="App\Services\PaymentService::verifyWebhookSignature">verifyWebhookSignature</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="PushNotificationService.php.html#50"><abbr title="App\Services\PushNotificationService::sendToUsers">sendToUsers</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="PushNotificationService.php.html#68"><abbr title="App\Services\PushNotificationService::sendToTopic">sendToTopic</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="RouteOptimizerService.php.html#197"><abbr title="App\Services\RouteOptimizerService::buildStopsFromOrders">buildStopsFromOrders</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="WalletService.php.html#46"><abbr title="App\Services\WalletService::requestWithdrawal">requestWithdrawal</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="WeatherService.php.html#104"><abbr title="App\Services\WeatherService::fetchScoreFromApi">fetchScoreFromApi</abbr></a></td><td class="text-right">12</td></tr>
+       <tr><td><a href="NotificationService.php.html#19"><abbr title="App\Services\NotificationService::send">send</abbr></a></td><td class="text-right">8</td></tr>
+       <tr><td><a href="CourierService.php.html#36"><abbr title="App\Services\CourierService::updateLocation">updateLocation</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="CourierService.php.html#414"><abbr title="App\Services\CourierService::calculateResponseScore">calculateResponseScore</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="CourierService.php.html#602"><abbr title="App\Services\CourierService::getAllCouriers">getAllCouriers</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="CourierService.php.html#616"><abbr title="App\Services\CourierService::approveCourier">approveCourier</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="CourierService.php.html#637"><abbr title="App\Services\CourierService::suspendCourier">suspendCourier</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#43"><abbr title="App\Services\EnhancedPushNotificationService::__construct">__construct</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#60"><abbr title="App\Services\EnhancedPushNotificationService::sendToUser">sendToUser</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#73"><abbr title="App\Services\EnhancedPushNotificationService::sendToUsers">sendToUsers</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#137"><abbr title="App\Services\EnhancedPushNotificationService::notifyOrderAssigned">notifyOrderAssigned</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#171"><abbr title="App\Services\EnhancedPushNotificationService::broadcastNewOrder">broadcastNewOrder</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#225"><abbr title="App\Services\EnhancedPushNotificationService::notifyOrderCancelled">notifyOrderCancelled</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#264"><abbr title="App\Services\EnhancedPushNotificationService::notifyCourierEarnings">notifyCourierEarnings</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#289"><abbr title="App\Services\EnhancedPushNotificationService::notifyChatMessage">notifyChatMessage</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#315"><abbr title="App\Services\EnhancedPushNotificationService::notifyCourierArriving">notifyCourierArriving</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#454"><abbr title="App\Services\EnhancedPushNotificationService::buildMessage">buildMessage</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#475"><abbr title="App\Services\EnhancedPushNotificationService::buildMulticastMessage">buildMulticastMessage</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#496"><abbr title="App\Services\EnhancedPushNotificationService::buildTopicMessage">buildTopicMessage</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#519"><abbr title="App\Services\EnhancedPushNotificationService::buildDataPayload">buildDataPayload</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#624"><abbr title="App\Services\EnhancedPushNotificationService::sanitizeData">sanitizeData</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="EnhancedPushNotificationService.php.html#632"><abbr title="App\Services\EnhancedPushNotificationService::shortenAddress">shortenAddress</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="ExportService.php.html#18"><abbr title="App\Services\ExportService::ordersToCSV">ordersToCSV</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="ExportService.php.html#65"><abbr title="App\Services\ExportService::paymentsToCSV">paymentsToCSV</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="GamificationService.php.html#143"><abbr title="App\Services\GamificationService::getCourierQuestsWithProgress">getCourierQuestsWithProgress</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="GeofenceService.php.html#116"><abbr title="App\Services\GeofenceService::isInZone">isInZone</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="GeofenceService.php.html#182"><abbr title="App\Services\GeofenceService::getUnreadAlerts">getUnreadAlerts</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="OrderService.php.html#104"><abbr title="App\Services\OrderService::createOrder">createOrder</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="OrderService.php.html#182"><abbr title="App\Services\OrderService::normalizePhone">normalizePhone</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="OrderService.php.html#194"><abbr title="App\Services\OrderService::notifyRecipient">notifyRecipient</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="OrderService.php.html#220"><abbr title="App\Services\OrderService::getClientOrders">getClientOrders</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="OrderService.php.html#236"><abbr title="App\Services\OrderService::getCourierOrders">getCourierOrders</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="PushNotificationService.php.html#37"><abbr title="App\Services\PushNotificationService::sendToUser">sendToUser</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="PushNotificationService.php.html#315"><abbr title="App\Services\PushNotificationService::notifyOrderCancelled">notifyOrderCancelled</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="PushNotificationService.php.html#356"><abbr title="App\Services\PushNotificationService::notifyCourierEarnings">notifyCourierEarnings</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="SmsService.php.html#251"><abbr title="App\Services\SmsService::logSms">logSms</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="SubscriptionService.php.html#52"><abbr title="App\Services\SubscriptionService::getDiscountForUser">getDiscountForUser</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="SubscriptionService.php.html#64"><abbr title="App\Services\SubscriptionService::cancelActiveSubscription">cancelActiveSubscription</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="WalletService.php.html#90"><abbr title="App\Services\WalletService::approveWithdrawal">approveWithdrawal</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="WalletService.php.html#102"><abbr title="App\Services\WalletService::rejectWithdrawal">rejectWithdrawal</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="WalletService.php.html#114"><abbr title="App\Services\WalletService::completeWithdrawal">completeWithdrawal</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="WalletService.php.html#126"><abbr title="App\Services\WalletService::getWithdrawalHistory">getWithdrawalHistory</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="WeatherService.php.html#214"><abbr title="App\Services\WeatherService::isRaining">isRaining</abbr></a></td><td class="text-right">6</td></tr>
+       <tr><td><a href="SmsService.php.html#36"><abbr title="App\Services\SmsService::send">send</abbr></a></td><td class="text-right">5</td></tr>
+       <tr><td><a href="NotificationService.php.html#54"><abbr title="App\Services\NotificationService::sendPush">sendPush</abbr></a></td><td class="text-right">4</td></tr>
+       <tr><td><a href="NotificationService.php.html#72"><abbr title="App\Services\NotificationService::sendSms">sendSms</abbr></a></td><td class="text-right">4</td></tr>
+       <tr><td><a href="ExportService.php.html#173"><abbr title="App\Services\ExportService::getOrdersQuery">getOrdersQuery</abbr></a></td><td class="text-right">4</td></tr>
+       <tr><td><a href="PushNotificationService.php.html#23"><abbr title="App\Services\PushNotificationService::__construct">__construct</abbr></a></td><td class="text-right">3</td></tr>
+       <tr><td><a href="FirebaseAuthService.php.html#27"><abbr title="App\Services\FirebaseAuthService::__construct">__construct</abbr></a></td><td class="text-right">3</td></tr>
+       <tr><td><a href="SmsService.php.html#231"><abbr title="App\Services\SmsService::normalizePhone">normalizePhone</abbr></a></td><td class="text-right">3</td></tr>
+       <tr><td><a href="NotificationService.php.html#111"><abbr title="App\Services\NotificationService::shouldNotify">shouldNotify</abbr></a></td><td class="text-right">2</td></tr>
+
+       </tbody>
+      </table>
+     </div>
+    </div>
+   </div>
+   <footer>
+    <hr/>
+    <p>
+     <small>Generated by <a href="https://github.com/sebastianbergmann/php-code-coverage" target="_top">php-code-coverage 11.0.12</a> using <a href="https://www.php.net/" target="_top">PHP 8.4.17</a> and <a href="https://phpunit.de/">PHPUnit 11.5.48</a> at Tue May 12 14:56:33 GMT 2026.</small>
+    </p>
+   </footer>
+  </div>
+  <script src="../_js/jquery.min.js?v=11.0.12" type="text/javascript"></script>
+  <script src="../_js/d3.min.js?v=11.0.12" type="text/javascript"></script>
+  <script src="../_js/nv.d3.min.js?v=11.0.12" type="text/javascript"></script>
+  <script type="text/javascript">
+$(document).ready(function() {
+  nv.addGraph(function() {
+    var chart = nv.models.multiBarChart();
+    chart.tooltips(false)
+      .showControls(false)
+      .showLegend(false)
+      .reduceXTicks(false)
+      .staggerLabels(true)
+      .yAxis.tickFormat(d3.format('d'));
+
+    d3.select('#classCoverageDistribution svg')
+      .datum(getCoverageDistributionData([8,9,0,4,0,0,0,0,0,0,0,0], "Class Coverage"))
+      .transition().duration(500).call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  nv.addGraph(function() {
+    var chart = nv.models.multiBarChart();
+    chart.tooltips(false)
+      .showControls(false)
+      .showLegend(false)
+      .reduceXTicks(false)
+      .staggerLabels(true)
+      .yAxis.tickFormat(d3.format('d'));
+
+    d3.select('#methodCoverageDistribution svg')
+      .datum(getCoverageDistributionData([202,0,1,1,1,2,2,0,2,2,0,21], "Method Coverage"))
+      .transition().duration(500).call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  function getCoverageDistributionData(data, label) {
+    var labels = [
+      '0%',
+      '0-10%',
+      '10-20%',
+      '20-30%',
+      '30-40%',
+      '40-50%',
+      '50-60%',
+      '60-70%',
+      '70-80%',
+      '80-90%',
+      '90-100%',
+      '100%'
+    ];
+    var values = [];
+    $.each(labels, function(key) {
+      values.push({x: labels[key], y: data[key]});
+    });
+
+    return [
+      {
+        key: label,
+        values: values,
+        color: "#4572A7"
+      }
+    ];
+  }
+  nv.addGraph(function() {
+    var chart = nv.models.scatterChart()
+      .showDistX(true)
+      .showDistY(true)
+      .showLegend(false)
+      .forceX([0, 100]);
+    chart.tooltipContent(function(graph) {
+      return '<p>' + graph.point.class + '</p>';
+    });
+
+    chart.xAxis.axisLabel('Code Coverage (in percent)');
+    chart.yAxis.axisLabel('Cyclomatic Complexity');
+
+    d3.select('#classComplexity svg')
+      .datum(getComplexityData([[6.976744186046512,18,"<a href=\"CacheService.php.html#13\">App\\Services\\CacheService<\/a>"],[0.33003300330033003,71,"<a href=\"CourierService.php.html#20\">App\\Services\\CourierService<\/a>"],[0,38,"<a href=\"DelayPredictorService.php.html#17\">App\\Services\\DelayPredictorService<\/a>"],[0,74,"<a href=\"EnhancedPushNotificationService.php.html#30\">App\\Services\\EnhancedPushNotificationService<\/a>"],[4.580152671755725,45,"<a href=\"ExportService.php.html#13\">App\\Services\\ExportService<\/a>"],[0.8547008547008548,33,"<a href=\"FirebaseAuthService.php.html#23\">App\\Services\\FirebaseAuthService<\/a>"],[0,23,"<a href=\"GamificationService.php.html#13\">App\\Services\\GamificationService<\/a>"],[0,23,"<a href=\"GeofenceService.php.html#12\">App\\Services\\GeofenceService<\/a>"],[2.631578947368421,7,"<a href=\"GoogleMapsService.php.html#13\">App\\Services\\GoogleMapsService<\/a>"],[1.5723270440251573,59,"<a href=\"JekoPaymentService.php.html#16\">App\\Services\\JekoPaymentService<\/a>"],[22.22222222222222,29,"<a href=\"NotificationService.php.html#9\">App\\Services\\NotificationService<\/a>"],[0.49019607843137253,41,"<a href=\"OrderService.php.html#21\">App\\Services\\OrderService<\/a>"],[21.311475409836063,39,"<a href=\"PaymentService.php.html#15\">App\\Services\\PaymentService<\/a>"],[0.4329004329004329,42,"<a href=\"PushNotificationService.php.html#17\">App\\Services\\PushNotificationService<\/a>"],[0,22,"<a href=\"RouteOptimizerService.php.html#20\">App\\Services\\RouteOptimizerService<\/a>"],[0,34,"<a href=\"SmartDispatcherService.php.html#17\">App\\Services\\SmartDispatcherService<\/a>"],[26.77165354330709,33,"<a href=\"SmsService.php.html#8\">App\\Services\\SmsService<\/a>"],[0,6,"<a href=\"SubscriptionService.php.html#10\">App\\Services\\SubscriptionService<\/a>"],[0,13,"<a href=\"TrafficAnalysisService.php.html#15\">App\\Services\\TrafficAnalysisService<\/a>"],[20.634920634920633,14,"<a href=\"WalletService.php.html#11\">App\\Services\\WalletService<\/a>"],[1.1111111111111112,49,"<a href=\"WeatherService.php.html#16\">App\\Services\\WeatherService<\/a>"]], 'Class Complexity'))
+      .transition()
+      .duration(500)
+      .call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  nv.addGraph(function() {
+    var chart = nv.models.scatterChart()
+      .showDistX(true)
+      .showDistY(true)
+      .showLegend(false)
+      .forceX([0, 100]);
+    chart.tooltipContent(function(graph) {
+      return '<p>' + graph.point.class + '</p>';
+    });
+
+    chart.xAxis.axisLabel('Code Coverage (in percent)');
+    chart.yAxis.axisLabel('Method Complexity');
+
+    d3.select('#methodComplexity svg')
+      .datum(getComplexityData([[0,1,"<a href=\"CacheService.php.html#27\">App\\Services\\CacheService::getActiveZones<\/a>"],[0,1,"<a href=\"CacheService.php.html#39\">App\\Services\\CacheService::getZone<\/a>"],[0,1,"<a href=\"CacheService.php.html#49\">App\\Services\\CacheService::getActiveFaqs<\/a>"],[0,1,"<a href=\"CacheService.php.html#62\">App\\Services\\CacheService::getFaqsByCategory<\/a>"],[0,1,"<a href=\"CacheService.php.html#75\">App\\Services\\CacheService::getGeneralConfig<\/a>"],[0,1,"<a href=\"CacheService.php.html#99\">App\\Services\\CacheService::getContactInfo<\/a>"],[100,1,"<a href=\"CacheService.php.html#120\">App\\Services\\CacheService::clearZonesCache<\/a>"],[0,1,"<a href=\"CacheService.php.html#130\">App\\Services\\CacheService::clearFaqsCache<\/a>"],[0,1,"<a href=\"CacheService.php.html#142\">App\\Services\\CacheService::clearConfigCache<\/a>"],[0,1,"<a href=\"CacheService.php.html#153\">App\\Services\\CacheService::getSiteSettings<\/a>"],[0,4,"<a href=\"CacheService.php.html#163\">App\\Services\\CacheService::getLandingSettings<\/a>"],[0,1,"<a href=\"CacheService.php.html#182\">App\\Services\\CacheService::clearSiteSettingsCache<\/a>"],[100,1,"<a href=\"CacheService.php.html#196\">App\\Services\\CacheService::clearStatsCache<\/a>"],[0,1,"<a href=\"CacheService.php.html#207\">App\\Services\\CacheService::clearAll<\/a>"],[0,1,"<a href=\"CacheService.php.html#219\">App\\Services\\CacheService::warmUp<\/a>"],[100,1,"<a href=\"CourierService.php.html#27\">App\\Services\\CourierService::__construct<\/a>"],[0,2,"<a href=\"CourierService.php.html#36\">App\\Services\\CourierService::updateLocation<\/a>"],[0,3,"<a href=\"CourierService.php.html#72\">App\\Services\\CourierService::broadcastTrackingUpdate<\/a>"],[0,1,"<a href=\"CourierService.php.html#100\">App\\Services\\CourierService::calculateDistance<\/a>"],[0,6,"<a href=\"CourierService.php.html#109\">App\\Services\\CourierService::validateAvailabilityToggle<\/a>"],[0,5,"<a href=\"CourierService.php.html#146\">App\\Services\\CourierService::updateAvailability<\/a>"],[0,1,"<a href=\"CourierService.php.html#171\">App\\Services\\CourierService::getAvailableCouriers<\/a>"],[100,2,"<a href=\"CourierService.php.html#211\">App\\Services\\CourierService::getSmartMatchedCouriers<\/a>"],[0,6,"<a href=\"CourierService.php.html#259\">App\\Services\\CourierService::calculateCourierScore<\/a>"],[0,6,"<a href=\"CourierService.php.html#397\">App\\Services\\CourierService::calculateBatteryScore<\/a>"],[0,2,"<a href=\"CourierService.php.html#414\">App\\Services\\CourierService::calculateResponseScore<\/a>"],[0,1,"<a href=\"CourierService.php.html#441\">App\\Services\\CourierService::calculateVehicleScore<\/a>"],[0,8,"<a href=\"CourierService.php.html#452\">App\\Services\\CourierService::getVehicleAdjustment<\/a>"],[0,4,"<a href=\"CourierService.php.html#471\">App\\Services\\CourierService::motoAdjustment<\/a>"],[0,4,"<a href=\"CourierService.php.html#480\">App\\Services\\CourierService::tricycleAdjustment<\/a>"],[0,5,"<a href=\"CourierService.php.html#489\">App\\Services\\CourierService::carAdjustment<\/a>"],[0,5,"<a href=\"CourierService.php.html#500\">App\\Services\\CourierService::vanAdjustment<\/a>"],[100,1,"<a href=\"CourierService.php.html#513\">App\\Services\\CourierService::getBestCourierForOrder<\/a>"],[0,1,"<a href=\"CourierService.php.html#536\">App\\Services\\CourierService::getCourierStats<\/a>"],[0,1,"<a href=\"CourierService.php.html#590\">App\\Services\\CourierService::getEarningsHistory<\/a>"],[0,2,"<a href=\"CourierService.php.html#602\">App\\Services\\CourierService::getAllCouriers<\/a>"],[0,2,"<a href=\"CourierService.php.html#616\">App\\Services\\CourierService::approveCourier<\/a>"],[0,2,"<a href=\"CourierService.php.html#637\">App\\Services\\CourierService::suspendCourier<\/a>"],[0,1,"<a href=\"DelayPredictorService.php.html#46\">App\\Services\\DelayPredictorService::__construct<\/a>"],[0,3,"<a href=\"DelayPredictorService.php.html#63\">App\\Services\\DelayPredictorService::predictETA<\/a>"],[0,4,"<a href=\"DelayPredictorService.php.html#144\">App\\Services\\DelayPredictorService::isCurrentlyPeakHour<\/a>"],[0,3,"<a href=\"DelayPredictorService.php.html#158\">App\\Services\\DelayPredictorService::minutesToNextPeakHour<\/a>"],[0,4,"<a href=\"DelayPredictorService.php.html#180\">App\\Services\\DelayPredictorService::getCourierToPickupDistance<\/a>"],[0,1,"<a href=\"DelayPredictorService.php.html#199\">App\\Services\\DelayPredictorService::getRouteTrafficScore<\/a>"],[0,9,"<a href=\"DelayPredictorService.php.html#220\">App\\Services\\DelayPredictorService::getPeakHourMultiplier<\/a>"],[0,6,"<a href=\"DelayPredictorService.php.html#241\">App\\Services\\DelayPredictorService::getWeatherMultiplier<\/a>"],[0,6,"<a href=\"DelayPredictorService.php.html#253\">App\\Services\\DelayPredictorService::getTrafficMultiplier<\/a>"],[0,1,"<a href=\"DelayPredictorService.php.html#265\">App\\Services\\DelayPredictorService::defaultETA<\/a>"],[0,2,"<a href=\"EnhancedPushNotificationService.php.html#43\">App\\Services\\EnhancedPushNotificationService::__construct<\/a>"],[0,2,"<a href=\"EnhancedPushNotificationService.php.html#60\">App\\Services\\EnhancedPushNotificationService::sendToUser<\/a>"],[0,2,"<a href=\"EnhancedPushNotificationService.php.html#73\">App\\Services\\EnhancedPushNotificationService::sendToUsers<\/a>"],[0,3,"<a href=\"EnhancedPushNotificationService.php.html#92\">App\\Services\\EnhancedPushNotificationService::sendToTopic<\/a>"],[0,1,"<a href=\"EnhancedPushNotificationService.php.html#118\">App\\Services\\EnhancedPushNotificationService::notifyOrderCreated<\/a>"],[0,2,"<a href=\"EnhancedPushNotificationService.php.html#137\">App\\Services\\EnhancedPushNotificationService::notifyOrderAssigned<\/a>"],[0,1,"<a href=\"EnhancedPushNotificationService.php.html#155\">App\\Services\\EnhancedPushNotificationService::notifyNewOrderAvailable<\/a>"],[0,2,"<a href=\"EnhancedPushNotificationService.php.html#171\">App\\Services\\EnhancedPushNotificationService::broadcastNewOrder<\/a>"],[0,1,"<a href=\"EnhancedPushNotificationService.php.html#198\">App\\Services\\EnhancedPushNotificationService::notifyOrderPickedUp<\/a>"],[0,1,"<a href=\"EnhancedPushNotificationService.php.html#211\">App\\Services\\EnhancedPushNotificationService::notifyOrderDelivered<\/a>"],[0,2,"<a href=\"EnhancedPushNotificationService.php.html#225\">App\\Services\\EnhancedPushNotificationService::notifyOrderCancelled<\/a>"],[0,1,"<a href=\"EnhancedPushNotificationService.php.html#250\">App\\Services\\EnhancedPushNotificationService::notifyPaymentReceived<\/a>"],[0,2,"<a href=\"EnhancedPushNotificationService.php.html#264\">App\\Services\\EnhancedPushNotificationService::notifyCourierEarnings<\/a>"],[0,2,"<a href=\"EnhancedPushNotificationService.php.html#289\">App\\Services\\EnhancedPushNotificationService::notifyChatMessage<\/a>"],[0,2,"<a href=\"EnhancedPushNotificationService.php.html#315\">App\\Services\\EnhancedPushNotificationService::notifyCourierArriving<\/a>"],[0,1,"<a href=\"EnhancedPushNotificationService.php.html#339\">App\\Services\\EnhancedPushNotificationService::notifyNewRating<\/a>"],[0,6,"<a href=\"EnhancedPushNotificationService.php.html#360\">App\\Services\\EnhancedPushNotificationService::sendWithRetry<\/a>"],[0,7,"<a href=\"EnhancedPushNotificationService.php.html#397\">App\\Services\\EnhancedPushNotificationService::sendMulticast<\/a>"],[0,2,"<a href=\"EnhancedPushNotificationService.php.html#454\">App\\Services\\EnhancedPushNotificationService::buildMessage<\/a>"],[0,2,"<a href=\"EnhancedPushNotificationService.php.html#475\">App\\Services\\EnhancedPushNotificationService::buildMulticastMessage<\/a>"],[0,2,"<a href=\"EnhancedPushNotificationService.php.html#496\">App\\Services\\EnhancedPushNotificationService::buildTopicMessage<\/a>"],[0,2,"<a href=\"EnhancedPushNotificationService.php.html#519\">App\\Services\\EnhancedPushNotificationService::buildDataPayload<\/a>"],[0,3,"<a href=\"EnhancedPushNotificationService.php.html#539\">App\\Services\\EnhancedPushNotificationService::buildAndroidConfig<\/a>"],[0,5,"<a href=\"EnhancedPushNotificationService.php.html#570\">App\\Services\\EnhancedPushNotificationService::buildApnsConfig<\/a>"],[0,2,"<a href=\"EnhancedPushNotificationService.php.html#624\">App\\Services\\EnhancedPushNotificationService::sanitizeData<\/a>"],[0,2,"<a href=\"EnhancedPushNotificationService.php.html#632\">App\\Services\\EnhancedPushNotificationService::shortenAddress<\/a>"],[0,3,"<a href=\"EnhancedPushNotificationService.php.html#643\">App\\Services\\EnhancedPushNotificationService::isInvalidToken<\/a>"],[0,3,"<a href=\"EnhancedPushNotificationService.php.html#654\">App\\Services\\EnhancedPushNotificationService::isRetryable<\/a>"],[0,3,"<a href=\"EnhancedPushNotificationService.php.html#665\">App\\Services\\EnhancedPushNotificationService::isInvalidTokenError<\/a>"],[0,1,"<a href=\"EnhancedPushNotificationService.php.html#677\">App\\Services\\EnhancedPushNotificationService::clearInvalidToken<\/a>"],[0,1,"<a href=\"EnhancedPushNotificationService.php.html#689\">App\\Services\\EnhancedPushNotificationService::clearInvalidTokens<\/a>"],[0,1,"<a href=\"EnhancedPushNotificationService.php.html#701\">App\\Services\\EnhancedPushNotificationService::logNotification<\/a>"],[0,1,"<a href=\"EnhancedPushNotificationService.php.html#714\">App\\Services\\EnhancedPushNotificationService::logSuccess<\/a>"],[0,1,"<a href=\"EnhancedPushNotificationService.php.html#727\">App\\Services\\EnhancedPushNotificationService::logError<\/a>"],[0,2,"<a href=\"ExportService.php.html#18\">App\\Services\\ExportService::ordersToCSV<\/a>"],[0,1,"<a href=\"ExportService.php.html#43\">App\\Services\\ExportService::ordersToPDF<\/a>"],[0,2,"<a href=\"ExportService.php.html#65\">App\\Services\\ExportService::paymentsToCSV<\/a>"],[0,3,"<a href=\"ExportService.php.html#89\">App\\Services\\ExportService::withdrawalsToCSV<\/a>"],[0,3,"<a href=\"ExportService.php.html#114\">App\\Services\\ExportService::couriersToCSV<\/a>"],[0,1,"<a href=\"ExportService.php.html#141\">App\\Services\\ExportService::revenueReportPDF<\/a>"],[75,4,"<a href=\"ExportService.php.html#173\">App\\Services\\ExportService::getOrdersQuery<\/a>"],[0,4,"<a href=\"ExportService.php.html#192\">App\\Services\\ExportService::getPaymentsQuery<\/a>"],[0,4,"<a href=\"ExportService.php.html#211\">App\\Services\\ExportService::getWithdrawalsQuery<\/a>"],[0,9,"<a href=\"ExportService.php.html#230\">App\\Services\\ExportService::translateStatus<\/a>"],[0,6,"<a href=\"ExportService.php.html#244\">App\\Services\\ExportService::translatePaymentStatus<\/a>"],[0,6,"<a href=\"ExportService.php.html#255\">App\\Services\\ExportService::translateWithdrawalStatus<\/a>"],[33.33333333333333,2,"<a href=\"FirebaseAuthService.php.html#27\">App\\Services\\FirebaseAuthService::__construct<\/a>"],[0,5,"<a href=\"FirebaseAuthService.php.html#43\">App\\Services\\FirebaseAuthService::authenticateWithToken<\/a>"],[0,17,"<a href=\"FirebaseAuthService.php.html#103\">App\\Services\\FirebaseAuthService::findOrCreateUser<\/a>"],[0,6,"<a href=\"FirebaseAuthService.php.html#195\">App\\Services\\FirebaseAuthService::validateRole<\/a>"],[0,3,"<a href=\"FirebaseAuthService.php.html#224\">App\\Services\\FirebaseAuthService::normalizePhone<\/a>"],[0,3,"<a href=\"GamificationService.php.html#19\">App\\Services\\GamificationService::onOrderDelivered<\/a>"],[0,10,"<a href=\"GamificationService.php.html#42\">App\\Services\\GamificationService::processQuestForDelivery<\/a>"],[0,5,"<a href=\"GamificationService.php.html#79\">App\\Services\\GamificationService::computeStreakValue<\/a>"],[0,3,"<a href=\"GamificationService.php.html#114\">App\\Services\\GamificationService::claimReward<\/a>"],[0,2,"<a href=\"GamificationService.php.html#143\">App\\Services\\GamificationService::getCourierQuestsWithProgress<\/a>"],[0,9,"<a href=\"GeofenceService.php.html#22\">App\\Services\\GeofenceService::checkPosition<\/a>"],[0,3,"<a href=\"GeofenceService.php.html#98\">App\\Services\\GeofenceService::isInAnyZone<\/a>"],[0,2,"<a href=\"GeofenceService.php.html#116\">App\\Services\\GeofenceService::isInZone<\/a>"],[0,4,"<a href=\"GeofenceService.php.html#139\">App\\Services\\GeofenceService::getDynamicPricing<\/a>"],[0,1,"<a href=\"GeofenceService.php.html#157\">App\\Services\\GeofenceService::calculateDeliveryFee<\/a>"],[0,1,"<a href=\"GeofenceService.php.html#174\">App\\Services\\GeofenceService::calculateDistance<\/a>"],[0,2,"<a href=\"GeofenceService.php.html#182\">App\\Services\\GeofenceService::getUnreadAlerts<\/a>"],[0,1,"<a href=\"GeofenceService.php.html#196\">App\\Services\\GeofenceService::markAlertsAsRead<\/a>"],[100,1,"<a href=\"GoogleMapsService.php.html#18\">App\\Services\\GoogleMapsService::__construct<\/a>"],[0,6,"<a href=\"GoogleMapsService.php.html#33\">App\\Services\\GoogleMapsService::getDirections<\/a>"],[100,1,"<a href=\"JekoPaymentService.php.html#28\">App\\Services\\JekoPaymentService::__construct<\/a>"],[0,1,"<a href=\"JekoPaymentService.php.html#40\">App\\Services\\JekoPaymentService::isCircuitOpen<\/a>"],[0,1,"<a href=\"JekoPaymentService.php.html#48\">App\\Services\\JekoPaymentService::recordFailure<\/a>"],[0,1,"<a href=\"JekoPaymentService.php.html#57\">App\\Services\\JekoPaymentService::recordSuccess<\/a>"],[0,1,"<a href=\"JekoPaymentService.php.html#65\">App\\Services\\JekoPaymentService::jekoRequest<\/a>"],[0,12,"<a href=\"JekoPaymentService.php.html#88\">App\\Services\\JekoPaymentService::createPaymentRequest<\/a>"],[0,4,"<a href=\"JekoPaymentService.php.html#249\">App\\Services\\JekoPaymentService::getPaymentStatus<\/a>"],[0,6,"<a href=\"JekoPaymentService.php.html#303\">App\\Services\\JekoPaymentService::handleWebhook<\/a>"],[0,7,"<a href=\"JekoPaymentService.php.html#356\">App\\Services\\JekoPaymentService::processSuccessfulPayment<\/a>"],[0,8,"<a href=\"JekoPaymentService.php.html#417\">App\\Services\\JekoPaymentService::verifyWebhookSignature<\/a>"],[0,4,"<a href=\"JekoPaymentService.php.html#465\">App\\Services\\JekoPaymentService::generateReference<\/a>"],[0,1,"<a href=\"JekoPaymentService.php.html#482\">App\\Services\\JekoPaymentService::getPaymentMethodName<\/a>"],[0,5,"<a href=\"JekoPaymentService.php.html#491\">App\\Services\\JekoPaymentService::mapJekoMethodToInternal<\/a>"],[0,1,"<a href=\"JekoPaymentService.php.html#504\">App\\Services\\JekoPaymentService::getAvailablePaymentMethods<\/a>"],[0,1,"<a href=\"JekoPaymentService.php.html#523\">App\\Services\\JekoPaymentService::mockPaymentRequest<\/a>"],[0,5,"<a href=\"JekoPaymentService.php.html#573\">App\\Services\\JekoPaymentService::mockConfirmPayment<\/a>"],[100,1,"<a href=\"NotificationService.php.html#11\">App\\Services\\NotificationService::__construct<\/a>"],[77.77777777777779,8,"<a href=\"NotificationService.php.html#19\">App\\Services\\NotificationService::send<\/a>"],[42.857142857142854,3,"<a href=\"NotificationService.php.html#54\">App\\Services\\NotificationService::sendPush<\/a>"],[42.857142857142854,3,"<a href=\"NotificationService.php.html#72\">App\\Services\\NotificationService::sendSms<\/a>"],[0,3,"<a href=\"NotificationService.php.html#91\">App\\Services\\NotificationService::sendToUser<\/a>"],[50,2,"<a href=\"NotificationService.php.html#111\">App\\Services\\NotificationService::shouldNotify<\/a>"],[0,1,"<a href=\"NotificationService.php.html#126\">App\\Services\\NotificationService::getDefaultPreferences<\/a>"],[0,4,"<a href=\"NotificationService.php.html#161\">App\\Services\\NotificationService::updatePreferences<\/a>"],[0,3,"<a href=\"NotificationService.php.html#179\">App\\Services\\NotificationService::sendToMany<\/a>"],[0,1,"<a href=\"NotificationService.php.html#200\">App\\Services\\NotificationService::notifyActiveCouriers<\/a>"],[100,1,"<a href=\"OrderService.php.html#25\">App\\Services\\OrderService::__construct<\/a>"],[0,1,"<a href=\"OrderService.php.html#35\">App\\Services\\OrderService::calculateDistance<\/a>"],[0,6,"<a href=\"OrderService.php.html#47\">App\\Services\\OrderService::getEstimate<\/a>"],[0,2,"<a href=\"OrderService.php.html#104\">App\\Services\\OrderService::createOrder<\/a>"],[0,2,"<a href=\"OrderService.php.html#182\">App\\Services\\OrderService::normalizePhone<\/a>"],[0,2,"<a href=\"OrderService.php.html#194\">App\\Services\\OrderService::notifyRecipient<\/a>"],[0,2,"<a href=\"OrderService.php.html#220\">App\\Services\\OrderService::getClientOrders<\/a>"],[0,2,"<a href=\"OrderService.php.html#236\">App\\Services\\OrderService::getCourierOrders<\/a>"],[0,1,"<a href=\"OrderService.php.html#252\">App\\Services\\OrderService::getAvailableOrders<\/a>"],[0,3,"<a href=\"OrderService.php.html#263\">App\\Services\\OrderService::getAvailableOrdersForCourier<\/a>"],[0,3,"<a href=\"OrderService.php.html#293\">App\\Services\\OrderService::assignCourier<\/a>"],[0,6,"<a href=\"OrderService.php.html#317\">App\\Services\\OrderService::assignOrder<\/a>"],[0,9,"<a href=\"OrderService.php.html#370\">App\\Services\\OrderService::updateStatus<\/a>"],[0,1,"<a href=\"OrderService.php.html#419\">App\\Services\\OrderService::getOrderDetails<\/a>"],[100,1,"<a href=\"PaymentService.php.html#17\">App\\Services\\PaymentService::__construct<\/a>"],[0,9,"<a href=\"PaymentService.php.html#24\">App\\Services\\PaymentService::initiatePayment<\/a>"],[0,7,"<a href=\"PaymentService.php.html#155\">App\\Services\\PaymentService::mapPaymentMethodToJeko<\/a>"],[100,1,"<a href=\"PaymentService.php.html#170\">App\\Services\\PaymentService::handleSuccess<\/a>"],[100,1,"<a href=\"PaymentService.php.html#198\">App\\Services\\PaymentService::handlePending<\/a>"],[100,1,"<a href=\"PaymentService.php.html#226\">App\\Services\\PaymentService::handleFailure<\/a>"],[0,9,"<a href=\"PaymentService.php.html#250\">App\\Services\\PaymentService::checkStatus<\/a>"],[0,6,"<a href=\"PaymentService.php.html#323\">App\\Services\\PaymentService::handleWebhook<\/a>"],[0,3,"<a href=\"PaymentService.php.html#383\">App\\Services\\PaymentService::verifyWebhookSignature<\/a>"],[0,1,"<a href=\"PaymentService.php.html#405\">App\\Services\\PaymentService::getUserPayments<\/a>"],[25,2,"<a href=\"PushNotificationService.php.html#23\">App\\Services\\PushNotificationService::__construct<\/a>"],[0,2,"<a href=\"PushNotificationService.php.html#37\">App\\Services\\PushNotificationService::sendToUser<\/a>"],[0,3,"<a href=\"PushNotificationService.php.html#50\">App\\Services\\PushNotificationService::sendToUsers<\/a>"],[0,3,"<a href=\"PushNotificationService.php.html#68\">App\\Services\\PushNotificationService::sendToTopic<\/a>"],[0,4,"<a href=\"PushNotificationService.php.html#97\">App\\Services\\PushNotificationService::send<\/a>"],[0,1,"<a href=\"PushNotificationService.php.html#141\">App\\Services\\PushNotificationService::androidConfig<\/a>"],[0,1,"<a href=\"PushNotificationService.php.html#155\">App\\Services\\PushNotificationService::apnsConfig<\/a>"],[0,1,"<a href=\"PushNotificationService.php.html#173\">App\\Services\\PushNotificationService::sanitizeData<\/a>"],[0,1,"<a href=\"PushNotificationService.php.html#181\">App\\Services\\PushNotificationService::clearInvalidToken<\/a>"],[0,1,"<a href=\"PushNotificationService.php.html#196\">App\\Services\\PushNotificationService::notifyOrderCreated<\/a>"],[0,1,"<a href=\"PushNotificationService.php.html#213\">App\\Services\\PushNotificationService::notifyOrderAssigned<\/a>"],[0,8,"<a href=\"PushNotificationService.php.html#234\">App\\Services\\PushNotificationService::notifyNewOrderAvailable<\/a>"],[0,1,"<a href=\"PushNotificationService.php.html#283\">App\\Services\\PushNotificationService::notifyOrderPickedUp<\/a>"],[0,1,"<a href=\"PushNotificationService.php.html#299\">App\\Services\\PushNotificationService::notifyOrderDelivered<\/a>"],[0,2,"<a href=\"PushNotificationService.php.html#315\">App\\Services\\PushNotificationService::notifyOrderCancelled<\/a>"],[0,1,"<a href=\"PushNotificationService.php.html#339\">App\\Services\\PushNotificationService::notifyPaymentReceived<\/a>"],[0,2,"<a href=\"PushNotificationService.php.html#356\">App\\Services\\PushNotificationService::notifyCourierEarnings<\/a>"],[0,1,"<a href=\"PushNotificationService.php.html#381\">App\\Services\\PushNotificationService::notifyCourierArriving<\/a>"],[0,6,"<a href=\"PushNotificationService.php.html#403\">App\\Services\\PushNotificationService::broadcastToAvailableCouriers<\/a>"],[0,1,"<a href=\"RouteOptimizerService.php.html#33\">App\\Services\\RouteOptimizerService::__construct<\/a>"],[0,5,"<a href=\"RouteOptimizerService.php.html#49\">App\\Services\\RouteOptimizerService::optimizeRoute<\/a>"],[0,1,"<a href=\"RouteOptimizerService.php.html#73\">App\\Services\\RouteOptimizerService::estimateTotalCompletion<\/a>"],[0,1,"<a href=\"RouteOptimizerService.php.html#87\">App\\Services\\RouteOptimizerService::needsReOptimization<\/a>"],[0,8,"<a href=\"RouteOptimizerService.php.html#103\">App\\Services\\RouteOptimizerService::nearestNeighborRoute<\/a>"],[0,3,"<a href=\"RouteOptimizerService.php.html#197\">App\\Services\\RouteOptimizerService::buildStopsFromOrders<\/a>"],[0,1,"<a href=\"RouteOptimizerService.php.html#243\">App\\Services\\RouteOptimizerService::getActiveOrders<\/a>"],[0,1,"<a href=\"RouteOptimizerService.php.html#252\">App\\Services\\RouteOptimizerService::singleOrderRoute<\/a>"],[0,1,"<a href=\"RouteOptimizerService.php.html#267\">App\\Services\\RouteOptimizerService::emptyRoute<\/a>"],[0,1,"<a href=\"SmartDispatcherService.php.html#28\">App\\Services\\SmartDispatcherService::__construct<\/a>"],[0,8,"<a href=\"SmartDispatcherService.php.html#51\">App\\Services\\SmartDispatcherService::dispatchOrder<\/a>"],[0,5,"<a href=\"SmartDispatcherService.php.html#130\">App\\Services\\SmartDispatcherService::autoDispatchPending<\/a>"],[0,1,"<a href=\"SmartDispatcherService.php.html#206\">App\\Services\\SmartDispatcherService::getDispatchSuggestions<\/a>"],[0,7,"<a href=\"SmartDispatcherService.php.html#215\">App\\Services\\SmartDispatcherService::getDispatchContext<\/a>"],[0,1,"<a href=\"SmartDispatcherService.php.html#273\">App\\Services\\SmartDispatcherService::getScoredCandidates<\/a>"],[0,6,"<a href=\"SmartDispatcherService.php.html#303\">App\\Services\\SmartDispatcherService::weatherScoreLabel<\/a>"],[0,5,"<a href=\"SmartDispatcherService.php.html#314\">App\\Services\\SmartDispatcherService::trafficScoreLabel<\/a>"],[50,1,"<a href=\"SmsService.php.html#12\">App\\Services\\SmsService::__construct<\/a>"],[100,1,"<a href=\"SmsService.php.html#23\">App\\Services\\SmsService::sendOtp<\/a>"],[85.71428571428571,5,"<a href=\"SmsService.php.html#36\">App\\Services\\SmsService::send<\/a>"],[10.16949152542373,10,"<a href=\"SmsService.php.html#48\">App\\Services\\SmsService::sendViaInfobip<\/a>"],[0,4,"<a href=\"SmsService.php.html#135\">App\\Services\\SmsService::sendViaBrevo<\/a>"],[100,6,"<a href=\"SmsService.php.html#181\">App\\Services\\SmsService::sendViaTwilio<\/a>"],[100,1,"<a href=\"SmsService.php.html#218\">App\\Services\\SmsService::sendViaLog<\/a>"],[87.5,3,"<a href=\"SmsService.php.html#231\">App\\Services\\SmsService::normalizePhone<\/a>"],[0,2,"<a href=\"SmsService.php.html#251\">App\\Services\\SmsService::logSms<\/a>"],[0,1,"<a href=\"SubscriptionService.php.html#18\">App\\Services\\SubscriptionService::subscribe<\/a>"],[0,1,"<a href=\"SubscriptionService.php.html#41\">App\\Services\\SubscriptionService::getActiveSubscription<\/a>"],[0,2,"<a href=\"SubscriptionService.php.html#52\">App\\Services\\SubscriptionService::getDiscountForUser<\/a>"],[0,2,"<a href=\"SubscriptionService.php.html#64\">App\\Services\\SubscriptionService::cancelActiveSubscription<\/a>"],[0,7,"<a href=\"TrafficAnalysisService.php.html#39\">App\\Services\\TrafficAnalysisService::getTrafficImpactScore<\/a>"],[0,5,"<a href=\"TrafficAnalysisService.php.html#88\">App\\Services\\TrafficAnalysisService::getNearbyIncidents<\/a>"],[0,1,"<a href=\"TrafficAnalysisService.php.html#123\">App\\Services\\TrafficAnalysisService::isRouteSeverelyImpacted<\/a>"],[100,1,"<a href=\"WalletService.php.html#16\">App\\Services\\WalletService::getOrCreateWallet<\/a>"],[100,1,"<a href=\"WalletService.php.html#32\">App\\Services\\WalletService::creditCourierForDelivery<\/a>"],[0,3,"<a href=\"WalletService.php.html#46\">App\\Services\\WalletService::requestWithdrawal<\/a>"],[0,2,"<a href=\"WalletService.php.html#90\">App\\Services\\WalletService::approveWithdrawal<\/a>"],[0,2,"<a href=\"WalletService.php.html#102\">App\\Services\\WalletService::rejectWithdrawal<\/a>"],[0,2,"<a href=\"WalletService.php.html#114\">App\\Services\\WalletService::completeWithdrawal<\/a>"],[0,2,"<a href=\"WalletService.php.html#126\">App\\Services\\WalletService::getWithdrawalHistory<\/a>"],[0,1,"<a href=\"WalletService.php.html#141\">App\\Services\\WalletService::getWalletStats<\/a>"],[100,1,"<a href=\"WeatherService.php.html#50\">App\\Services\\WeatherService::__construct<\/a>"],[100,2,"<a href=\"WeatherService.php.html#64\">App\\Services\\WeatherService::getDeliveryScore<\/a>"],[100,2,"<a href=\"WeatherService.php.html#87\">App\\Services\\WeatherService::getCurrentConditions<\/a>"],[0,3,"<a href=\"WeatherService.php.html#104\">App\\Services\\WeatherService::fetchScoreFromApi<\/a>"],[0,4,"<a href=\"WeatherService.php.html#132\">App\\Services\\WeatherService::fetchConditionsFromApi<\/a>"],[0,4,"<a href=\"WeatherService.php.html#171\">App\\Services\\WeatherService::computeScoreFromData<\/a>"],[0,24,"<a href=\"WeatherService.php.html#193\">App\\Services\\WeatherService::scoreFromWeatherId<\/a>"],[0,2,"<a href=\"WeatherService.php.html#214\">App\\Services\\WeatherService::isRaining<\/a>"],[0,6,"<a href=\"WeatherService.php.html#219\">App\\Services\\WeatherService::isHarmattan<\/a>"],[0,1,"<a href=\"WeatherService.php.html#233\">App\\Services\\WeatherService::fallbackConditions<\/a>"]], 'Method Complexity'))
+      .transition()
+      .duration(500)
+      .call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  });
+
+  function getComplexityData(data, label) {
+    var values = [];
+    $.each(data, function(key) {
+      var value = Math.round(data[key][0]*100) / 100;
+      values.push({
+        x: value,
+        y: data[key][1],
+        class: data[key][2],
+        size: 0.05,
+        shape: 'diamond'
+      });
+    });
+
+    return [
+      {
+        key: label,
+        values: values,
+        color: "#4572A7"
+      }
+    ];
+  }
+});
+  </script>
+ </body>
+</html>

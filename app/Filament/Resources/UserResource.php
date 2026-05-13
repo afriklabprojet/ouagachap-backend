@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\UserRole;
+use App\Enums\UserStatus;
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
 use Filament\Forms;
@@ -14,26 +16,16 @@ use Illuminate\Database\Eloquent\Builder;
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-users';
-
     protected static ?string $navigationLabel = 'Clients';
-
     protected static ?string $modelLabel = 'Client';
-
     protected static ?string $pluralModelLabel = 'Clients';
-
+    protected static ?int $navigationSort = 1;
     protected static ?string $navigationGroup = 'Utilisateurs';
 
-    protected static ?int $navigationSort = 1;
-
-    // ==================== EAGER LOADING (Performance) ====================
-    
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()
-            ->where('role', 'client')
-            ->withCount('clientOrders');
+        return parent::getEloquentQuery()->where('role', UserRole::CLIENT);
     }
 
     public static function form(Form $form): Form
@@ -44,39 +36,37 @@ class UserResource extends Resource
                     ->schema([
                         Forms\Components\TextInput::make('name')
                             ->label('Nom complet')
-                            ->required()
-                            ->maxLength(255),
-                        Forms\Components\TextInput::make('email')
-                            ->email()
-                            ->required()
-                            ->unique(ignoreRecord: true)
                             ->maxLength(255),
                         Forms\Components\TextInput::make('phone')
                             ->label('Téléphone')
-                            ->tel()
                             ->required()
-                            ->unique(ignoreRecord: true)
-                            ->maxLength(20),
-                        Forms\Components\TextInput::make('password')
-                            ->label('Mot de passe')
-                            ->password()
-                            ->dehydrateStateUsing(fn ($state) => filled($state) ? bcrypt($state) : null)
-                            ->dehydrated(fn ($state) => filled($state))
-                            ->required(fn (string $operation): bool => $operation === 'create'),
-                    ])
-                    ->columns(2),
+                            ->tel()
+                            ->unique(ignoreRecord: true),
+                        Forms\Components\TextInput::make('email')
+                            ->label('Email')
+                            ->email()
+                            ->unique(ignoreRecord: true),
+                        Forms\Components\Select::make('status')
+                            ->label('Statut')
+                            ->options(collect(UserStatus::cases())->mapWithKeys(fn($s) => [$s->value => $s->label()]))
+                            ->required(),
+                    ])->columns(2),
 
-                Forms\Components\Section::make('Statut')
+                Forms\Components\Section::make('Solde & Stats')
                     ->schema([
-                        Forms\Components\Toggle::make('is_active')
-                            ->label('Compte actif')
-                            ->default(true),
-                        Forms\Components\Toggle::make('email_verified_at')
-                            ->label('Email vérifié')
-                            ->dehydrateStateUsing(fn ($state) => $state ? now() : null)
-                            ->formatStateUsing(fn ($state) => $state !== null),
-                    ])
-                    ->columns(2),
+                        Forms\Components\TextInput::make('wallet_balance')
+                            ->label('Solde portefeuille (FCFA)')
+                            ->numeric()
+                            ->disabled(),
+                        Forms\Components\TextInput::make('total_orders')
+                            ->label('Total commandes')
+                            ->numeric()
+                            ->disabled(),
+                        Forms\Components\TextInput::make('average_rating')
+                            ->label('Note moyenne')
+                            ->numeric()
+                            ->disabled(),
+                    ])->columns(3),
             ]);
     }
 
@@ -87,36 +77,52 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nom')
                     ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('email')
-                    ->searchable()
-                    ->copyable(),
+                    ->sortable()
+                    ->placeholder('Sans nom'),
                 Tables\Columns\TextColumn::make('phone')
                     ->label('Téléphone')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('email')
+                    ->label('Email')
                     ->searchable()
-                    ->copyable(),
-                Tables\Columns\TextColumn::make('clientOrders_count')
-                    ->label('Commandes')
-                    ->counts('clientOrders')
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('status')
+                    ->label('Statut')
                     ->badge()
-                    ->color('info'),
-                Tables\Columns\IconColumn::make('is_active')
-                    ->label('Actif')
-                    ->boolean(),
+                    ->color(fn(UserStatus $state): string => $state->color())
+                    ->formatStateUsing(fn(UserStatus $state): string => $state->label()),
+                Tables\Columns\TextColumn::make('total_orders')
+                    ->label('Commandes')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('wallet_balance')
+                    ->label('Solde')
+                    ->money('XOF')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Inscrit le')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->date('d/m/Y')
+                    ->sortable(),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
-                Tables\Filters\TernaryFilter::make('is_active')
+                Tables\Filters\SelectFilter::make('status')
                     ->label('Statut')
-                    ->placeholder('Tous')
-                    ->trueLabel('Actifs')
-                    ->falseLabel('Inactifs'),
+                    ->options(collect(UserStatus::cases())->mapWithKeys(fn($s) => [$s->value => $s->label()])),
             ])
             ->actions([
+                Tables\Actions\Action::make('suspend')
+                    ->label('Suspendre')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->visible(fn(User $record) => $record->status === UserStatus::ACTIVE)
+                    ->requiresConfirmation()
+                    ->action(fn(User $record) => $record->update(['status' => UserStatus::SUSPENDED])),
+                Tables\Actions\Action::make('activate')
+                    ->label('Activer')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->visible(fn(User $record) => $record->status !== UserStatus::ACTIVE)
+                    ->action(fn(User $record) => $record->update(['status' => UserStatus::ACTIVE])),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])
@@ -124,23 +130,28 @@ class UserResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ])
-            ->defaultSort('created_at', 'desc');
+            ]);
     }
 
     public static function getRelations(): array
     {
         return [
-            //
+            \App\Filament\Resources\UserResource\RelationManagers\SubscriptionsRelationManager::class,
         ];
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListUsers::route('/'),
+            'index'  => Pages\ListUsers::route('/'),
             'create' => Pages\CreateUser::route('/create'),
-            'edit' => Pages\EditUser::route('/{record}/edit'),
+            'view'   => Pages\ViewUser::route('/{record}'),
+            'edit'   => Pages\EditUser::route('/{record}/edit'),
         ];
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return (string) static::getEloquentQuery()->count();
     }
 }

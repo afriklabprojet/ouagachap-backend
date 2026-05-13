@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\KycStatus;
 use App\Enums\OrderStatus;
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
@@ -29,13 +30,13 @@ class CourierResource extends Resource
     protected static ?string $navigationGroup = 'Utilisateurs';
 
     // ==================== EAGER LOADING (Performance) ====================
-    
+
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
             ->where('role', UserRole::COURIER)
             ->withCount(['courierOrders as active_orders_count' => function ($query) {
-                $query->whereIn('status', [OrderStatus::ASSIGNED->value, OrderStatus::PICKED_UP->value]);
+                $query->whereIn('status', OrderStatus::activeStatuses());
             }]);
     }
 
@@ -85,6 +86,32 @@ class CourierResource extends Resource
                         Forms\Components\Toggle::make('is_available')
                             ->label('Disponible pour livraisons'),
                     ]),
+
+                Forms\Components\Section::make('KYC — Vérification d\'identité')
+                    ->schema([
+                        Forms\Components\Select::make('kyc_status')
+                            ->label('Statut KYC')
+                            ->options(collect(KycStatus::cases())->mapWithKeys(fn($s) => [$s->value => $s->label()]))
+                            ->disabled(),
+                        Forms\Components\DateTimePicker::make('documents_submitted_at')
+                            ->label('Documents soumis le')
+                            ->disabled(),
+                        Forms\Components\DateTimePicker::make('documents_verified_at')
+                            ->label('Vérifié le')
+                            ->disabled(),
+                        Forms\Components\Textarea::make('kyc_rejection_reason')
+                            ->label('Raison du rejet')
+                            ->disabled()
+                            ->columnSpanFull(),
+                        Forms\Components\TextInput::make('identity_document_url')
+                            ->label('Document d\'identité (URL)')
+                            ->disabled()
+                            ->columnSpanFull(),
+                        Forms\Components\TextInput::make('selfie_url')
+                            ->label('Selfie (URL)')
+                            ->disabled()
+                            ->columnSpanFull(),
+                    ])->columns(2)->collapsible(),
             ]);
     }
 
@@ -105,6 +132,12 @@ class CourierResource extends Resource
                 Tables\Columns\IconColumn::make('is_available')
                     ->label('En ligne')
                     ->boolean(),
+                Tables\Columns\TextColumn::make('kyc_status')
+                    ->label('KYC')
+                    ->badge()
+                    ->color(fn(KycStatus $state): string => $state->color())
+                    ->formatStateUsing(fn(KycStatus $state): string => $state->label()),
+
                 Tables\Columns\TextColumn::make('status')
                     ->label('Statut')
                     ->badge()
@@ -125,6 +158,9 @@ class CourierResource extends Resource
                     ->options(collect(UserStatus::cases())->mapWithKeys(fn($s) => [$s->value => $s->label()])),
                 Tables\Filters\TernaryFilter::make('is_available')
                     ->label('Disponibilité'),
+                Tables\Filters\SelectFilter::make('kyc_status')
+                    ->label('Statut KYC')
+                    ->options(collect(KycStatus::cases())->mapWithKeys(fn($s) => [$s->value => $s->label()])),
             ])
             ->actions([
                 Tables\Actions\Action::make('approve')
@@ -133,6 +169,32 @@ class CourierResource extends Resource
                     ->color('success')
                     ->visible(fn(User $record) => $record->status === UserStatus::PENDING)
                     ->action(fn(User $record) => $record->update(['status' => UserStatus::ACTIVE])),
+                Tables\Actions\Action::make('kyc_approve')
+                    ->label('Valider KYC')
+                    ->icon('heroicon-o-identification')
+                    ->color('success')
+                    ->visible(fn(User $record) => $record->kyc_status === KycStatus::PENDING)
+                    ->requiresConfirmation()
+                    ->action(fn(User $record) => $record->update([
+                        'kyc_status' => KycStatus::APPROVED,
+                        'documents_verified_at' => now(),
+                        'kyc_rejection_reason' => null,
+                    ])),
+                Tables\Actions\Action::make('kyc_reject')
+                    ->label('Rejeter KYC')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->visible(fn(User $record) => $record->kyc_status === KycStatus::PENDING)
+                    ->form([
+                        Forms\Components\Textarea::make('reason')
+                            ->label('Raison du rejet')
+                            ->required()
+                            ->minLength(10),
+                    ])
+                    ->action(fn(User $record, array $data) => $record->update([
+                        'kyc_status' => KycStatus::REJECTED,
+                        'kyc_rejection_reason' => $data['reason'],
+                    ])),
                 Tables\Actions\Action::make('suspend')
                     ->label('Suspendre')
                     ->icon('heroicon-o-x-circle')
@@ -152,7 +214,9 @@ class CourierResource extends Resource
 
     public static function getRelations(): array
     {
-        return [];
+        return [
+            \App\Filament\Resources\CourierResource\RelationManagers\QuestsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

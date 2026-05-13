@@ -24,7 +24,7 @@ class SupportController extends BaseController
         return $this->success([
             'phone' => '+226 70 00 00 00',
             'phone_display' => '70 00 00 00',
-            'email' => 'support@ouagachap.com',
+            'email' => 'support@ouagachap.pro',
             'whatsapp' => '+22670000000',
             'whatsapp_message' => 'Bonjour, j\'ai besoin d\'aide avec mon compte OUAGA CHAP.',
             'working_hours' => [
@@ -51,6 +51,11 @@ class SupportController extends BaseController
      */
     public function faqs(Request $request): JsonResponse
     {
+        $request->validate([
+            'search' => 'nullable|string|max:100',
+            'category' => 'nullable|string|max:50',
+        ]);
+
         $query = Faq::active()->orderBy('order');
 
         // Filtrer par catégorie si fourni
@@ -146,6 +151,9 @@ class SupportController extends BaseController
         $user = $request->user();
 
         $chats = SupportChat::where('user_id', $user->id)
+            ->withCount(['messages as unread_count' => function ($query) {
+                $query->where('is_admin', true)->where('is_read', false);
+            }])
             ->with(['messages' => function ($query) {
                 $query->latest()->limit(1);
             }])
@@ -178,6 +186,7 @@ class SupportController extends BaseController
         $chat->messages()->where('is_admin', true)->where('is_read', false)->update(['is_read' => true]);
 
         $messages = $chat->messages()
+            ->with('user:id,name')
             ->orderBy('created_at', 'asc')
             ->get()
             ->map(fn($msg) => $this->formatMessage($msg));
@@ -259,8 +268,11 @@ class SupportController extends BaseController
         $user = $request->user();
 
         $complaints = Complaint::where('user_id', $user->id)
-            ->with(['order:id,tracking_number', 'messages' => function ($query) {
+            ->with(['order:id,order_number', 'messages' => function ($query) {
                 $query->latest()->limit(1);
+            }])
+            ->withCount(['messages as unread_count' => function ($query) {
+                $query->where('is_admin', true)->where('is_read', false);
             }])
             ->orderBy('created_at', 'desc')
             ->get()
@@ -292,6 +304,7 @@ class SupportController extends BaseController
         $complaint->messages()->where('is_admin', true)->where('is_read', false)->update(['is_read' => true]);
 
         $messages = $complaint->messages()
+            ->with('user:id,name')
             ->orderBy('created_at', 'asc')
             ->get()
             ->map(fn($msg) => $this->formatComplaintMessage($msg));
@@ -387,8 +400,15 @@ class SupportController extends BaseController
 
     private function formatChat(SupportChat $chat): array
     {
-        $lastMessage = $chat->messages()->latest()->first();
-        $unreadCount = $chat->messages()->where('is_admin', true)->where('is_read', false)->count();
+        // Use eager-loaded messages relation instead of extra queries
+        $lastMessage = $chat->relationLoaded('messages')
+            ? $chat->messages->first()
+            : $chat->messages()->latest()->first();
+
+        $unreadCount = $chat->unread_count ?? $chat->messages()
+            ->where('is_admin', true)
+            ->where('is_read', false)
+            ->count();
 
         return [
             'id' => $chat->id,
@@ -420,8 +440,15 @@ class SupportController extends BaseController
 
     private function formatComplaint(Complaint $complaint): array
     {
-        $lastMessage = $complaint->messages()->latest()->first();
-        $unreadCount = $complaint->messages()->where('is_admin', true)->where('is_read', false)->count();
+        // Use eager-loaded messages relation instead of extra queries
+        $lastMessage = $complaint->relationLoaded('messages')
+            ? $complaint->messages->first()
+            : $complaint->messages()->latest()->first();
+
+        $unreadCount = $complaint->unread_count ?? $complaint->messages()
+            ->where('is_admin', true)
+            ->where('is_read', false)
+            ->count();
 
         return [
             'id' => $complaint->id,
@@ -437,7 +464,7 @@ class SupportController extends BaseController
             'priority_color' => $complaint->getPriorityColor(),
             'priority_label' => $this->getPriorityLabel($complaint->priority),
             'order_id' => $complaint->order_id,
-            'order_tracking' => $complaint->order?->tracking_number,
+            'order_tracking' => $complaint->order?->order_number,
             'resolution' => $complaint->resolution,
             'resolved_at' => $complaint->resolved_at?->toIso8601String(),
             'last_message' => $lastMessage ? [

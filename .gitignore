@@ -1,2 +1,52 @@
-node_modules
+# Dependencies
+/vendor
+/node_modules
+package-lock.json
+
+# Environment
+.env
+.env.backup
+.env.production
+
+# Laravel generated
+/bootstrap/cache/*.php
+/public/hot
+/public/storage
+/storage/*.key
+/storage/app/public/*
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+
+# Build
+/public/build
+
+# Testing & static analysis
+.phpunit.result.cache
+/.phpunit.cache
+/coverage
+/coverage-report
+coverage.xml
+coverage_report.txt
+
+# Scribe (doc auto-générée)
+/.scribe
+
+# IDE & OS
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
+
+# Misc
+npm-debug.log
+yarn-error.log
+
+# Secrets
 storage/firebase-credentials.json

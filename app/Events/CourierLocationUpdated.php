@@ -3,7 +3,6 @@
 namespace App\Events;
 
 use App\Models\User;
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -11,8 +10,8 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
 /**
- * Événement émis quand un coursier met à jour sa position GPS
- * Diffusé aux clients qui ont une commande active avec ce coursier
+ * Émis quand un coursier met à jour sa position GPS.
+ * Diffusé sur le canal de la commande active si elle existe.
  */
 class CourierLocationUpdated implements ShouldBroadcast
 {
@@ -25,42 +24,34 @@ class CourierLocationUpdated implements ShouldBroadcast
         public ?string $orderId = null
     ) {}
 
-    /**
-     * Canaux de diffusion
-     */
     public function broadcastOn(): array
     {
         $channels = [
-            new PrivateChannel("courier.{$this->courier->id}.location"),
+            new PrivateChannel('courier.' . $this->courier->id . '.location'),
         ];
 
-        // Si lié à une commande spécifique
-        if ($this->orderId) {
-            $channels[] = new PrivateChannel("orders.{$this->orderId}");
+        if ($this->orderId !== null) {
+            $channels[] = new PrivateChannel('orders.' . $this->orderId);
         }
 
         return $channels;
     }
 
-    /**
-     * Nom de l'événement côté client
-     */
     public function broadcastAs(): string
     {
         return 'location.updated';
     }
 
-    /**
-     * Données diffusées
-     */
     public function broadcastWith(): array
     {
         return [
-            'courier_id' => $this->courier->id,
+            'courier_id'   => $this->courier->id,
             'courier_name' => $this->courier->name,
-            'latitude' => $this->latitude,
-            'longitude' => $this->longitude,
-            'timestamp' => now()->toIso8601String(),
+            'latitude'     => $this->latitude,
+            'longitude'    => $this->longitude,
+            'heading'      => $this->courier->heading ?? null,
+            'speed'        => $this->courier->speed ?? null,
+            'timestamp'    => now()->toIso8601String(),
         ];
     }
 }

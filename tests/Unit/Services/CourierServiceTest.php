@@ -61,6 +61,7 @@ class CourierServiceTest extends TestCase
     {
         $courier = User::factory()->courier()->active()->create([
             'is_available' => false,
+            'wallet_balance' => 2000,
         ]);
 
         $result = $this->courierService->updateAvailability($courier, true);
@@ -124,7 +125,7 @@ class CourierServiceTest extends TestCase
         $this->assertArrayHasKey('this_month', $stats);
         $this->assertArrayHasKey('average_rating', $stats);
         $this->assertArrayHasKey('total_orders', $stats);
-        
+
         // Vérification nested structure
         $this->assertArrayHasKey('orders', $stats['today']);
         $this->assertArrayHasKey('earnings', $stats['today']);
@@ -285,5 +286,124 @@ class CourierServiceTest extends TestCase
         $history = $this->courierService->getEarningsHistory($courier);
 
         $this->assertEquals($newer->id, $history->first()->id);
+    }
+
+    // ========== Vehicle score calculation (via reflection) ==========
+
+    public function test_calculate_vehicle_score_moto_small_parcel(): void
+    {
+        $courier = User::factory()->courier()->create(['vehicle_type' => 'moto']);
+        $score = $this->invokeProtected('calculateVehicleScore', $courier, ['is_large' => false, 'weight' => 5]);
+
+        $this->assertGreaterThanOrEqual(80, $score);
+    }
+
+    public function test_calculate_vehicle_score_moto_large_parcel_penalized(): void
+    {
+        $courier = User::factory()->courier()->create(['vehicle_type' => 'moto']);
+        $score = $this->invokeProtected('calculateVehicleScore', $courier, ['is_large' => true, 'weight' => 25]);
+
+        $this->assertLessThan(80, $score);
+    }
+
+    public function test_calculate_vehicle_score_moto_food_bonus(): void
+    {
+        $courier = User::factory()->courier()->create(['vehicle_type' => 'moto']);
+        $score = $this->invokeProtected('calculateVehicleScore', $courier, ['order_type' => 'food']);
+
+        $this->assertEquals(90, $score); // 80 base + 10 food bonus
+    }
+
+    public function test_calculate_vehicle_score_voiture_fragile_bonus(): void
+    {
+        $courier = User::factory()->courier()->create(['vehicle_type' => 'voiture']);
+        $score = $this->invokeProtected('calculateVehicleScore', $courier, ['is_fragile' => true, 'is_large' => true, 'weight' => 35]);
+
+        // 80 base + 20(large) + 15(fragile) + 15(weight>30) = 130, capped at 100
+        $this->assertEquals(100, $score);
+    }
+
+    public function test_calculate_vehicle_score_capped_at_100(): void
+    {
+        $courier = User::factory()->courier()->create(['vehicle_type' => 'voiture']);
+        $score = $this->invokeProtected('calculateVehicleScore', $courier, ['is_fragile' => true, 'is_large' => true, 'weight' => 50]);
+
+        $this->assertLessThanOrEqual(100, $score);
+    }
+
+    public function test_calculate_vehicle_score_camionnette_large_parcel(): void
+    {
+        $courier = User::factory()->courier()->create(['vehicle_type' => 'camionnette']);
+        $score = $this->invokeProtected('calculateVehicleScore', $courier, ['is_large' => true, 'weight' => 60]);
+
+        $this->assertGreaterThan(80, $score);
+    }
+
+    public function test_calculate_vehicle_score_camionnette_small_parcel_penalized(): void
+    {
+        $courier = User::factory()->courier()->create(['vehicle_type' => 'camionnette']);
+        $score = $this->invokeProtected('calculateVehicleScore', $courier, ['is_large' => false, 'weight' => 2]);
+
+        $this->assertLessThan(80, $score); // 80 - 20 = 60
+    }
+
+    public function test_calculate_vehicle_score_tricycle_medium(): void
+    {
+        $courier = User::factory()->courier()->create(['vehicle_type' => 'tricycle']);
+        $score = $this->invokeProtected('calculateVehicleScore', $courier, ['is_large' => true, 'weight' => 30]);
+
+        $this->assertGreaterThanOrEqual(90, $score); // 80 + 10(large) + 10(weight)
+    }
+
+    // ========== Response score ==========
+
+    public function test_calculate_response_score_new_courier_gets_neutral(): void
+    {
+        $courier = User::factory()->courier()->create();
+        $score = $this->invokeProtected('calculateResponseScore', $courier);
+
+        $this->assertEquals(70.0, $score);
+    }
+
+    public function test_calculate_response_score_perfect_delivery_history(): void
+    {
+        $courier = User::factory()->courier()->create();
+        Order::factory()->count(5)->create([
+            'courier_id' => $courier->id,
+            'status' => OrderStatus::DELIVERED,
+            'assigned_at' => now()->subHour(),
+            'delivered_at' => now(),
+        ]);
+
+        $score = $this->invokeProtected('calculateResponseScore', $courier);
+        $this->assertEquals(100.0, $score);
+    }
+
+    public function test_calculate_response_score_mixed_history(): void
+    {
+        $courier = User::factory()->courier()->create();
+        // 3 delivered, 2 cancelled → 60% acceptance
+        Order::factory()->count(3)->create([
+            'courier_id' => $courier->id,
+            'status' => OrderStatus::DELIVERED,
+            'assigned_at' => now()->subHour(),
+        ]);
+        Order::factory()->count(2)->create([
+            'courier_id' => $courier->id,
+            'status' => OrderStatus::CANCELLED,
+            'assigned_at' => now()->subHour(),
+        ]);
+
+        $score = $this->invokeProtected('calculateResponseScore', $courier);
+        $this->assertEquals(60.0, $score);
+    }
+
+    // ========== Helper to invoke protected methods ==========
+
+    private function invokeProtected(string $method, ...$args): mixed
+    {
+        $reflection = new \ReflectionMethod($this->courierService, $method);
+        $reflection->setAccessible(true);
+        return $reflection->invoke($this->courierService, ...$args);
     }
 }

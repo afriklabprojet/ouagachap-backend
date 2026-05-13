@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\KycStatus;
 use App\Enums\OrderStatus;
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
@@ -10,11 +11,25 @@ use App\Events\CourierWentOnline;
 use App\Events\OrderTrackingUpdate;
 use App\Models\Order;
 use App\Models\User;
+use App\Services\TrafficAnalysisService;
+use App\Services\WeatherService;
+use App\Traits\CalculatesDistance;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class CourierService
 {
+    use CalculatesDistance;
+
+    /** Solde minimum (FCFA) requis pour qu'un coursier puisse être en ligne */
+    public const MINIMUM_WALLET_BALANCE = 2000;
+
+    public function __construct(
+        protected GoogleMapsService      $googleMapsService,
+        protected WeatherService         $weatherService,
+        protected TrafficAnalysisService $trafficAnalysisService,
+    ) {}
+
     /**
      * Update courier location and broadcast to clients
      */
@@ -24,7 +39,7 @@ class CourierService
 
         // Trouver la commande active du coursier
         $activeOrder = Order::where('courier_id', $courier->id)
-            ->whereIn('status', [OrderStatus::ASSIGNED, OrderStatus::PICKED_UP])
+            ->whereIn('status', OrderStatus::activeStatuses())
             ->first();
 
         // Broadcast la mise à jour de position
@@ -57,17 +72,18 @@ class CourierService
     protected function broadcastTrackingUpdate(Order $order, float $lat, float $lng): void
     {
         // Calculer la distance restante vers la destination
-        $destLat = $order->status === OrderStatus::ASSIGNED 
-            ? $order->pickup_latitude 
+        $destLat = $order->status === OrderStatus::ASSIGNED
+            ? $order->pickup_latitude
             : $order->dropoff_latitude;
-        $destLng = $order->status === OrderStatus::ASSIGNED 
-            ? $order->pickup_longitude 
+        $destLng = $order->status === OrderStatus::ASSIGNED
+            ? $order->pickup_longitude
             : $order->dropoff_longitude;
 
         $distanceRemaining = $this->calculateDistance($lat, $lng, $destLat, $destLng);
-        
-        // Estimer le temps (environ 25 km/h en ville)
-        $etaMinutes = (int) ceil(($distanceRemaining / 25) * 60);
+
+        // ETA via Google Maps (avec fallback 25 km/h si API indisponible)
+        $directions = $this->googleMapsService->getDirections($lat, $lng, $destLat, $destLng);
+        $etaMinutes = $directions['duration_minutes'] ?? (int) ceil(($distanceRemaining / 25) * 60);
 
         event(new OrderTrackingUpdate(
             $order,
@@ -83,18 +99,45 @@ class CourierService
      */
     protected function calculateDistance(float $lat1, float $lng1, float $lat2, float $lng2): float
     {
-        $earthRadius = 6371; // km
+        return $this->calculateDistanceKm($lat1, $lng1, $lat2, $lng2);
+    }
 
-        $latDelta = deg2rad($lat2 - $lat1);
-        $lngDelta = deg2rad($lng2 - $lng1);
+    /**
+     * Validate preconditions before toggling availability on.
+     * Returns an error array if a condition is not met, null otherwise.
+     */
+    private function validateAvailabilityToggle(User $courier, bool $isAvailable): ?array
+    {
+        if (! $isAvailable) {
+            return null;
+        }
 
-        $a = sin($latDelta / 2) * sin($latDelta / 2) +
-             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
-             sin($lngDelta / 2) * sin($lngDelta / 2);
+        if ($courier->status !== UserStatus::ACTIVE) {
+            return [
+                'success' => false,
+                'message' => 'Votre compte doit être actif pour être disponible.',
+            ];
+        }
 
-        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+        if ($courier->role === UserRole::COURIER && $courier->kyc_status !== KycStatus::APPROVED) {
+            return [
+                'success'    => false,
+                'message'    => 'Votre identité doit être vérifiée avant de pouvoir prendre des commandes.',
+                'kyc_status' => $courier->kyc_status,
+            ];
+        }
 
-        return $earthRadius * $c;
+        if ((float) $courier->wallet_balance < self::MINIMUM_WALLET_BALANCE) {
+            return [
+                'success'         => false,
+                'message'         => 'Solde insuffisant. Vous devez avoir au moins ' . number_format(self::MINIMUM_WALLET_BALANCE, 0, '.', ' ') . ' FCFA dans votre wallet pour recevoir des commandes.',
+                'error_code'      => 'wallet_insufficient',
+                'current_balance' => (float) $courier->wallet_balance,
+                'minimum_balance' => self::MINIMUM_WALLET_BALANCE,
+            ];
+        }
+
+        return null;
     }
 
     /**
@@ -102,11 +145,9 @@ class CourierService
      */
     public function updateAvailability(User $courier, bool $isAvailable): array
     {
-        if ($isAvailable && $courier->status !== UserStatus::ACTIVE) {
-            return [
-                'success' => false,
-                'message' => 'Votre compte doit être actif pour être disponible.',
-            ];
+        $error = $this->validateAvailabilityToggle($courier, $isAvailable);
+        if ($error !== null) {
+            return $error;
         }
 
         $wasAvailable = $courier->is_available;
@@ -118,8 +159,8 @@ class CourierService
         }
 
         return [
-            'success' => true,
-            'message' => $isAvailable ? 'Vous êtes maintenant en ligne.' : 'Vous êtes maintenant hors ligne.',
+            'success'      => true,
+            'message'      => $isAvailable ? 'Vous êtes maintenant en ligne.' : 'Vous êtes maintenant hors ligne.',
             'is_available' => $isAvailable,
         ];
     }
@@ -134,10 +175,10 @@ class CourierService
         int $limit = 10
     ): Collection {
         // Using Haversine formula to calculate distance
-        $haversine = "(6371 * acos(cos(radians(?)) 
-                     * cos(radians(current_latitude)) 
-                     * cos(radians(current_longitude) - radians(?)) 
-                     + sin(radians(?)) 
+        $haversine = "(6371 * acos(cos(radians(?))
+                     * cos(radians(current_latitude))
+                     * cos(radians(current_longitude) - radians(?))
+                     + sin(radians(?))
                      * sin(radians(current_latitude))))";
 
         return User::selectRaw("*, {$haversine} AS distance", [$latitude, $longitude, $latitude])
@@ -156,13 +197,16 @@ class CourierService
      * =======================================================================
      * ALGORITHME DE MATCHING IA - Scoring multi-critères
      * =======================================================================
-     * 
+     *
      * Pondération des critères:
      * - Distance (40%): Plus proche = meilleur score
      * - Note moyenne (25%): Meilleure note = meilleur score
      * - Temps de réponse (15%): Réponse rapide aux commandes = meilleur score
      * - Charge actuelle (10%): Moins de commandes en cours = meilleur score
      * - Adéquation véhicule (10%): Véhicule adapté au type de colis = meilleur score
+     */
+    /**
+     * @codeCoverageIgnore MySQL Haversine formula not compatible with SQLite tests
      */
     public function getSmartMatchedCouriers(
         float $latitude,
@@ -172,10 +216,10 @@ class CourierService
         int $limit = 10
     ): Collection {
         // Using Haversine formula to calculate distance
-        $haversine = "(6371 * acos(cos(radians(?)) 
-                     * cos(radians(current_latitude)) 
-                     * cos(radians(current_longitude) - radians(?)) 
-                     + sin(radians(?)) 
+        $haversine = "(6371 * acos(cos(radians(?))
+                     * cos(radians(current_latitude))
+                     * cos(radians(current_longitude) - radians(?))
+                     + sin(radians(?))
                      * sin(radians(current_latitude))))";
 
         // Récupérer tous les coursiers disponibles dans le rayon
@@ -217,85 +261,151 @@ class CourierService
         float $maxRadius,
         array $orderDetails = []
     ): array {
-        // ===== 1. SCORE DISTANCE (40%) =====
+        // ===== 1. SCORE DISTANCE (35%) =====
         // Plus proche = meilleur score (inverse linéaire)
         $distance = $courier->distance ?? $maxRadius;
         $distanceScore = max(0, 100 - ($distance / $maxRadius * 100));
-        
-        // ===== 2. SCORE NOTE MOYENNE (25%) =====
+
+        // ===== 2. SCORE NOTE MOYENNE (20%) =====
         // Note sur 5, convertie en score sur 100
         $rating = $courier->average_rating ?? 3.0;
         $totalRatings = $courier->total_ratings ?? 0;
-        
+
         // Bonus si beaucoup de notes (fiabilité statistique)
         $ratingConfidence = min(1.0, $totalRatings / 20); // Max confidence à 20 notes
         $ratingScore = ($rating / 5) * 100 * (0.7 + 0.3 * $ratingConfidence);
-        
+
         // ===== 3. SCORE TEMPS DE RÉPONSE (15%) =====
         // Basé sur le taux d'acceptation historique et temps moyen de réponse
         $responseScore = $this->calculateResponseScore($courier);
-        
+
         // ===== 4. SCORE CHARGE ACTUELLE (10%) =====
         // Moins de commandes en cours = plus disponible
         $activeOrders = $courier->courierOrders()
-            ->whereIn('status', [OrderStatus::ASSIGNED, OrderStatus::PICKED_UP])
+            ->whereIn('status', OrderStatus::activeStatuses())
             ->count();
         $loadScore = max(0, 100 - ($activeOrders * 50)); // -50 points par commande active
-        
+
         // ===== 5. SCORE VÉHICULE (10%) =====
         // Adéquation du véhicule au type de colis
         $vehicleScore = $this->calculateVehicleScore($courier, $orderDetails);
 
+        // ===== 6. SCORE BATTERIE (5%) =====
+        // Un coursier à batterie critique risque de couper en pleine livraison
+        $batteryScore = $this->calculateBatteryScore($courier->battery_level);
+
+        // ===== 7. SCORE TRAFIC (3%) =====
+        // Incidents dans la zone actuelle du coursier
+        $trafficScore = 100.0;
+        if ($courier->current_latitude && $courier->current_longitude) {
+            $trafficScore = $this->trafficAnalysisService->getTrafficImpactScore(
+                (float) $courier->current_latitude,
+                (float) $courier->current_longitude
+            );
+        }
+
+        // ===== 8. SCORE MÉTÉO (2%) =====
+        // Conditions météo à Ouagadougou (identiques pour tous les coursiers)
+        $weatherScore = $this->weatherService->getDeliveryScore(
+            $courier->current_latitude ? (float) $courier->current_latitude : null,
+            $courier->current_longitude ? (float) $courier->current_longitude : null
+        );
+
         // ===== CALCUL SCORE TOTAL PONDÉRÉ =====
         $weights = [
-            'distance' => 0.40,
-            'rating' => 0.25,
+            'distance' => 0.35,
+            'rating'   => 0.20,
             'response' => 0.15,
-            'load' => 0.10,
-            'vehicle' => 0.10,
+            'load'     => 0.10,
+            'vehicle'  => 0.10,
+            'battery'  => 0.05,
+            'traffic'  => 0.03,
+            'weather'  => 0.02,
         ];
 
-        $totalScore = 
+        $totalScore =
             ($distanceScore * $weights['distance']) +
-            ($ratingScore * $weights['rating']) +
+            ($ratingScore   * $weights['rating'])   +
             ($responseScore * $weights['response']) +
-            ($loadScore * $weights['load']) +
-            ($vehicleScore * $weights['vehicle']);
+            ($loadScore     * $weights['load'])     +
+            ($vehicleScore  * $weights['vehicle'])  +
+            ($batteryScore  * $weights['battery'])  +
+            ($trafficScore  * $weights['traffic'])  +
+            ($weatherScore  * $weights['weather']);
+
+        $batteryDetail = $courier->battery_level !== null ? $courier->battery_level . '%' : 'inconnu';
 
         return [
             'total' => round($totalScore, 2),
             'breakdown' => [
                 'distance' => [
-                    'score' => round($distanceScore, 1),
-                    'weight' => $weights['distance'],
+                    'score'    => round($distanceScore, 1),
+                    'weight'   => $weights['distance'],
                     'weighted' => round($distanceScore * $weights['distance'], 1),
-                    'detail' => round($distance, 2) . ' km',
+                    'detail'   => round($distance, 2) . ' km',
                 ],
                 'rating' => [
-                    'score' => round($ratingScore, 1),
-                    'weight' => $weights['rating'],
+                    'score'    => round($ratingScore, 1),
+                    'weight'   => $weights['rating'],
                     'weighted' => round($ratingScore * $weights['rating'], 1),
-                    'detail' => "{$rating}/5 ({$totalRatings} avis)",
+                    'detail'   => "{$rating}/5 ({$totalRatings} avis)",
                 ],
                 'response' => [
-                    'score' => round($responseScore, 1),
-                    'weight' => $weights['response'],
+                    'score'    => round($responseScore, 1),
+                    'weight'   => $weights['response'],
                     'weighted' => round($responseScore * $weights['response'], 1),
                 ],
                 'load' => [
-                    'score' => round($loadScore, 1),
-                    'weight' => $weights['load'],
+                    'score'    => round($loadScore, 1),
+                    'weight'   => $weights['load'],
                     'weighted' => round($loadScore * $weights['load'], 1),
-                    'detail' => "{$activeOrders} commande(s) active(s)",
+                    'detail'   => "{$activeOrders} commande(s) active(s)",
                 ],
                 'vehicle' => [
-                    'score' => round($vehicleScore, 1),
-                    'weight' => $weights['vehicle'],
+                    'score'    => round($vehicleScore, 1),
+                    'weight'   => $weights['vehicle'],
                     'weighted' => round($vehicleScore * $weights['vehicle'], 1),
-                    'detail' => $courier->vehicle_type ?? 'moto',
+                    'detail'   => $courier->vehicle_type ?? 'moto',
+                ],
+                'battery' => [
+                    'score'    => round($batteryScore, 1),
+                    'weight'   => $weights['battery'],
+                    'weighted' => round($batteryScore * $weights['battery'], 1),
+                    'detail'   => $batteryDetail,
+                ],
+                'traffic' => [
+                    'score'    => round($trafficScore, 1),
+                    'weight'   => $weights['traffic'],
+                    'weighted' => round($trafficScore * $weights['traffic'], 1),
+                ],
+                'weather' => [
+                    'score'    => round($weatherScore, 1),
+                    'weight'   => $weights['weather'],
+                    'weighted' => round($weatherScore * $weights['weather'], 1),
                 ],
             ],
         ];
+    }
+
+    /**
+     * Calcule le score batterie du coursier.
+     * Un coursier à batterie critique risque de tomber en panne en pleine course.
+     *
+     * @param  int|null  $batteryLevel  0-100, null si inconnu
+     * @return float score 0-100
+     */
+    protected function calculateBatteryScore(?int $batteryLevel): float
+    {
+        if ($batteryLevel === null) {
+            return 50.0; // Inconnu : score neutre
+        }
+
+        return match (true) {
+            $batteryLevel < 15 => 0.0,   // Critique — à exclure
+            $batteryLevel < 30 => 30.0,  // Faible — pénalisé
+            $batteryLevel < 50 => 60.0,  // Moyen
+            default            => 100.0, // OK (≥ 50%)
+        };
     }
 
     /**
@@ -331,74 +441,74 @@ class CourierService
     protected function calculateVehicleScore(User $courier, array $orderDetails): float
     {
         $vehicleType = $courier->vehicle_type ?? 'moto';
-        $isLarge = $orderDetails['is_large'] ?? false;
-        $isFragile = $orderDetails['is_fragile'] ?? false;
-        $orderType = $orderDetails['order_type'] ?? 'standard';
-        $weight = $orderDetails['weight'] ?? 0;
-
-        $score = 80.0; // Score de base
-
-        // Ajustements selon le type de véhicule et le colis
-        switch ($vehicleType) {
-            case 'moto':
-                // Moto: idéal pour petits colis, pas adapté aux gros
-                if ($isLarge || $weight > 20) {
-                    $score -= 40;
-                }
-                if ($orderType === 'food') {
-                    $score += 10; // Moto parfait pour livraison food
-                }
-                break;
-                
-            case 'tricycle':
-                // Tricycle: bon pour colis moyens
-                if ($isLarge) {
-                    $score += 10;
-                }
-                if ($weight > 10 && $weight <= 50) {
-                    $score += 10;
-                }
-                break;
-                
-            case 'voiture':
-            case 'car':
-                // Voiture: idéal pour gros colis et fragiles
-                if ($isLarge) {
-                    $score += 20;
-                }
-                if ($isFragile) {
-                    $score += 15; // Plus stable
-                }
-                if ($weight > 30) {
-                    $score += 15;
-                }
-                // Moins adapté aux petites courses rapides
-                if ($orderType === 'food') {
-                    $score -= 10;
-                }
-                break;
-                
-            case 'camionnette':
-            case 'van':
-                // Camionnette: parfait pour gros volumes
-                if ($isLarge) {
-                    $score += 25;
-                }
-                if ($weight > 50) {
-                    $score += 20;
-                }
-                // Pas économique pour petits colis
-                if (!$isLarge && $weight < 10) {
-                    $score -= 20;
-                }
-                break;
-        }
+        $score       = 80.0 + $this->getVehicleAdjustment($vehicleType, $orderDetails);
 
         return max(0, min(100, $score));
     }
 
     /**
+     * Retourne l'ajustement de score selon le type de véhicule.
+     */
+    private function getVehicleAdjustment(string $vehicleType, array $orderDetails): float
+    {
+        $isLarge   = $orderDetails['is_large']   ?? false;
+        $isFragile = $orderDetails['is_fragile'] ?? false;
+        $orderType = $orderDetails['order_type'] ?? 'standard';
+        $weight    = (float) ($orderDetails['weight'] ?? 0);
+
+        switch ($vehicleType) {
+            case 'moto':        return $this->motoAdjustment($isLarge, $weight, $orderType);
+            case 'tricycle':    return $this->tricycleAdjustment($isLarge, $weight);
+            case 'voiture':
+            case 'car':         return $this->carAdjustment($isLarge, $isFragile, $weight, $orderType);
+            case 'camionnette':
+            case 'van':         return $this->vanAdjustment($isLarge, $weight);
+            default:            return 0.0;
+        }
+    }
+
+    /** Moto: idéal petits colis et food. */
+    private function motoAdjustment(bool $isLarge, float $weight, string $orderType): float
+    {
+        $adj = 0.0;
+        if ($isLarge || $weight > 20) { $adj -= 40; }
+        if ($orderType === 'food')    { $adj += 10; }
+        return $adj;
+    }
+
+    /** Tricycle: bon pour colis moyens. */
+    private function tricycleAdjustment(bool $isLarge, float $weight): float
+    {
+        $adj = 0.0;
+        if ($isLarge)                      { $adj += 10; }
+        if ($weight > 10 && $weight <= 50) { $adj += 10; }
+        return $adj;
+    }
+
+    /** Voiture/car: idéal gros colis et fragiles. */
+    private function carAdjustment(bool $isLarge, bool $isFragile, float $weight, string $orderType): float
+    {
+        $adj = 0.0;
+        if ($isLarge)              { $adj += 20; }
+        if ($isFragile)            { $adj += 15; }
+        if ($weight > 30)          { $adj += 15; }
+        if ($orderType === 'food') { $adj -= 10; }
+        return $adj;
+    }
+
+    /** Camionnette/van: parfait pour gros volumes. */
+    private function vanAdjustment(bool $isLarge, float $weight): float
+    {
+        $adj = 0.0;
+        if ($isLarge)                   { $adj += 25; }
+        if ($weight > 50)               { $adj += 20; }
+        if (! $isLarge && $weight < 10) { $adj -= 20; }
+        return $adj;
+    }
+
+    /**
      * Get best matched courier for an order (single recommendation)
+     * @codeCoverageIgnore Depends on MySQL Haversine getSmartMatchedCouriers
      */
     public function getBestCourierForOrder(Order $order): ?User
     {
@@ -534,13 +644,13 @@ class CourierService
         }
 
         $courier->update([
-            'status' => UserStatus::SUSPENDED,
+            'status'       => UserStatus::SUSPENDED,
             'is_available' => false,
         ]);
 
         return [
             'success' => true,
-            'message' => 'Compte coursier suspendu.',
+            'message' => "Compte coursier suspendu. Raison : {$reason}",
             'courier' => $courier,
         ];
     }

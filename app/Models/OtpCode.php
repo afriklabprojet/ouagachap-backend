@@ -2,12 +2,23 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
 
 class OtpCode extends Model
 {
-    use HasFactory;
+    use HasFactory, MassPrunable;
+
+    const PURPOSE_LOGIN              = 'login';
+    const PURPOSE_REGISTER           = 'register';
+    const PURPOSE_PASSWORD_RESET     = 'password_reset';
+    const PURPOSE_PHONE_VERIFICATION = 'phone_verification';
+
+    const OTP_EXPIRY_MINUTES  = 5;
+    const RATE_LIMIT_MAX      = 3;
+    const RATE_LIMIT_WINDOW   = 15; // minutes
 
     protected $fillable = [
         'phone',
@@ -21,68 +32,71 @@ class OtpCode extends Model
         'user_agent',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'expires_at' => 'datetime',
-            'is_used' => 'boolean',
-            'attempts' => 'integer',
-            'max_attempts' => 'integer',
-        ];
-    }
+    protected $casts = [
+        'expires_at' => 'datetime',
+        'is_used'    => 'boolean',
+        'attempts'   => 'integer',
+        'max_attempts' => 'integer',
+    ];
 
-    const PURPOSE_LOGIN = 'login';
-    const PURPOSE_REGISTER = 'register';
-    const PURPOSE_PASSWORD_RESET = 'password_reset';
-    const PURPOSE_PHONE_VERIFICATION = 'phone_verification';
+    public function prunable(): Builder
+    {
+        return static::where('expires_at', '<', now()->subDay());
+    }
 
     // ==================== SCOPES ====================
 
-    public function scopeValid($query, string $phone, string $code)
+    public function scopeValid(Builder $query, string $phone, string $code): Builder
     {
         return $query->where('phone', $phone)
             ->where('code', $code)
             ->where('is_used', false)
             ->where('expires_at', '>', now())
-            ->whereRaw('attempts < max_attempts');
+            ->whereColumn('attempts', '<', 'max_attempts');
     }
 
-    public function scopeActive($query, string $phone)
+    public function scopeActive(Builder $query, string $phone): Builder
     {
         return $query->where('phone', $phone)
             ->where('is_used', false)
             ->where('expires_at', '>', now());
     }
 
-    // ==================== HELPERS ====================
+    // ==================== STATIC METHODS ====================
 
+    /**
+     * @throws \Exception
+     */
     public static function generate(
         string $phone,
-        string $purpose = self::PURPOSE_LOGIN,
+        string $purpose   = self::PURPOSE_LOGIN,
         ?string $ipAddress = null,
         ?string $userAgent = null
     ): self {
-        // Vérifier le rate limiting (max 50 OTP par heure par numéro - développement)
-        $recentCount = self::where('phone', $phone)
-            ->where('created_at', '>', now()->subHour())
+        // Rate limiting
+        $recentCount = static::where('phone', $phone)
+            ->where('created_at', '>=', now()->subMinutes(self::RATE_LIMIT_WINDOW))
             ->count();
 
-        if ($recentCount >= 50) {
-            throw new \Exception('Trop de demandes OTP. Réessayez dans 1 heure.');
+        if ($recentCount >= self::RATE_LIMIT_MAX) {
+            throw new \RuntimeException('OTP_RATE_LIMIT_EXCEEDED');
         }
 
         // Invalidate existing codes
-        self::where('phone', $phone)
+        static::where('phone', $phone)
             ->where('is_used', false)
             ->update(['is_used' => true]);
 
-        return self::create([
-            'phone' => $phone,
-            'code' => str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT),
-            'expires_at' => now()->addMinutes(5),
-            'attempts' => 0,
+        $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        return static::create([
+            'phone'      => $phone,
+            'code'       => $code,
+            'expires_at' => now()->addMinutes(self::OTP_EXPIRY_MINUTES),
+            'is_used'    => false,
+            'attempts'   => 0,
             'max_attempts' => 3,
-            'purpose' => $purpose,
+            'purpose'    => $purpose,
             'ip_address' => $ipAddress,
             'user_agent' => $userAgent,
         ]);
@@ -90,49 +104,42 @@ class OtpCode extends Model
 
     public static function verify(string $phone, string $code): array
     {
-        $otpCode = self::where('phone', $phone)
+        $otp = static::where('phone', $phone)
             ->where('is_used', false)
-            ->where('expires_at', '>', now())
             ->latest()
             ->first();
 
-        if (!$otpCode) {
-            return ['success' => false, 'message' => 'Code invalide ou expiré'];
+        if (! $otp) {
+            return ['success' => false, 'message' => 'Aucun code OTP trouvé.'];
         }
 
-        // Incrémenter les tentatives
-        $otpCode->increment('attempts');
-
-        // Vérifier si max tentatives atteint
-        if ($otpCode->attempts >= $otpCode->max_attempts) {
-            $otpCode->update(['is_used' => true]);
-            return ['success' => false, 'message' => 'Nombre maximum de tentatives atteint'];
+        if ($otp->isExpired()) {
+            return ['success' => false, 'message' => 'Code OTP expiré.'];
         }
 
-        // Vérifier le code
-        if ($otpCode->code !== $code) {
-            $remaining = $otpCode->max_attempts - $otpCode->attempts;
-            return ['success' => false, 'message' => "Code incorrect. {$remaining} tentative(s) restante(s)"];
+        if ($otp->hasMaxAttempts()) {
+            return ['success' => false, 'message' => 'Nombre maximum de tentatives atteint.'];
         }
 
-        $otpCode->update(['is_used' => true]);
+        if ($otp->code !== $code) {
+            $otp->increment('attempts');
+            if ($otp->fresh()->hasMaxAttempts()) {
+                $otp->update(['is_used' => true]);
+                return ['success' => false, 'message' => 'Nombre maximum de tentatives atteint.'];
+            }
+            return ['success' => false, 'message' => 'Code incorrect.'];
+        }
 
-        return ['success' => true, 'message' => 'Code vérifié avec succès'];
+        $otp->update(['is_used' => true]);
+
+        return ['success' => true, 'message' => 'Code vérifié avec succès.'];
     }
+
+    // ==================== HELPERS ====================
 
     public function isExpired(): bool
     {
         return $this->expires_at->isPast();
-    }
-
-    public function hasMaxAttempts(): bool
-    {
-        return $this->attempts >= $this->max_attempts;
-    }
-
-    public function getRemainingAttempts(): int
-    {
-        return max(0, $this->max_attempts - $this->attempts);
     }
 
     public function getTimeRemaining(): int
@@ -140,6 +147,17 @@ class OtpCode extends Model
         if ($this->isExpired()) {
             return 0;
         }
-        return $this->expires_at->diffInSeconds(now());
+
+        return (int) now()->diffInSeconds($this->expires_at);
+    }
+
+    public function getRemainingAttempts(): int
+    {
+        return max(0, $this->max_attempts - $this->attempts);
+    }
+
+    public function hasMaxAttempts(): bool
+    {
+        return $this->attempts >= $this->max_attempts;
     }
 }
