@@ -168,7 +168,7 @@ class OrderResource extends Resource
                                 User::where('role', UserRole::COURIER)
                                     ->where('is_online', true)
                                     ->get()
-                                    ->mapWithKeys(fn ($u) => [$u->id => ($u->name ?? $u->phone) . ' — ⭐ ' . number_format($u->average_rating, 1)])
+                                    ->mapWithKeys(fn ($u) => [$u->id => ($u->name ?? $u->phone) . ' — ⭐ ' . number_format((float) ($u->average_rating ?? 0), 1)])
                             )
                             ->searchable()
                             ->required()

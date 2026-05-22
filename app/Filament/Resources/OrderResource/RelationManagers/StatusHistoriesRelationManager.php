@@ -21,13 +21,13 @@ class StatusHistoriesRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('previous_status')
                     ->label('Ancien statut')
                     ->badge()
-                    ->color(fn ($state) => $state?->color() ?? 'gray')
-                    ->formatStateUsing(fn ($state) => $state?->label() ?? '—'),
+                    ->color(fn ($state) => $state instanceof \App\Enums\OrderStatus ? $state->color() : 'gray')
+                    ->formatStateUsing(fn ($state) => $state instanceof \App\Enums\OrderStatus ? $state->label() : '—'),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Nouveau statut')
                     ->badge()
-                    ->color(fn ($state) => $state?->color() ?? 'gray')
-                    ->formatStateUsing(fn ($state) => $state?->label() ?? '—'),
+                    ->color(fn ($state) => $state instanceof \App\Enums\OrderStatus ? $state->color() : 'gray')
+                    ->formatStateUsing(fn ($state) => $state instanceof \App\Enums\OrderStatus ? $state->label() : '—'),
                 Tables\Columns\TextColumn::make('changedBy.name')
                     ->label('Changé par')
                     ->placeholder('Système'),
