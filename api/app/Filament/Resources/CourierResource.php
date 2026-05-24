@@ -8,6 +8,7 @@ use App\Enums\UserRole;
 use App\Enums\UserStatus;
 use App\Filament\Resources\CourierResource\Pages;
 use App\Models\User;
+use App\Services\PushNotificationService;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Infolists;
@@ -168,18 +169,45 @@ class CourierResource extends Resource
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->visible(fn(User $record) => $record->status === UserStatus::PENDING)
-                    ->action(fn(User $record) => $record->update(['status' => UserStatus::ACTIVE])),
+                    ->requiresConfirmation()
+                    ->action(function (User $record) {
+                        $record->update(['status' => UserStatus::ACTIVE]);
+                        app(PushNotificationService::class)->sendToUser(
+                            $record,
+                            'Compte approuvé ✅',
+                            'Félicitations ! Votre compte coursier a été validé. Vous pouvez maintenant vous connecter.',
+                            ['type' => 'account_approved'],
+                        );
+                        Notification::make()
+                            ->title('Coursier approuvé')
+                            ->body("{$record->name} peut maintenant se connecter.")
+                            ->success()
+                            ->send();
+                    }),
                 Tables\Actions\Action::make('kyc_approve')
                     ->label('Valider KYC')
                     ->icon('heroicon-o-identification')
                     ->color('success')
                     ->visible(fn(User $record) => $record->kyc_status === KycStatus::PENDING)
                     ->requiresConfirmation()
-                    ->action(fn(User $record) => $record->update([
-                        'kyc_status' => KycStatus::APPROVED,
-                        'documents_verified_at' => now(),
-                        'kyc_rejection_reason' => null,
-                    ])),
+                    ->action(function (User $record) {
+                        $record->update([
+                            'kyc_status' => KycStatus::APPROVED,
+                            'documents_verified_at' => now(),
+                            'kyc_rejection_reason' => null,
+                        ]);
+                        app(PushNotificationService::class)->sendToUser(
+                            $record,
+                            'Identité vérifiée ✅',
+                            'Vos documents d\'identité ont été validés. Votre profil est maintenant complet.',
+                            ['type' => 'kyc_approved'],
+                        );
+                        Notification::make()
+                            ->title('KYC approuvé')
+                            ->body("Documents de {$record->name} validés.")
+                            ->success()
+                            ->send();
+                    }),
                 Tables\Actions\Action::make('kyc_reject')
                     ->label('Rejeter KYC')
                     ->icon('heroicon-o-x-circle')
@@ -191,17 +219,38 @@ class CourierResource extends Resource
                             ->required()
                             ->minLength(10),
                     ])
-                    ->action(fn(User $record, array $data) => $record->update([
-                        'kyc_status' => KycStatus::REJECTED,
-                        'kyc_rejection_reason' => $data['reason'],
-                    ])),
+                    ->action(function (User $record, array $data) {
+                        $record->update([
+                            'kyc_status' => KycStatus::REJECTED,
+                            'kyc_rejection_reason' => $data['reason'],
+                        ]);
+                        app(PushNotificationService::class)->sendToUser(
+                            $record,
+                            'Documents refusés',
+                            'Vos documents d\'identité ont été refusés. Raison : ' . $data['reason'],
+                            ['type' => 'kyc_rejected'],
+                        );
+                        Notification::make()
+                            ->title('KYC rejeté')
+                            ->body("Documents de {$record->name} refusés.")
+                            ->danger()
+                            ->send();
+                    }),
                 Tables\Actions\Action::make('suspend')
                     ->label('Suspendre')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->visible(fn(User $record) => $record->status === UserStatus::ACTIVE)
                     ->requiresConfirmation()
-                    ->action(fn(User $record) => $record->update(['status' => UserStatus::SUSPENDED, 'is_available' => false])),
+                    ->action(function (User $record) {
+                        $record->update(['status' => UserStatus::SUSPENDED, 'is_available' => false]);
+                        app(PushNotificationService::class)->sendToUser(
+                            $record,
+                            'Compte suspendu',
+                            'Votre compte coursier a été suspendu. Contactez le support pour plus d\'informations.',
+                            ['type' => 'account_suspended'],
+                        );
+                    }),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])

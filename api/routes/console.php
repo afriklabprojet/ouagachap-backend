@@ -18,20 +18,44 @@ Artisan::command('inspire', function () {
 |--------------------------------------------------------------------------
 */
 
+$sentryEnabled = (bool) config('sentry.dsn');
+
+$schedule = function (object $entry, string $monitor) use ($sentryEnabled): object {
+    return $sentryEnabled ? $entry->sentryMonitor($monitor) : $entry;
+};
+
 // Dispatcher automatiquement les commandes PENDING sans coursier (toutes les 2 min)
-Schedule::job(new AutoDispatchPendingOrdersJob)->everyTwoMinutes();
+$schedule(
+    Schedule::job(new AutoDispatchPendingOrdersJob)->everyTwoMinutes(),
+    'ouagachap-auto-dispatch'
+);
 
 // Nettoyer les commandes expirées toutes les heures
-Schedule::job(new CleanupExpiredOrdersJob)->hourly();
+$schedule(
+    Schedule::job(new CleanupExpiredOrdersJob)->hourly(),
+    'ouagachap-cleanup-expired-orders'
+);
 
 // Réassigner les commandes bloquées (ASSIGNED/ACCEPTED > 10 min sans activité)
-Schedule::job(new ReassignStuckOrderJob)->everyFiveMinutes();
+$schedule(
+    Schedule::job(new ReassignStuckOrderJob)->everyFiveMinutes(),
+    'ouagachap-reassign-stuck-orders'
+);
 
 // Générer le rapport quotidien à 1h du matin
-Schedule::job(new GenerateDailyReportJob)->dailyAt('01:00');
+$schedule(
+    Schedule::job(new GenerateDailyReportJob)->dailyAt('01:00'),
+    'ouagachap-daily-report'
+);
 
 // Nettoyer les tokens expirés une fois par jour
-Schedule::command('sanctum:prune-expired --hours=24')->daily();
+$schedule(
+    Schedule::command('sanctum:prune-expired --hours=24')->daily(),
+    'ouagachap-prune-expired-tokens'
+);
 
 // Nettoyer les fichiers temporaires
-Schedule::command('cache:prune-stale-tags')->hourly();
+$schedule(
+    Schedule::command('cache:prune-stale-tags')->hourly(),
+    'ouagachap-prune-stale-cache-tags'
+);

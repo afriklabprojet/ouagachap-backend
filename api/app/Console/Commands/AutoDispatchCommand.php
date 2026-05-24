@@ -24,7 +24,7 @@ class AutoDispatchCommand extends Command
 
         $this->info('Démarrage du dispatch automatique…');
 
-        $result = $dispatcher->autoDispatchPending(dryRun: $dryRun);
+        $result = $dispatcher->autoDispatchPending();
 
         $this->table(
             ['Catégorie', 'Nombre'],

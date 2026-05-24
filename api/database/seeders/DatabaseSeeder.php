@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             AdminSeeder::class,
             SiteSettingsSeeder::class,
             CourierAppSettingsSeeder::class,
+            ConfigurationSettingsSeeder::class,
             LegalPageSeeder::class,
         ]);
     }

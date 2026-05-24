@@ -43,21 +43,53 @@ return [
         ],
 
         'mysql' => [
-            'driver' => 'mysql',
-            'url' => env('DB_URL'),
-            'host' => env('DB_HOST', '127.0.0.1'),
-            'port' => env('DB_PORT', '3306'),
-            'database' => env('DB_DATABASE', 'laravel'),
-            'username' => env('DB_USERNAME', 'root'),
-            'password' => env('DB_PASSWORD', ''),
+            'driver'    => 'mysql',
+            'url'       => env('DB_URL'),
+            // Read/write split — si DB_READ_HOST est défini, les SELECT partent
+            // automatiquement sur le replica. Sinon les deux pointent sur le primaire.
+            // env() retourne '' si var définie mais vide → ?: force le fallback correct
+            'read'  => ['host' => [env('DB_READ_HOST') ?: env('DB_HOST', '127.0.0.1')]],
+            'write' => ['host' => [env('DB_HOST', '127.0.0.1')]],
+            // sticky = true : une écriture dans la même requête HTTP est lisible
+            // immédiatement depuis le primaire (évite les lectures sale après INSERT).
+            'sticky'     => true,
+            'port'       => env('DB_PORT', '3306'),
+            'database'   => env('DB_DATABASE', 'laravel'),
+            'username'   => env('DB_USERNAME', 'root'),
+            'password'   => env('DB_PASSWORD', ''),
             'unix_socket' => env('DB_SOCKET', ''),
-            'charset' => env('DB_CHARSET', 'utf8mb4'),
-            'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
-            'prefix' => '',
+            'charset'    => env('DB_CHARSET', 'utf8mb4'),
+            'collation'  => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
+            'prefix'     => '',
             'prefix_indexes' => true,
-            'strict' => true,
-            'engine' => null,
-            'options' => extension_loaded('pdo_mysql') ? array_filter([
+            'strict'     => true,
+            'engine'     => null,
+            'options'    => extension_loaded('pdo_mysql') ? array_filter([
+                \Pdo\Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
+
+        // Connexion dédiée aux requêtes analytiques lourdes (rapports Filament,
+        // exports, dashboard stats). Toujours sur le replica si disponible.
+        // Usage : DB::connection('mysql_analytics')->table(...)
+        'mysql_analytics' => [
+            'driver'    => 'mysql',
+            'url'       => env('DB_URL'),
+            // env() retourne '' si la var est définie mais vide → utiliser ?: pour le fallback
+            'host'      => env('DB_READ_HOST') ?: env('DB_HOST', '127.0.0.1'),
+            'port'      => env('DB_READ_PORT') ?: env('DB_PORT', '3306'),
+            'database'  => env('DB_DATABASE', 'laravel'),
+            'username'  => env('DB_READ_USERNAME') ?: env('DB_USERNAME', 'root'),
+            'password'  => env('DB_READ_PASSWORD') ?: env('DB_PASSWORD', ''),
+            'unix_socket' => env('DB_SOCKET', ''),
+            'charset'   => env('DB_CHARSET', 'utf8mb4'),
+            'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
+            'prefix'    => '',
+            'prefix_indexes' => true,
+            // Pas de sticky sur analytics — toujours replica (lecture only)
+            'strict'    => false,
+            'engine'    => null,
+            'options'   => extension_loaded('pdo_mysql') ? array_filter([
                 \Pdo\Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
@@ -143,13 +175,14 @@ return [
 
     'redis' => [
 
-        'client' => env('REDIS_CLIENT', 'phpredis'),
+        'client' => env('REDIS_CLIENT', 'predis'),
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
             'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'),
         ],
 
+        // DB 0 — Queue jobs
         'default' => [
             'url' => env('REDIS_URL'),
             'host' => env('REDIS_HOST', '127.0.0.1'),
@@ -159,6 +192,7 @@ return [
             'database' => env('REDIS_DB', '0'),
         ],
 
+        // DB 1 — Cache
         'cache' => [
             'url' => env('REDIS_URL'),
             'host' => env('REDIS_HOST', '127.0.0.1'),
@@ -166,6 +200,26 @@ return [
             'password' => env('REDIS_PASSWORD'),
             'port' => env('REDIS_PORT', '6379'),
             'database' => env('REDIS_CACHE_DB', '1'),
+        ],
+
+        // DB 2 — Sessions
+        'sessions' => [
+            'url' => env('REDIS_URL'),
+            'host' => env('REDIS_HOST', '127.0.0.1'),
+            'username' => env('REDIS_USERNAME'),
+            'password' => env('REDIS_PASSWORD'),
+            'port' => env('REDIS_PORT', '6379'),
+            'database' => env('REDIS_SESSION_DB', '2'),
+        ],
+
+        // DB 3 — Reverb/Broadcast
+        'broadcast' => [
+            'url' => env('REDIS_URL'),
+            'host' => env('REDIS_HOST', '127.0.0.1'),
+            'username' => env('REDIS_USERNAME'),
+            'password' => env('REDIS_PASSWORD'),
+            'port' => env('REDIS_PORT', '6379'),
+            'database' => env('REDIS_BROADCAST_DB', '3'),
         ],
 
     ],

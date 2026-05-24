@@ -59,12 +59,13 @@ class CourierPerformanceWidget extends BaseWidget
 
         // Coursiers avec + de 3 livraisons aujourd'hui (top performers)
         $topCouriersCount = DB::table('orders')
+            ->selectRaw('courier_id')
             ->whereDate('delivered_at', $today)
             ->where('status', OrderStatus::DELIVERED->value)
             ->whereNotNull('courier_id')
             ->groupBy('courier_id')
             ->havingRaw('COUNT(*) >= 3')
-            ->count();
+            ->get()->count();
 
         // Note moyenne des livraisons du jour
         $avgRatingToday = DB::table('ratings')

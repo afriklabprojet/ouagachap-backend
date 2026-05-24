@@ -1,0 +1,3394 @@
+openapi: 3.0.3
+info:
+  title: 'OUAGA CHAP API Documentation'
+  description: 'API de la plateforme OUAGA CHAP — livraison de repas à Ouagadougou. Gestion des commandes, paiements, suivi en temps réel et notifications.'
+  version: 1.0.0
+servers:
+  -
+    url: 'https://ouagachap.pro'
+tags:
+  -
+    name: Addresses
+    description: ''
+  -
+    name: Authentification
+    description: "\nEndpoints pour l'authentification par OTP et la gestion du profil utilisateur."
+  -
+    name: Commandes
+    description: "\nEndpoints pour gérer les commandes de livraison."
+  -
+    name: Configuration
+    description: "\nEndpoints pour obtenir la configuration de l'application."
+  -
+    name: Coursiers
+    description: "\nEndpoints réservés aux coursiers pour gérer leur disponibilité, localisation et commandes."
+  -
+    name: Endpoints
+    description: ''
+  -
+    name: 'Notifications In-App'
+    description: "\nAPIs pour gérer les notifications dans l'application"
+  -
+    name: Paiements
+    description: "\nEndpoints pour gérer les paiements Mobile Money."
+  -
+    name: 'Portefeuille Client'
+    description: "\nAPIs pour la gestion du portefeuille client (recharge)"
+  -
+    name: 'Portefeuille Coursier'
+    description: "\nAPIs pour la gestion du portefeuille et des retraits des coursiers"
+  -
+    name: Services
+    description: "\nAPIs pour la liste des services disponibles"
+components:
+  securitySchemes:
+    default:
+      type: http
+      scheme: bearer
+      description: 'Authentification via Laravel Sanctum. Envoyez le header `Authorization: Bearer {token}` obtenu via `POST /api/v1/auth/login`.'
+security:
+  -
+    default: []
+paths:
+  /api/v1/addresses:
+    post:
+      summary: 'Create a new saved address'
+      operationId: createANewSavedAddress
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Addresses
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                label:
+                  type: string
+                  description: validation.max.
+                  example: b
+                address:
+                  type: string
+                  description: validation.max.
+                  example: 'n'
+                latitude:
+                  type: number
+                  description: validation.between.
+                  example: -90
+                longitude:
+                  type: number
+                  description: validation.between.
+                  example: -179
+                contact_name:
+                  type: string
+                  description: validation.max.
+                  example: m
+                  nullable: true
+                contact_phone:
+                  type: string
+                  description: validation.max.
+                  example: iyvdljnikhwaykcm
+                  nullable: true
+                instructions:
+                  type: string
+                  description: validation.max.
+                  example: 'y'
+                  nullable: true
+                is_default:
+                  type: boolean
+                  description: ''
+                  example: true
+                type:
+                  type: string
+                  description: ''
+                  example: other
+                  enum:
+                    - home
+                    - work
+                    - other
+              required:
+                - label
+                - address
+                - latitude
+                - longitude
+  '/api/v1/addresses/{id}':
+    put:
+      summary: 'Update a saved address'
+      operationId: updateASavedAddress
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Addresses
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                label:
+                  type: string
+                  description: validation.max.
+                  example: b
+                address:
+                  type: string
+                  description: validation.max.
+                  example: 'n'
+                latitude:
+                  type: number
+                  description: validation.between.
+                  example: -90
+                longitude:
+                  type: number
+                  description: validation.between.
+                  example: -179
+                contact_name:
+                  type: string
+                  description: validation.max.
+                  example: m
+                  nullable: true
+                contact_phone:
+                  type: string
+                  description: validation.max.
+                  example: iyvdljnikhwaykcm
+                  nullable: true
+                instructions:
+                  type: string
+                  description: validation.max.
+                  example: 'y'
+                  nullable: true
+                is_default:
+                  type: boolean
+                  description: ''
+                  example: false
+                type:
+                  type: string
+                  description: ''
+                  example: other
+                  enum:
+                    - home
+                    - work
+                    - other
+    delete:
+      summary: 'Delete a saved address'
+      operationId: deleteASavedAddress
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Addresses
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the address.'
+        example: architecto
+        required: true
+        schema:
+          type: string
+  '/api/v1/addresses/{id}/set-default':
+    post:
+      summary: 'Set an address as default'
+      operationId: setAnAddressAsDefault
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Addresses
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the address.'
+        example: architecto
+        required: true
+        schema:
+          type: string
+  /api/v1/courier/login:
+    post:
+      summary: 'Envoyer un OTP'
+      operationId: envoyerUnOTP
+      description: "Envoie un code OTP à 6 chiffres au numéro de téléphone spécifié.\nLe code expire après 5 minutes."
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: 'Code OTP envoyé avec succès.'
+                  data:
+                    expires_in: 300
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Code OTP envoyé avec succès.'
+                  data:
+                    type: object
+                    properties:
+                      expires_in:
+                        type: integer
+                        example: 300
+      tags:
+        - Authentification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone:
+                  type: string
+                  description: 'Le numéro de téléphone au format Burkina Faso.'
+                  example: '+22670123456'
+              required:
+                - phone
+      security: []
+  /api/v1/courier/verify-otp:
+    post:
+      summary: "Vérifier l'OTP"
+      operationId: vrifierLOTP
+      description: "Vérifie le code OTP et connecte/inscrit l'utilisateur.\nRetourne un token Bearer pour les requêtes authentifiées."
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: 'Connexion réussie.'
+                  data:
+                    user:
+                      id: 1
+                      name: John
+                      phone: '+22670123456'
+                      role: client
+                    token: 1|abc123...
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Connexion réussie.'
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            example: 1
+                          name:
+                            type: string
+                            example: John
+                          phone:
+                            type: string
+                            example: '+22670123456'
+                          role:
+                            type: string
+                            example: client
+                      token:
+                        type: string
+                        example: 1|abc123...
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: false
+                  message: 'Code OTP invalide ou expiré.'
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: 'Code OTP invalide ou expiré.'
+        403:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: false
+                  message: "Ce compte est un compte coursier. Veuillez utiliser l'application OUAGA CHAP Coursier."
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Ce compte est un compte coursier. Veuillez utiliser l'application OUAGA CHAP Coursier."
+      tags:
+        - Authentification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone:
+                  type: string
+                  description: 'Le numéro de téléphone.'
+                  example: '+22670123456'
+                code:
+                  type: string
+                  description: 'Le code OTP à 6 chiffres.'
+                  example: '123456'
+                firebase_id_token:
+                  type: string
+                  description: validation.min.
+                  example: cmyuwpwlvqwrsitcpscqldzsnrwtujwvlxjklqppwqbewtnnoqitpxntltcvipojsaus
+                device_name:
+                  type: string
+                  description: "Nom de l'appareil."
+                  example: 'iPhone 15'
+                app_type:
+                  type: string
+                  description: "Type d'application (client ou courier)."
+                  example: client
+              required:
+                - phone
+                - code
+      security: []
+  /api/v1/auth/otp/send:
+    post:
+      summary: 'Envoyer un OTP'
+      operationId: envoyerUnOTP
+      description: "Envoie un code OTP à 6 chiffres au numéro de téléphone spécifié.\nLe code expire après 5 minutes."
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: 'Code OTP envoyé avec succès.'
+                  data:
+                    expires_in: 300
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Code OTP envoyé avec succès.'
+                  data:
+                    type: object
+                    properties:
+                      expires_in:
+                        type: integer
+                        example: 300
+      tags:
+        - Authentification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone:
+                  type: string
+                  description: 'Le numéro de téléphone au format Burkina Faso.'
+                  example: '+22670123456'
+              required:
+                - phone
+      security: []
+  /api/v1/auth/otp/verify:
+    post:
+      summary: "Vérifier l'OTP"
+      operationId: vrifierLOTP
+      description: "Vérifie le code OTP et connecte/inscrit l'utilisateur.\nRetourne un token Bearer pour les requêtes authentifiées."
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: 'Connexion réussie.'
+                  data:
+                    user:
+                      id: 1
+                      name: John
+                      phone: '+22670123456'
+                      role: client
+                    token: 1|abc123...
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Connexion réussie.'
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            example: 1
+                          name:
+                            type: string
+                            example: John
+                          phone:
+                            type: string
+                            example: '+22670123456'
+                          role:
+                            type: string
+                            example: client
+                      token:
+                        type: string
+                        example: 1|abc123...
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: false
+                  message: 'Code OTP invalide ou expiré.'
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: 'Code OTP invalide ou expiré.'
+        403:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: false
+                  message: "Ce compte est un compte coursier. Veuillez utiliser l'application OUAGA CHAP Coursier."
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Ce compte est un compte coursier. Veuillez utiliser l'application OUAGA CHAP Coursier."
+      tags:
+        - Authentification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone:
+                  type: string
+                  description: 'Le numéro de téléphone.'
+                  example: '+22670123456'
+                code:
+                  type: string
+                  description: 'Le code OTP à 6 chiffres.'
+                  example: '123456'
+                firebase_id_token:
+                  type: string
+                  description: validation.min.
+                  example: cmyuwpwlvqwrsitcpscqldzsnrwtujwvlxjklqppwqbewtnnoqitpxntltcvipojsaus
+                device_name:
+                  type: string
+                  description: "Nom de l'appareil."
+                  example: 'iPhone 15'
+                app_type:
+                  type: string
+                  description: "Type d'application (client ou courier)."
+                  example: client
+              required:
+                - phone
+                - code
+      security: []
+  /api/v1/auth/register/courier:
+    post:
+      summary: 'Inscription coursier'
+      operationId: inscriptionCoursier
+      description: "Inscrit un nouvel utilisateur en tant que coursier.\nLe coursier doit ensuite être approuvé par un admin."
+      parameters: []
+      responses:
+        201:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: "Inscription réussie. En attente d'approbation."
+                  data:
+                    id: 1
+                    name: 'Ouédraogo Ibrahim'
+                    role: courier
+                    status: pending
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Inscription réussie. En attente d'approbation."
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      name:
+                        type: string
+                        example: 'Ouédraogo Ibrahim'
+                      role:
+                        type: string
+                        example: courier
+                      status:
+                        type: string
+                        example: pending
+      tags:
+        - Authentification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone:
+                  type: string
+                  description: 'Numéro de téléphone.'
+                  example: '+22670123456'
+                name:
+                  type: string
+                  description: 'Nom complet.'
+                  example: 'Ouédraogo Ibrahim'
+                vehicle_type:
+                  type: string
+                  description: 'Type de véhicule (moto, vélo, voiture).'
+                  example: moto
+                vehicle_plate:
+                  type: string
+                  description: "Plaque d'immatriculation."
+                  example: 12AB3456
+                vehicle_model:
+                  type: string
+                  description: validation.max.
+                  example: r
+                email:
+                  type: string
+                  description: 'Email optionnel.'
+                  example: ibrahim@example.com
+              required:
+                - phone
+                - name
+                - vehicle_type
+      security: []
+  /api/v1/auth/me:
+    get:
+      summary: 'Profil utilisateur'
+      operationId: profilUtilisateur
+      description: "Retourne les informations de l'utilisateur connecté."
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  data:
+                    id: 1
+                    name: John
+                    phone: '+22670123456'
+                    email: null
+                    role: client
+                    wallet_balance: 0
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      name:
+                        type: string
+                        example: John
+                      phone:
+                        type: string
+                        example: '+22670123456'
+                      email:
+                        type: string
+                        example: null
+                      role:
+                        type: string
+                        example: client
+                      wallet_balance:
+                        type: integer
+                        example: 0
+      tags:
+        - Authentification
+  /api/v1/auth/fcm-token:
+    put:
+      summary: "Update FCM token for push notifications\nPUT /api/v1/auth/fcm-token"
+      operationId: updateFCMTokenForPushNotificationsPUTapiv1authfcmToken
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Authentification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fcm_token:
+                  type: string
+                  description: validation.max.
+                  example: b
+                device_type:
+                  type: string
+                  description: ''
+                  example: ios
+                  enum:
+                    - ios
+                    - android
+                  nullable: true
+              required:
+                - fcm_token
+  /api/v1/auth/refresh-token:
+    post:
+      summary: 'Rafraîchir le token'
+      operationId: rafrachirLeToken
+      description: "Révoque le token actuel et en génère un nouveau.\nÀ appeler périodiquement par l'app mobile pour maintenir la session sécurisée."
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: '{"success": true, "message": "Token rafraîchi avec succès.", "data": {"token": "2|xyz789...", "user": {...}}}'
+        403:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: false
+                  message: 'Votre compte est suspendu.'
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: 'Votre compte est suspendu.'
+      tags:
+        - Authentification
+  /api/v1/auth/logout:
+    post:
+      summary: Déconnexion
+      operationId: dconnexion
+      description: "Révoque le token actuel de l'utilisateur."
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: 'Déconnexion réussie.'
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Déconnexion réussie.'
+      tags:
+        - Authentification
+  /api/v1/auth/logout-all:
+    post:
+      summary: 'Déconnexion de tous les appareils'
+      operationId: dconnexionDeTousLesAppareils
+      description: "Révoque tous les tokens de l'utilisateur."
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: 'Déconnexion de tous les appareils réussie.'
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Déconnexion de tous les appareils réussie.'
+      tags:
+        - Authentification
+  /api/v1/auth/account:
+    delete:
+      summary: 'Supprimer le compte'
+      operationId: supprimerLeCompte
+      description: "Supprime définitivement le compte de l'utilisateur et anonymise ses données (RGPD)."
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: 'Votre compte a été supprimé avec succès.'
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Votre compte a été supprimé avec succès.'
+      tags:
+        - Authentification
+  /api/v1/user/fcm-token:
+    post:
+      summary: "Update FCM token for push notifications\nPUT /api/v1/auth/fcm-token"
+      operationId: updateFCMTokenForPushNotificationsPUTapiv1authfcmToken
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Authentification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fcm_token:
+                  type: string
+                  description: validation.max.
+                  example: b
+                device_type:
+                  type: string
+                  description: ''
+                  example: android
+                  enum:
+                    - ios
+                    - android
+                  nullable: true
+              required:
+                - fcm_token
+  /api/v1/courier/profile:
+    get:
+      summary: 'Profil utilisateur'
+      operationId: profilUtilisateur
+      description: "Retourne les informations de l'utilisateur connecté."
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  data:
+                    id: 1
+                    name: John
+                    phone: '+22670123456'
+                    email: null
+                    role: client
+                    wallet_balance: 0
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      name:
+                        type: string
+                        example: John
+                      phone:
+                        type: string
+                        example: '+22670123456'
+                      email:
+                        type: string
+                        example: null
+                      role:
+                        type: string
+                        example: client
+                      wallet_balance:
+                        type: integer
+                        example: 0
+      tags:
+        - Authentification
+  /api/v1/courier/logout:
+    post:
+      summary: Déconnexion
+      operationId: dconnexion
+      description: "Révoque le token actuel de l'utilisateur."
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: 'Déconnexion réussie.'
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Déconnexion réussie.'
+      tags:
+        - Authentification
+  /api/v1/courier/logout-all:
+    post:
+      summary: 'Déconnexion de tous les appareils'
+      operationId: dconnexionDeTousLesAppareils
+      description: "Révoque tous les tokens de l'utilisateur."
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: 'Déconnexion de tous les appareils réussie.'
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Déconnexion de tous les appareils réussie.'
+      tags:
+        - Authentification
+  /api/v1/orders/estimate:
+    post:
+      summary: 'Estimer le prix'
+      operationId: estimerLePrix
+      description: 'Calcule une estimation de prix basée sur la distance entre les points de collecte et de livraison.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: 'Estimation calculée.'
+                  data:
+                    distance_km: 2.5
+                    estimated_price: 1500
+                    estimated_duration_minutes: 15
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Estimation calculée.'
+                  data:
+                    type: object
+                    properties:
+                      distance_km:
+                        type: number
+                        example: 2.5
+                      estimated_price:
+                        type: integer
+                        example: 1500
+                      estimated_duration_minutes:
+                        type: integer
+                        example: 15
+      tags:
+        - Commandes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pickup_latitude:
+                  type: number
+                  description: 'Latitude du point de collecte.'
+                  example: 12.3714
+                pickup_longitude:
+                  type: number
+                  description: 'Longitude du point de collecte.'
+                  example: -1.5197
+                dropoff_latitude:
+                  type: number
+                  description: 'Latitude du point de livraison.'
+                  example: 12.38
+                dropoff_longitude:
+                  type: number
+                  description: 'Longitude du point de livraison.'
+                  example: -1.51
+                zone_id:
+                  type: integer
+                  description: 'ID de la zone (optionnel).'
+                  example: 1
+                  nullable: true
+              required:
+                - pickup_latitude
+                - pickup_longitude
+                - dropoff_latitude
+                - dropoff_longitude
+  /api/v1/orders:
+    post:
+      summary: 'Créer une commande'
+      operationId: crerUneCommande
+      description: 'Crée une nouvelle commande de livraison. Réservé aux clients.'
+      parameters: []
+      responses:
+        201:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: 'Commande créée avec succès.'
+                  data:
+                    id: uuid
+                    order_number: OC-20260120-ABCD
+                    status: pending
+                    total_price: 1500
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Commande créée avec succès.'
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: uuid
+                      order_number:
+                        type: string
+                        example: OC-20260120-ABCD
+                      status:
+                        type: string
+                        example: pending
+                      total_price:
+                        type: integer
+                        example: 1500
+        403:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: false
+                  message: 'Seuls les clients peuvent créer des commandes.'
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: 'Seuls les clients peuvent créer des commandes.'
+      tags:
+        - Commandes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pickup_address:
+                  type: string
+                  description: 'validation.min validation.max.'
+                  example: b
+                pickup_latitude:
+                  type: number
+                  description: 'Must match the regex /^-?\d{1,2}\.\d{4,8}$/. validation.between.'
+                  example: -89
+                pickup_longitude:
+                  type: number
+                  description: 'Must match the regex /^-?\d{1,3}\.\d{4,8}$/. validation.between.'
+                  example: -180
+                pickup_contact_name:
+                  type: string
+                  description: 'validation.min validation.max.'
+                  example: z
+                pickup_contact_phone:
+                  type: string
+                  description: 'Must match the regex /^(\+226|00226)?[0-9]{8}$/.'
+                  example: '+22642559314'
+                pickup_instructions:
+                  type: string
+                  description: validation.max.
+                  example: k
+                  nullable: true
+                dropoff_address:
+                  type: string
+                  description: 'validation.min validation.max.'
+                  example: h
+                dropoff_latitude:
+                  type: number
+                  description: 'Must match the regex /^-?\d{1,2}\.\d{4,8}$/. validation.between.'
+                  example: -90
+                dropoff_longitude:
+                  type: number
+                  description: 'Must match the regex /^-?\d{1,3}\.\d{4,8}$/. validation.between.'
+                  example: -180
+                dropoff_contact_name:
+                  type: string
+                  description: 'validation.min validation.max.'
+                  example: 'y'
+                dropoff_contact_phone:
+                  type: string
+                  description: 'Must match the regex /^(\+226|00226)?[0-9]{8}$/.'
+                  example: '+22642559314'
+                dropoff_instructions:
+                  type: string
+                  description: validation.max.
+                  example: k
+                  nullable: true
+                package_description:
+                  type: string
+                  description: 'validation.min validation.max.'
+                  example: h
+                package_size:
+                  type: string
+                  description: ''
+                  example: small
+                  enum:
+                    - small
+                    - medium
+                    - large
+                zone_id:
+                  type: integer
+                  description: 'The <code>id</code> of an existing record in the zones table.'
+                  example: 16
+                  nullable: true
+              required:
+                - pickup_address
+                - pickup_latitude
+                - pickup_longitude
+                - pickup_contact_name
+                - pickup_contact_phone
+                - dropoff_address
+                - dropoff_latitude
+                - dropoff_longitude
+                - dropoff_contact_name
+                - dropoff_contact_phone
+                - package_description
+    get:
+      summary: 'Lister mes commandes'
+      operationId: listerMesCommandes
+      description: 'Retourne la liste paginée des commandes du client connecté.'
+      parameters:
+        -
+          in: query
+          name: status
+          description: 'Filtrer par statut (pending, assigned, picked_up, delivered, cancelled).'
+          example: pending
+          required: false
+          schema:
+            type: string
+            description: 'Filtrer par statut (pending, assigned, picked_up, delivered, cancelled).'
+            example: pending
+        -
+          in: query
+          name: per_page
+          description: 'Nombre de résultats par page.'
+          example: 15
+          required: false
+          schema:
+            type: integer
+            description: 'Nombre de résultats par page.'
+            example: 15
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: 'Commandes récupérées.'
+                  data: []
+                  meta:
+                    current_page: 1
+                    last_page: 1
+                    per_page: 15
+                    total: 0
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Commandes récupérées.'
+                  data:
+                    type: array
+                    example: []
+                  meta:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                        example: 1
+                      last_page:
+                        type: integer
+                        example: 1
+                      per_page:
+                        type: integer
+                        example: 15
+                      total:
+                        type: integer
+                        example: 0
+      tags:
+        - Commandes
+  '/api/v1/orders/{order}/cancel':
+    post:
+      summary: "Cancel order (client)\nPOST /api/v1/orders/{order}/cancel"
+      operationId: cancelOrderclientPOSTapiv1ordersordercancel
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Commandes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  description: validation.max.
+                  example: b
+              required:
+                - reason
+    parameters:
+      -
+        in: path
+        name: order
+        description: 'The order.'
+        example: BcECdBDA-CdED-bFEA-CbCE-BcCdeBfbbebc
+        required: true
+        schema:
+          type: string
+  '/api/v1/orders/{order}/rate-courier':
+    post:
+      summary: "Rate courier (client)\nPOST /api/v1/orders/{order}/rate-courier"
+      operationId: rateCourierclientPOSTapiv1ordersorderrateCourier
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Commandes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rating:
+                  type: integer
+                  description: validation.between.
+                  example: 2
+                review:
+                  type: string
+                  description: validation.max.
+                  example: 'n'
+              required:
+                - rating
+    parameters:
+      -
+        in: path
+        name: order
+        description: 'The order.'
+        example: BcECdBDA-CdED-bFEA-CbCE-BcCdeBfbbebc
+        required: true
+        schema:
+          type: string
+  '/api/v1/orders/{order}/rate-client':
+    post:
+      summary: "Rate client (courier)\nPOST /api/v1/orders/{order}/rate-client"
+      operationId: rateClientcourierPOSTapiv1ordersorderrateClient
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Commandes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rating:
+                  type: integer
+                  description: validation.between.
+                  example: 2
+                review:
+                  type: string
+                  description: validation.max.
+                  example: 'n'
+              required:
+                - rating
+    parameters:
+      -
+        in: path
+        name: order
+        description: 'The order.'
+        example: BcECdBDA-CdED-bFEA-CbCE-BcCdeBfbbebc
+        required: true
+        schema:
+          type: string
+  /api/v1/config/general:
+    get:
+      summary: 'Configuration générale'
+      operationId: configurationGnrale
+      description: "Retourne la configuration générale de l'application."
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  data:
+                    app_name: 'OUAGA CHAP'
+                    version: 1.0.0
+                    currency: XOF
+                    support_phone: '+22670000000'
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      app_name:
+                        type: string
+                        example: 'OUAGA CHAP'
+                      version:
+                        type: string
+                        example: 1.0.0
+                      currency:
+                        type: string
+                        example: XOF
+                      support_phone:
+                        type: string
+                        example: '+22670000000'
+      tags:
+        - Configuration
+      security: []
+  /api/v1/config/websocket:
+    get:
+      summary: 'Configuration WebSocket'
+      operationId: configurationWebSocket
+      description: "Retourne les informations de connexion pour le client WebSocket.\nUtilisez ces informations pour configurer Laravel Echo dans Flutter."
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  data:
+                    host: localhost
+                    port: 8080
+                    key: xxx
+                    scheme: http
+                    cluster: mt1
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      host:
+                        type: string
+                        example: localhost
+                      port:
+                        type: integer
+                        example: 8080
+                      key:
+                        type: string
+                        example: xxx
+                      scheme:
+                        type: string
+                        example: http
+                      cluster:
+                        type: string
+                        example: mt1
+      tags:
+        - Configuration
+      security: []
+  /api/v1/config/zones:
+    get:
+      summary: 'Zones de livraison'
+      operationId: zonesDeLivraison
+      description: 'Retourne la liste des zones de livraison actives.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  data:
+                    -
+                      id: 1
+                      name: Centre-ville
+                      base_price: 500
+                      price_per_km: 200
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    example:
+                      -
+                        id: 1
+                        name: Centre-ville
+                        base_price: 500
+                        price_per_km: 200
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        name:
+                          type: string
+                          example: Centre-ville
+                        base_price:
+                          type: integer
+                          example: 500
+                        price_per_km:
+                          type: integer
+                          example: 200
+      tags:
+        - Configuration
+      security: []
+  /api/v1/courier/location:
+    put:
+      summary: 'Mettre à jour la position'
+      operationId: mettreJourLaPosition
+      description: "Met à jour la position GPS du coursier en temps réel.\nÀ appeler régulièrement pendant les livraisons."
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: 'Position mise à jour.'
+                  data:
+                    latitude: 12.3714
+                    longitude: -1.5197
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Position mise à jour.'
+                  data:
+                    type: object
+                    properties:
+                      latitude:
+                        type: number
+                        example: 12.3714
+                      longitude:
+                        type: number
+                        example: -1.5197
+      tags:
+        - Coursiers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                latitude:
+                  type: number
+                  description: 'Latitude GPS.'
+                  example: 12.3714
+                longitude:
+                  type: number
+                  description: 'Longitude GPS.'
+                  example: -1.5197
+              required:
+                - latitude
+                - longitude
+    post:
+      summary: 'Mettre à jour la position'
+      operationId: mettreJourLaPosition
+      description: "Met à jour la position GPS du coursier en temps réel.\nÀ appeler régulièrement pendant les livraisons."
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: 'Position mise à jour.'
+                  data:
+                    latitude: 12.3714
+                    longitude: -1.5197
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Position mise à jour.'
+                  data:
+                    type: object
+                    properties:
+                      latitude:
+                        type: number
+                        example: 12.3714
+                      longitude:
+                        type: number
+                        example: -1.5197
+      tags:
+        - Coursiers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                latitude:
+                  type: number
+                  description: 'Latitude GPS.'
+                  example: 12.3714
+                longitude:
+                  type: number
+                  description: 'Longitude GPS.'
+                  example: -1.5197
+              required:
+                - latitude
+                - longitude
+  /api/v1/courier/status:
+    post:
+      summary: 'Mettre à jour le statut en ligne'
+      operationId: mettreJourLeStatutEnLigne
+      description: 'Active ou désactive le mode en ligne du coursier (avec position GPS).'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: 'Statut mis à jour.'
+                  data:
+                    is_online: true
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Statut mis à jour.'
+                  data:
+                    type: object
+                    properties:
+                      is_online:
+                        type: boolean
+                        example: true
+      tags:
+        - Coursiers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                is_online:
+                  type: boolean
+                  description: 'Statut en ligne.'
+                  example: true
+                latitude:
+                  type: number
+                  description: 'Latitude GPS actuelle.'
+                  example: 12.3714
+                  nullable: true
+                longitude:
+                  type: number
+                  description: 'Longitude GPS actuelle.'
+                  example: -1.5197
+                  nullable: true
+              required:
+                - is_online
+  /api/v1/courier/availability:
+    put:
+      summary: 'Modifier la disponibilité'
+      operationId: modifierLaDisponibilit
+      description: 'Active ou désactive la disponibilité du coursier pour recevoir des commandes.'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: 'Disponibilité mise à jour.'
+                  data:
+                    is_available: true
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Disponibilité mise à jour.'
+                  data:
+                    type: object
+                    properties:
+                      is_available:
+                        type: boolean
+                        example: true
+      tags:
+        - Coursiers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                is_available:
+                  type: boolean
+                  description: Disponibilité.
+                  example: true
+              required:
+                - is_available
+  '/api/v1/courier/orders/{order}/accept':
+    post:
+      summary: "Accept an order\nPOST /api/v1/courier/orders/{order}/accept"
+      operationId: acceptAnOrderPOSTapiv1courierordersorderaccept
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Coursiers
+    parameters:
+      -
+        in: path
+        name: order
+        description: 'The order.'
+        example: architecto
+        required: true
+        schema:
+          type: string
+  '/api/v1/courier/orders/{order}/status':
+    put:
+      summary: "Update order status (picked_up, delivered)\nPUT /api/v1/courier/orders/{order}/status"
+      operationId: updateOrderStatuspickedUpDeliveredPUTapiv1courierordersorderstatus
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Coursiers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  description: ''
+                  example: picked_up
+                  enum:
+                    - accepted
+                    - picking_up
+                    - picked_up
+                    - in_transit
+                    - delivered
+              required:
+                - status
+    parameters:
+      -
+        in: path
+        name: order
+        description: 'The order.'
+        example: architecto
+        required: true
+        schema:
+          type: string
+  '/api/v1/courier/orders/{order}/confirm-delivery':
+    post:
+      summary: "Confirm delivery with client's confirmation code\nPOST /api/v1/courier/orders/{order}/confirm-delivery"
+      operationId: confirmDeliveryWithClientsConfirmationCodePOSTapiv1courierordersorderconfirmDelivery
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Coursiers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                confirmation_code:
+                  type: string
+                  description: validation.size.
+                  example: bngzmi
+              required:
+                - confirmation_code
+    parameters:
+      -
+        in: path
+        name: order
+        description: 'The order.'
+        example: architecto
+        required: true
+        schema:
+          type: string
+  '/api/v1/couriers/{courier}/profile':
+    get:
+      summary: "Profil public d'un coursier"
+      operationId: profilPublicDunCoursier
+      description: "Retourne les informations publiques d'un coursier (nom, photo, note, véhicule).\nAccessible par les clients authentifiés."
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: '{"success": true, "data": {"id": 1, "name": "Ali", "avatar_url": "https://...", ...}}'
+      tags:
+        - Coursiers
+    parameters:
+      -
+        in: path
+        name: courier
+        description: "L'ID du coursier."
+        example: 16
+        required: true
+        schema:
+          type: integer
+  /api/v1/admin/login:
+    post:
+      summary: 'Connexion admin via API (avec email/password)'
+      operationId: connexionAdminViaAPIavecEmailpassword
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: validation.email.
+                  example: gbailey@example.net
+                password:
+                  type: string
+                  description: ''
+                  example: '|]|{+-'
+              required:
+                - email
+                - password
+  /api/v1/jeko/webhook:
+    post:
+      summary: 'Gérer le webhook JEKO'
+      operationId: grerLeWebhookJEKO
+      description: 'La signature HMAC-SHA256 est vérifiée avec le corps brut de la requête'
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+  /api/v1/track-order:
+    post:
+      summary: "Recherche de colis par numéro de commande (pour les non-inscrits)\nPOST /api/v1/incoming-orders/search"
+      operationId: rechercheDeColisParNumroDeCommandepourLesNonInscritsPOSTapiv1incomingOrderssearch
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                order_number:
+                  type: string
+                  description: ''
+                  example: architecto
+                phone:
+                  type: string
+                  description: ''
+                  example: architecto
+              required:
+                - order_number
+                - phone
+  '/api/v1/support/faqs/{id}/view':
+    post:
+      summary: "Incrémenter le compteur de vues d'une FAQ"
+      operationId: incrmenterLeCompteurDeVuesDuneFAQ
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the faq.'
+        example: architecto
+        required: true
+        schema:
+          type: string
+  /api/v1/traffic/incidents:
+    post:
+      summary: "Report a new traffic incident\nPOST /api/v1/traffic/incidents"
+      operationId: reportANewTrafficIncidentPOSTapiv1trafficincidents
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  description: ''
+                  example: hazard
+                  enum:
+                    - congestion
+                    - accident
+                    - road_work
+                    - road_closed
+                    - police
+                    - hazard
+                severity:
+                  type: string
+                  description: ''
+                  example: high
+                  enum:
+                    - low
+                    - moderate
+                    - high
+                    - severe
+                latitude:
+                  type: number
+                  description: validation.between.
+                  example: -89
+                longitude:
+                  type: number
+                  description: validation.between.
+                  example: -179
+                address:
+                  type: string
+                  description: validation.max.
+                  example: g
+                  nullable: true
+                description:
+                  type: string
+                  description: validation.max.
+                  example: 'Quos velit et fugiat sunt nihil accusantium harum.'
+                  nullable: true
+                duration_hours:
+                  type: number
+                  description: 'validation.min validation.max.'
+                  example: 5
+                  nullable: true
+              required:
+                - type
+                - severity
+                - latitude
+                - longitude
+  '/api/v1/traffic/incidents/{incident}/confirm':
+    post:
+      summary: "Confirm an existing incident\nPOST /api/v1/traffic/incidents/{incident}/confirm"
+      operationId: confirmAnExistingIncidentPOSTapiv1trafficincidentsincidentconfirm
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+    parameters:
+      -
+        in: path
+        name: incident
+        description: 'The incident.'
+        example: architecto
+        required: true
+        schema:
+          type: string
+  '/api/v1/traffic/incidents/{incident}/resolve':
+    post:
+      summary: "Resolve/dismiss an incident\nPOST /api/v1/traffic/incidents/{incident}/resolve"
+      operationId: resolvedismissAnIncidentPOSTapiv1trafficincidentsincidentresolve
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+    parameters:
+      -
+        in: path
+        name: incident
+        description: 'The incident.'
+        example: architecto
+        required: true
+        schema:
+          type: string
+  /api/v1/promo-codes/validate:
+    post:
+      summary: 'Valider un code promo'
+      operationId: validerUnCodePromo
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  description: validation.max.
+                  example: b
+                order_amount:
+                  type: number
+                  description: validation.min.
+                  example: 39
+                zone_id:
+                  type: integer
+                  description: 'The <code>id</code> of an existing record in the zones table.'
+                  example: 16
+                  nullable: true
+              required:
+                - code
+                - order_amount
+  /api/v1/promo-codes/apply:
+    post:
+      summary: 'Appliquer un code promo à une commande'
+      operationId: appliquerUnCodePromoUneCommande
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  description: validation.max.
+                  example: b
+                order_id:
+                  type: string
+                  description: 'validation.uuid The <code>id</code> of an existing record in the orders table.'
+                  example: a4855dc5-0acb-33c3-b921-f4291f719ca0
+              required:
+                - code
+                - order_id
+  '/api/v1/incoming-orders/{id}/confirm':
+    post:
+      summary: "Confirmer la réception d'un colis avec le code\nPOST /api/v1/incoming-orders/{id}/confirm"
+      operationId: confirmerLaRceptionDunColisAvecLeCodePOSTapiv1incomingOrdersidconfirm
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                confirmation_code:
+                  type: string
+                  description: validation.size.
+                  example: bngzmi
+              required:
+                - confirmation_code
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the incoming order.'
+        example: architecto
+        required: true
+        schema:
+          type: string
+  /api/v1/jeko/recharge:
+    post:
+      summary: 'Initier une recharge de wallet via JEKO'
+      operationId: initierUneRechargeDeWalletViaJEKO
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                  description: 'validation.min validation.max.'
+                  example: 1
+                payment_method:
+                  type: string
+                  description: ''
+                  example: moov
+                  enum:
+                    - wave
+                    - orange
+                    - mtn
+                    - moov
+                    - djamo
+              required:
+                - amount
+                - payment_method
+  /api/v1/jeko/pay-order:
+    post:
+      summary: 'Initier un paiement de commande via JEKO'
+      operationId: initierUnPaiementDeCommandeViaJEKO
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                order_id:
+                  type: string
+                  description: 'The <code>id</code> of an existing record in the orders table.'
+                  example: architecto
+                payment_method:
+                  type: string
+                  description: ''
+                  example: moov
+                  enum:
+                    - wave
+                    - orange
+                    - mtn
+                    - moov
+                    - djamo
+              required:
+                - order_id
+                - payment_method
+  /api/v1/geofence/position:
+    post:
+      summary: 'Mettre à jour la position et vérifier les géofences (pour coursiers)'
+      operationId: mettreJourLaPositionEtVrifierLesGofencespourCoursiers
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                latitude:
+                  type: number
+                  description: validation.between.
+                  example: -89
+                longitude:
+                  type: number
+                  description: validation.between.
+                  example: -179
+                order_id:
+                  type: string
+                  description: 'validation.uuid The <code>id</code> of an existing record in the orders table.'
+                  example: 6b72fe4a-5b40-307c-bc24-f79acf9a1bb9
+                  nullable: true
+              required:
+                - latitude
+                - longitude
+  /api/v1/support/chats:
+    post:
+      summary: 'Obtenir ou créer une conversation de chat'
+      operationId: obtenirOuCrerUneConversationDeChat
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+  '/api/v1/support/chats/{chatId}/messages':
+    post:
+      summary: 'Envoyer un message dans une conversation'
+      operationId: envoyerUnMessageDansUneConversation
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  description: validation.max.
+                  example: b
+              required:
+                - message
+    parameters:
+      -
+        in: path
+        name: chatId
+        description: ''
+        example: architecto
+        required: true
+        schema:
+          type: string
+  '/api/v1/support/chats/{chatId}/close':
+    post:
+      summary: 'Fermer une conversation'
+      operationId: fermerUneConversation
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+    parameters:
+      -
+        in: path
+        name: chatId
+        description: ''
+        example: architecto
+        required: true
+        schema:
+          type: string
+  /api/v1/support/complaints:
+    post:
+      summary: 'Créer une nouvelle réclamation'
+      operationId: crerUneNouvelleRclamation
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  description: ''
+                  example: other
+                  enum:
+                    - delivery_issue
+                    - payment_issue
+                    - courier_behavior
+                    - app_bug
+                    - other
+                subject:
+                  type: string
+                  description: validation.max.
+                  example: b
+                description:
+                  type: string
+                  description: validation.max.
+                  example: 'Et animi quos velit et fugiat.'
+                order_id:
+                  type: string
+                  description: 'The <code>id</code> of an existing record in the orders table.'
+                  example: null
+                  nullable: true
+                priority:
+                  type: string
+                  description: ''
+                  example: low
+                  enum:
+                    - low
+                    - medium
+                    - high
+                    - urgent
+                  nullable: true
+              required:
+                - type
+                - subject
+                - description
+  '/api/v1/support/complaints/{complaintId}/messages':
+    post:
+      summary: 'Ajouter un message à une réclamation'
+      operationId: ajouterUnMessageUneRclamation
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  description: validation.max.
+                  example: b
+              required:
+                - message
+    parameters:
+      -
+        in: path
+        name: complaintId
+        description: ''
+        example: architecto
+        required: true
+        schema:
+          type: string
+  '/api/v1/orders/{order_id}/chat/messages':
+    post:
+      summary: 'Envoyer un message'
+      operationId: envoyerUnMessage
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  description: 'This field is required when <code>image</code> is not present. validation.max.'
+                  example: b
+                image:
+                  type: string
+                  format: binary
+                  description: 'This field is required when <code>message</code> is not present. validation.image validation.max.'
+    parameters:
+      -
+        in: path
+        name: order_id
+        description: 'The ID of the order.'
+        example: architecto
+        required: true
+        schema:
+          type: string
+  '/api/v1/orders/{order_id}/chat/read':
+    post:
+      summary: 'Marquer les messages comme lus'
+      operationId: marquerLesMessagesCommeLus
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+    parameters:
+      -
+        in: path
+        name: order_id
+        description: 'The ID of the order.'
+        example: architecto
+        required: true
+        schema:
+          type: string
+  /api/v1/geofence/dynamic-pricing:
+    post:
+      summary: 'Calculer le multiplicateur de prix dynamique pour une zone'
+      operationId: calculerLeMultiplicateurDePrixDynamiquePourUneZone
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                zone_id:
+                  type: integer
+                  description: 'The <code>id</code> of an existing record in the zones table.'
+                  example: 16
+              required:
+                - zone_id
+  /api/v1/geofence/check-position:
+    post:
+      summary: 'Vérifier si une position est dans une zone spécifique'
+      operationId: vrifierSiUnePositionEstDansUneZoneSpcifique
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                latitude:
+                  type: number
+                  description: validation.between.
+                  example: -89
+                longitude:
+                  type: number
+                  description: validation.between.
+                  example: -179
+                zone_id:
+                  type: integer
+                  description: 'The <code>id</code> of an existing record in the zones table.'
+                  example: 16
+                  nullable: true
+              required:
+                - latitude
+                - longitude
+  /api/v1/admin/users:
+    post:
+      summary: 'Créer un nouvel administrateur'
+      operationId: crerUnNouvelAdministrateur
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: validation.max.
+                  example: b
+                email:
+                  type: string
+                  description: validation.email.
+                  example: zbailey@example.net
+                phone:
+                  type: string
+                  description: 'Must match the regex /^(\+226.'
+                  example: (+226
+                password:
+                  type: string
+                  description: ''
+                  example: architecto
+              required:
+                - name
+                - email
+                - phone
+                - password
+  '/api/v1/admin/users/{admin_id}':
+    put:
+      summary: 'Mettre à jour un administrateur'
+      operationId: mettreJourUnAdministrateur
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: validation.max.
+                  example: b
+                email:
+                  type: string
+                  description: validation.email.
+                  example: zbailey@example.net
+                phone:
+                  type: string
+                  description: 'Must match the regex /^(\+226.'
+                  example: (+226
+                status:
+                  type: string
+                  description: ''
+                  example: null
+    delete:
+      summary: 'Supprimer un administrateur (soft delete)'
+      operationId: supprimerUnAdministrateursoftDelete
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+    parameters:
+      -
+        in: path
+        name: admin_id
+        description: 'The ID of the admin.'
+        example: 16
+        required: true
+        schema:
+          type: integer
+  '/api/v1/admin/users/{admin_id}/change-password':
+    post:
+      summary: "Changer le mot de passe d'un administrateur"
+      operationId: changerLeMotDePasseDunAdministrateur
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  description: ''
+                  example: architecto
+                password_confirmation:
+                  type: string
+                  description: 'The value and <code>password</code> must match.'
+                  example: architecto
+              required:
+                - password
+                - password_confirmation
+    parameters:
+      -
+        in: path
+        name: admin_id
+        description: 'The ID of the admin.'
+        example: 16
+        required: true
+        schema:
+          type: integer
+  '/api/v1/admin/users/{admin_id}/suspend':
+    post:
+      summary: 'Suspendre un administrateur'
+      operationId: suspendreUnAdministrateur
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+    parameters:
+      -
+        in: path
+        name: admin_id
+        description: 'The ID of the admin.'
+        example: 16
+        required: true
+        schema:
+          type: integer
+  '/api/v1/admin/users/{admin_id}/activate':
+    post:
+      summary: 'Réactiver un administrateur'
+      operationId: ractiverUnAdministrateur
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Endpoints
+    parameters:
+      -
+        in: path
+        name: admin_id
+        description: 'The ID of the admin.'
+        example: 16
+        required: true
+        schema:
+          type: integer
+  /api/v1/notifications:
+    get:
+      summary: 'Liste des notifications'
+      operationId: listeDesNotifications
+      description: "Récupère les notifications de l'utilisateur connecté"
+      parameters:
+        -
+          in: query
+          name: unread_only
+          description: 'Afficher uniquement les non lues.'
+          example: true
+          required: false
+          schema:
+            type: boolean
+            description: 'Afficher uniquement les non lues.'
+            example: true
+        -
+          in: query
+          name: type
+          description: 'Filtrer par type (order_status, payment, promo, system, wallet).'
+          example: order_status
+          required: false
+          schema:
+            type: string
+            description: 'Filtrer par type (order_status, payment, promo, system, wallet).'
+            example: order_status
+        -
+          in: query
+          name: per_page
+          description: 'Nombre par page (max 50).'
+          example: 20
+          required: false
+          schema:
+            type: integer
+            description: 'Nombre par page (max 50).'
+            example: 20
+      responses:
+        200:
+          description: ''
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "{\n  \"success\": true,\n  \"data\": {\n    \"current_page\": 1,\n    \"data\": [...],\n    \"unread_count\": 5\n  }\n}"
+      tags:
+        - 'Notifications In-App'
+  /api/v1/notifications/unread-count:
+    get:
+      summary: 'Nombre de notifications non lues'
+      operationId: nombreDeNotificationsNonLues
+      description: ''
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  unread_count: 5
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  unread_count:
+                    type: integer
+                    example: 5
+      tags:
+        - 'Notifications In-App'
+  /api/v1/notifications/mark-read:
+    post:
+      summary: 'Marquer plusieurs notifications comme lues'
+      operationId: marquerPlusieursNotificationsCommeLues
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - 'Notifications In-App'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids:
+                  type: array
+                  description: 'Liste des UUIDs.'
+                  example:
+                    - 550e8400-e29b-41d4-a716-446655440000
+                  items:
+                    type: string
+              required:
+                - ids
+  /api/v1/notifications/mark-all-read:
+    post:
+      summary: 'Marquer toutes les notifications comme lues'
+      operationId: marquerToutesLesNotificationsCommeLues
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - 'Notifications In-App'
+  /api/v1/notifications/clear-read:
+    delete:
+      summary: 'Supprimer les notifications lues'
+      operationId: supprimerLesNotificationsLues
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - 'Notifications In-App'
+  '/api/v1/notifications/{notification}/read':
+    post:
+      summary: 'Marquer une notification comme lue'
+      operationId: marquerUneNotificationCommeLue
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - 'Notifications In-App'
+    parameters:
+      -
+        in: path
+        name: notification
+        description: 'UUID de la notification.'
+        example: 550e8400-e29b-41d4-a716-446655440000
+        required: true
+        schema:
+          type: string
+  '/api/v1/notifications/{notification}':
+    delete:
+      summary: 'Supprimer une notification'
+      operationId: supprimerUneNotification
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - 'Notifications In-App'
+    parameters:
+      -
+        in: path
+        name: notification
+        description: 'UUID de la notification.'
+        example: architecto
+        required: true
+        schema:
+          type: string
+  /api/v1/payments/webhook:
+    post:
+      summary: "Handle webhook from payment provider\nPOST /api/v1/payments/webhook"
+      operationId: handleWebhookFromPaymentProviderPOSTapiv1paymentswebhook
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Paiements
+  /api/v1/payments/initiate:
+    post:
+      summary: 'Initier un paiement'
+      operationId: initierUnPaiement
+      description: "Initie un paiement Mobile Money pour une commande.\nSupporte Orange Money et Moov Money."
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: 'Paiement initié.'
+                  data:
+                    payment:
+                      id: 1
+                      transaction_id: TXN-ABC123
+                      amount: 1500
+                      status: pending
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Paiement initié.'
+                  data:
+                    type: object
+                    properties:
+                      payment:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            example: 1
+                          transaction_id:
+                            type: string
+                            example: TXN-ABC123
+                          amount:
+                            type: integer
+                            example: 1500
+                          status:
+                            type: string
+                            example: pending
+        400:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: false
+                  message: 'Cette commande a déjà été payée.'
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: 'Cette commande a déjà été payée.'
+        403:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: false
+                  message: 'Accès non autorisé.'
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: 'Accès non autorisé.'
+      tags:
+        - Paiements
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                order_id:
+                  type: string
+                  description: 'UUID de la commande.'
+                  example: 550e8400-e29b-41d4-a716-446655440000
+                method:
+                  type: string
+                  description: 'Méthode de paiement (orange_money, moov_money, cash).'
+                  example: orange_money
+                phone_number:
+                  type: string
+                  description: 'Numéro pour le paiement.'
+                  example: '+22670123456'
+              required:
+                - order_id
+                - method
+                - phone_number
+  /api/v1/client-wallet/balance:
+    get:
+      summary: 'Mon solde'
+      operationId: monSolde
+      description: 'Récupère le solde du portefeuille client'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  data:
+                    balance: 5000
+                    currency: FCFA
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      balance:
+                        type: integer
+                        example: 5000
+                      currency:
+                        type: string
+                        example: FCFA
+      tags:
+        - 'Portefeuille Client'
+  /api/v1/client-wallet/recharge:
+    post:
+      summary: 'Initier une recharge'
+      operationId: initierUneRecharge
+      description: 'Démarre le processus de recharge via Mobile Money'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: 'Recharge initiée avec succès'
+                  data:
+                    transaction_id: RECH-ABC123
+                    amount: 1000
+                    provider: orange_money
+                    phone: '70123456'
+                    status: pending
+                    instructions: 'Vous allez recevoir une demande de paiement sur votre téléphone. Veuillez confirmer avec votre code PIN Mobile Money.'
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Recharge initiée avec succès'
+                  data:
+                    type: object
+                    properties:
+                      transaction_id:
+                        type: string
+                        example: RECH-ABC123
+                      amount:
+                        type: integer
+                        example: 1000
+                      provider:
+                        type: string
+                        example: orange_money
+                      phone:
+                        type: string
+                        example: '70123456'
+                      status:
+                        type: string
+                        example: pending
+                      instructions:
+                        type: string
+                        example: 'Vous allez recevoir une demande de paiement sur votre téléphone. Veuillez confirmer avec votre code PIN Mobile Money.'
+      tags:
+        - 'Portefeuille Client'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: integer
+                  description: 'Montant à recharger (min: 100 FCFA).'
+                  example: 1000
+                provider:
+                  type: string
+                  description: 'Opérateur (orange_money, moov_money).'
+                  example: orange_money
+                phone:
+                  type: string
+                  description: 'Numéro de téléphone Mobile Money.'
+                  example: '70123456'
+              required:
+                - amount
+                - provider
+                - phone
+  /api/v1/client-wallet/recharge/confirm:
+    post:
+      summary: 'Confirmer une recharge (webhook ou simulation)'
+      operationId: confirmerUneRechargewebhookOuSimulation
+      description: ''
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: 'Recharge confirmée'
+                  data:
+                    new_balance: 6000
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Recharge confirmée'
+                  data:
+                    type: object
+                    properties:
+                      new_balance:
+                        type: integer
+                        example: 6000
+      tags:
+        - 'Portefeuille Client'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                transaction_id:
+                  type: string
+                  description: 'ID de la transaction.'
+                  example: RECH-ABC123
+              required:
+                - transaction_id
+  /api/v1/client-wallet/recharge/history:
+    get:
+      summary: 'Historique des recharges'
+      operationId: historiqueDesRecharges
+      description: ''
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  data:
+                    -
+                      id: 1
+                      transaction_id: RECH-ABC123
+                      amount: 1000
+                      provider: orange_money
+                      status: completed
+                      created_at: '2026-01-20T10:00:00Z'
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    example:
+                      -
+                        id: 1
+                        transaction_id: RECH-ABC123
+                        amount: 1000
+                        provider: orange_money
+                        status: completed
+                        created_at: '2026-01-20T10:00:00Z'
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        transaction_id:
+                          type: string
+                          example: RECH-ABC123
+                        amount:
+                          type: integer
+                          example: 1000
+                        provider:
+                          type: string
+                          example: orange_money
+                        status:
+                          type: string
+                          example: completed
+                        created_at:
+                          type: string
+                          example: '2026-01-20T10:00:00Z'
+      tags:
+        - 'Portefeuille Client'
+  /api/v1/wallet:
+    get:
+      summary: 'Mon portefeuille'
+      operationId: monPortefeuille
+      description: 'Récupère les informations du portefeuille du coursier connecté'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  data:
+                    balance: '15000.00'
+                    pending_balance: '2000.00'
+                    total_earned: '50000.00'
+                    total_withdrawn: '33000.00'
+                    available_for_withdrawal: '15000.00'
+                    pending_withdrawals_count: 1
+                    pending_withdrawals_amount: '2000.00'
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      balance:
+                        type: string
+                        example: '15000.00'
+                      pending_balance:
+                        type: string
+                        example: '2000.00'
+                      total_earned:
+                        type: string
+                        example: '50000.00'
+                      total_withdrawn:
+                        type: string
+                        example: '33000.00'
+                      available_for_withdrawal:
+                        type: string
+                        example: '15000.00'
+                      pending_withdrawals_count:
+                        type: integer
+                        example: 1
+                      pending_withdrawals_amount:
+                        type: string
+                        example: '2000.00'
+      tags:
+        - 'Portefeuille Coursier'
+  /api/v1/wallet/withdraw:
+    post:
+      summary: 'Demander un retrait'
+      operationId: demanderUnRetrait
+      description: 'Créer une demande de retrait de fonds'
+      parameters: []
+      responses:
+        201:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: 'Demande de retrait créée avec succès'
+                  data:
+                    id: 1
+                    amount: '5000.00'
+                    status: pending
+                    payment_method: mobile_money
+                    payment_phone: '22670123456'
+                    created_at: '2026-01-20T10:00:00Z'
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Demande de retrait créée avec succès'
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      amount:
+                        type: string
+                        example: '5000.00'
+                      status:
+                        type: string
+                        example: pending
+                      payment_method:
+                        type: string
+                        example: mobile_money
+                      payment_phone:
+                        type: string
+                        example: '22670123456'
+                      created_at:
+                        type: string
+                        example: '2026-01-20T10:00:00Z'
+      tags:
+        - 'Portefeuille Coursier'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: numeric
+                  description: 'Montant à retirer (min: 500 FCFA).'
+                  example: '5000'
+                payment_method:
+                  type: string
+                  description: 'Méthode de paiement (mobile_money, bank_transfer).'
+                  example: mobile_money
+                phone:
+                  type: string
+                  description: 'Numéro de téléphone Mobile Money.'
+                  example: '22670123456'
+                provider:
+                  type: string
+                  description: 'Opérateur (orange_money, moov_money).'
+                  example: orange_money
+                bank_name:
+                  type: string
+                  description: 'Nom de la banque (si virement).'
+                  example: SGBF
+                bank_account:
+                  type: string
+                  description: 'Numéro de compte bancaire.'
+                  example: BF001234567890
+              required:
+                - amount
+                - payment_method
+  /api/v1/wallet/withdrawals:
+    get:
+      summary: 'Historique des retraits'
+      operationId: historiqueDesRetraits
+      description: 'Liste paginée des demandes de retrait du coursier'
+      parameters:
+        -
+          in: query
+          name: status
+          description: 'Filtrer par statut (pending, approved, completed, rejected).'
+          example: pending
+          required: false
+          schema:
+            type: string
+            description: 'Filtrer par statut (pending, approved, completed, rejected).'
+            example: pending
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  data:
+                    current_page: 1
+                    data:
+                      -
+                        id: 1
+                        amount: '5000.00'
+                        status: completed
+                        payment_method: mobile_money
+                        transaction_reference: TXN123456
+                        created_at: '2026-01-20T10:00:00Z'
+                        completed_at: '2026-01-20T12:00:00Z'
+                    total: 10
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                        example: 1
+                      data:
+                        type: array
+                        example:
+                          -
+                            id: 1
+                            amount: '5000.00'
+                            status: completed
+                            payment_method: mobile_money
+                            transaction_reference: TXN123456
+                            created_at: '2026-01-20T10:00:00Z'
+                            completed_at: '2026-01-20T12:00:00Z'
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                              example: 1
+                            amount:
+                              type: string
+                              example: '5000.00'
+                            status:
+                              type: string
+                              example: completed
+                            payment_method:
+                              type: string
+                              example: mobile_money
+                            transaction_reference:
+                              type: string
+                              example: TXN123456
+                            created_at:
+                              type: string
+                              example: '2026-01-20T10:00:00Z'
+                            completed_at:
+                              type: string
+                              example: '2026-01-20T12:00:00Z'
+                      total:
+                        type: integer
+                        example: 10
+      tags:
+        - 'Portefeuille Coursier'
+  '/api/v1/wallet/withdrawals/{withdrawal}':
+    delete:
+      summary: 'Annuler un retrait'
+      operationId: annulerUnRetrait
+      description: 'Annuler une demande de retrait en attente'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  message: 'Demande de retrait annulée'
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Demande de retrait annulée'
+      tags:
+        - 'Portefeuille Coursier'
+    parameters:
+      -
+        in: path
+        name: withdrawal
+        description: 'ID du retrait.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+  /api/v1/services:
+    get:
+      summary: 'Liste des services'
+      operationId: listeDesServices
+      description: 'Récupère la liste des services disponibles pour le client'
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  data:
+                    services:
+                      -
+                        id: delivery
+                        name: 'Livraison Express'
+                        description: 'Livraison rapide en moins de 2h'
+                        icon: local_shipping
+                        color: '#FF9800'
+                        is_active: true
+                        badge: Express
+                    promotions:
+                      -
+                        id: 1
+                        title: '-20% sur votre première commande'
+                        code: BIENVENUE20
+                        expires_at: '2026-02-28'
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      services:
+                        type: array
+                        example:
+                          -
+                            id: delivery
+                            name: 'Livraison Express'
+                            description: 'Livraison rapide en moins de 2h'
+                            icon: local_shipping
+                            color: '#FF9800'
+                            is_active: true
+                            badge: Express
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              example: delivery
+                            name:
+                              type: string
+                              example: 'Livraison Express'
+                            description:
+                              type: string
+                              example: 'Livraison rapide en moins de 2h'
+                            icon:
+                              type: string
+                              example: local_shipping
+                            color:
+                              type: string
+                              example: '#FF9800'
+                            is_active:
+                              type: boolean
+                              example: true
+                            badge:
+                              type: string
+                              example: Express
+                      promotions:
+                        type: array
+                        example:
+                          -
+                            id: 1
+                            title: '-20% sur votre première commande'
+                            code: BIENVENUE20
+                            expires_at: '2026-02-28'
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                              example: 1
+                            title:
+                              type: string
+                              example: '-20% sur votre première commande'
+                            code:
+                              type: string
+                              example: BIENVENUE20
+                            expires_at:
+                              type: string
+                              example: '2026-02-28'
+      tags:
+        - Services

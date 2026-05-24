@@ -20,30 +20,18 @@ class AddCommissionToZones extends Command
 
     public function handle(): int
     {
-        // 1. Add commission_rate column if not exists (DDL outside transaction — MySQL auto-commits DDL)
+        // 1. Add commission_rate column if not exists
         if (!Schema::hasColumn('zones', 'commission_rate')) {
-            try {
-                DB::statement("ALTER TABLE zones ADD COLUMN commission_rate DECIMAL(5,2) DEFAULT 0.15 AFTER price_per_km");
-                $this->info("✅ Colonne 'commission_rate' ajoutée à la table zones");
-            } catch (\Throwable $e) {
-                $this->error("❌ Impossible d'ajouter la colonne : " . $e->getMessage());
-                return Command::FAILURE;
-            }
+            DB::statement("ALTER TABLE zones ADD COLUMN commission_rate DECIMAL(5,2) DEFAULT 0.15 AFTER price_per_km");
+            $this->info("✅ Colonne 'commission_rate' ajoutée à la table zones");
         } else {
             $this->line("⏭️ Colonne 'commission_rate' existe déjà");
         }
 
-        // 2. Set commission_rate = 0.15 for all zones that have NULL (wrapped in transaction)
-        try {
-            $updated = DB::transaction(fn () =>
-                DB::table('zones')
-                    ->whereNull('commission_rate')
-                    ->update(['commission_rate' => 0.15])
-            );
-        } catch (\Throwable $e) {
-            $this->error("❌ Mise à jour des zones échouée : " . $e->getMessage());
-            return Command::FAILURE;
-        }
+        // 2. Set commission_rate = 0.15 for all zones that have NULL
+        $updated = DB::table('zones')
+            ->whereNull('commission_rate')
+            ->update(['commission_rate' => 0.15]);
         $this->info("✅ {$updated} zone(s) mises à jour avec commission_rate = 0.15 (15%)");
 
         // 3. Clear cache

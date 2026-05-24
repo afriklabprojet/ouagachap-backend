@@ -10,6 +10,7 @@ use App\Traits\LogsActivity;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -54,10 +55,8 @@ class User extends Authenticatable implements FilamentUser // NOSONAR php:S1448
         'vehicle_plate',
         'vehicle_model',
         'is_available',
-        'current_latitude',
+        'current_latitude',   // position live — seul champ à utiliser pour la géolocalisation
         'current_longitude',
-        'latitude',
-        'longitude',
         'location_updated_at',
         'battery_level',
         'battery_updated_at',
@@ -72,6 +71,9 @@ class User extends Authenticatable implements FilamentUser // NOSONAR php:S1448
         'documents_verified_at',
         'kyc_status',
         'kyc_rejection_reason',
+        'phone_verified_at',
+        'referral_code',
+        'referred_by_user_id',
     ];
 
     /**
@@ -111,6 +113,7 @@ class User extends Authenticatable implements FilamentUser // NOSONAR php:S1448
             'kyc_status' => KycStatus::class,
             'documents_submitted_at' => 'datetime',
             'documents_verified_at' => 'datetime',
+            'phone_verified_at' => 'datetime',
         ];
     }
 
@@ -156,6 +159,22 @@ class User extends Authenticatable implements FilamentUser // NOSONAR php:S1448
         return $this->hasMany(CourierQuestProgress::class, 'courier_id');
     }
 
+    /**
+     * L'utilisateur qui a parrainé ce user.
+     */
+    public function referredBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'referred_by_user_id');
+    }
+
+    /**
+     * Les utilisateurs parrainés par ce user.
+     */
+    public function referrals(): HasMany
+    {
+        return $this->hasMany(Referral::class, 'referrer_id');
+    }
+
     // ==================== SCOPES ====================
 
     public function scopeClients(Builder $query): Builder
@@ -181,7 +200,8 @@ class User extends Authenticatable implements FilamentUser // NOSONAR php:S1448
     public function scopeAvailable(Builder $query): Builder
     {
         return $query->where('is_available', true)
-            ->where('wallet_balance', '>=', \App\Services\CourierService::MINIMUM_WALLET_BALANCE);
+            ->where('wallet_balance', '>=', \App\Services\CourierService::MINIMUM_WALLET_BALANCE)
+            ->where('kyc_status', \App\Enums\KycStatus::APPROVED);
     }
 
     // ==================== HELPERS ====================
@@ -209,6 +229,14 @@ class User extends Authenticatable implements FilamentUser // NOSONAR php:S1448
     public function canAcceptOrders(): bool
     {
         if (!$this->isCourier() || !$this->isActive() || !$this->is_available) {
+            return false;
+        }
+
+        if ($this->kyc_status !== \App\Enums\KycStatus::APPROVED) {
+            return false;
+        }
+
+        if ((float) $this->wallet_balance < \App\Services\CourierService::MINIMUM_WALLET_BALANCE) {
             return false;
         }
 
@@ -292,13 +320,13 @@ class User extends Authenticatable implements FilamentUser // NOSONAR php:S1448
             return null;
         }
 
-        // Si c'est déjà une URL complète, retourner tel quel
+        // URL complète déjà stockée (CDN ou autre) — retourner tel quel
         if (str_starts_with($this->avatar, 'http')) {
             return $this->avatar;
         }
 
-        // Sinon, générer l'URL du storage
-        return url('storage/' . $this->avatar);
+        // Chemin relatif — résoudre via CdnService (local ou R2 selon l'env)
+        return app(\App\Services\CdnService::class)->url($this->avatar);
     }
 
     public function canAccessPanel(Panel $panel): bool

@@ -31,6 +31,9 @@ class CourierLocationUpdated implements ShouldBroadcast
         ];
 
         if ($this->orderId !== null) {
+            // Singular channel: subscribed by the Flutter client
+            $channels[] = new PrivateChannel('order.' . $this->orderId);
+            // Plural channel: kept for backward compatibility
             $channels[] = new PrivateChannel('orders.' . $this->orderId);
         }
 

@@ -22,12 +22,15 @@ use App\Http\Controllers\Api\V1\ClientWalletController;
 use App\Http\Controllers\Api\V1\ServiceController;
 use App\Http\Controllers\Api\V1\SupportController;
 use App\Http\Controllers\Api\V1\ZoneController;
-use App\Http\Controllers\Api\V1\JekoPaymentController;
-use App\Http\Controllers\Api\V1\JekoWebhookController;
+use App\Http\Controllers\Api\V1\SappayController;
 use App\Http\Controllers\Api\V1\SmsWebhookController;
 use App\Http\Controllers\Api\V1\WhatsAppWebhookController;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
+
+defined('OUAGA_ROUTE_STATS') || define('OUAGA_ROUTE_STATS', '/stats');
+defined('OUAGA_ROUTE_ID') || define('OUAGA_ROUTE_ID', '/{id}');
+defined('OUAGA_ROUTE_ADMIN_USER') || define('OUAGA_ROUTE_ADMIN_USER', '/users/{admin}');
 
 /*
 |--------------------------------------------------------------------------
@@ -67,13 +70,12 @@ Route::prefix('v1')->group(function () { // NOSONAR
         Route::get('/zones', [ConfigController::class, 'zones']);
     });
 
-    // Authentication deprecated endpoints (410 — no rate limiting needed)
-    Route::prefix('auth')->group(function () {
-        // Inscription client supprimée — Firebase Phone Auth gère tout
-        Route::post('/register',              fn() => response()->json(['success' => false, 'message' => 'Endpoint déprécié. Utilisez POST /api/v1/auth/firebase', 'code' => 410], 410));
-        // JWT refresh supprimé — Sanctum tokens uniquement
-        Route::post('/refresh-token/mobile',  fn() => response()->json(['success' => false, 'message' => 'Endpoint déprécié. Utilisez POST /api/v1/auth/firebase', 'code' => 410], 410));
-    });
+    // Client auth (public, rate limited) — no OTP
+    Route::post('/auth/login',    [AuthController::class, 'loginClient'])->middleware('throttle:auth');
+    Route::post('/auth/login/courier', [AuthController::class, 'loginCourier'])->middleware('throttle:auth');
+    Route::post('/auth/password/forgot/courier', [AuthController::class, 'forgotCourierPassword'])->middleware('throttle:auth');
+    Route::post('/auth/password/reset/courier', [AuthController::class, 'resetCourierPassword'])->middleware('throttle:auth');
+    Route::post('/auth/register', [AuthController::class, 'registerClient'])->middleware('throttle:auth');
 
     // Courier registration (public, rate limited)
     Route::post('/auth/register/courier', [AuthController::class, 'registerCourier'])
@@ -96,9 +98,9 @@ Route::prefix('v1')->group(function () { // NOSONAR
     Route::post('/payments/webhook', [PaymentController::class, 'webhook'])
         ->middleware('throttle:60,1');
 
-    // ==================== JEKO WEBHOOK (SIGNATURE VALIDATED IN CONTROLLER) ====================
-    Route::post('/jeko/webhook', [JekoWebhookController::class, 'handle'])
-        ->middleware('throttle:60,1');
+    // ==================== SAPPAY WEBHOOK ====================
+    Route::post('/sappay/webhook', [SappayController::class, 'webhook'])
+        ->middleware(['sappay.ip', 'throttle:60,1']);
 
     // ==================== SMS DELIVERY WEBHOOK (Infobip) ====================
     Route::post('/webhooks/sms/delivery', [SmsWebhookController::class, 'handle'])
@@ -114,13 +116,6 @@ Route::prefix('v1')->group(function () { // NOSONAR
         ->middleware('throttle:60,1')
         ->name('whatsapp.webhook.handle');
 
-    // Mock confirmation endpoint (sandbox only - excluded in production)
-    if (config('jeko.sandbox')) {
-        Route::post('/jeko/mock-confirm/{reference}', function ($reference) {
-            $service = app(\App\Services\JekoPaymentService::class);
-            return response()->json($service->mockConfirmPayment($reference));
-        })->withoutMiddleware(['auth:sanctum'])->middleware('throttle:10,1');
-    }
 
     // ==================== TRACKING PUBLIC (pour destinataires sans compte) ====================
     Route::post('/track-order', [App\Http\Controllers\Api\V1\IncomingOrderController::class, 'searchByOrderNumber'])
@@ -135,7 +130,7 @@ Route::prefix('v1')->group(function () { // NOSONAR
 
     // ==================== AUTHENTICATED ROUTES ====================
 
-    Route::middleware(['auth.api', 'user.active', 'throttle:api'])->group(function () {
+    Route::middleware(['auth.api', 'user.active', 'throttle:api'])->group(function () { // NOSONAR
 
         // Auth management
         Route::prefix('auth')->group(function () {
@@ -147,6 +142,9 @@ Route::prefix('v1')->group(function () { // NOSONAR
             Route::post('/logout', [FirebaseAuthController::class, 'logout']);
             Route::post('/logout-all', [FirebaseAuthController::class, 'logoutAll']);
             Route::post('/refresh-token', [AuthController::class, 'refreshToken']);
+            Route::post('/refresh-token/mobile', [AuthController::class, 'refreshToken']); // alias app coursier
+            Route::post('/phone/send-otp', [AuthController::class, 'sendPhoneVerificationOtp']);
+            Route::post('/phone/verify',   [AuthController::class, 'verifyPhoneOtp']);
             Route::delete('/account', [FirebaseAuthController::class, 'deleteAccount'])
                 ->middleware('throttle:account-delete');
         });
@@ -177,7 +175,7 @@ Route::prefix('v1')->group(function () { // NOSONAR
             Route::post('/incidents/{incident}/confirm', [App\Http\Controllers\Api\V1\TrafficController::class, 'confirm']);
             Route::post('/incidents/{incident}/resolve', [App\Http\Controllers\Api\V1\TrafficController::class, 'resolve']);
             Route::get('/types', [App\Http\Controllers\Api\V1\TrafficController::class, 'types']);
-            Route::get('/stats', [App\Http\Controllers\Api\V1\TrafficController::class, 'stats']);
+            Route::get(OUAGA_ROUTE_STATS, [App\Http\Controllers\Api\V1\TrafficController::class, 'stats']);
         });
 
         // ==================== KYC COURSIER ====================
@@ -249,9 +247,9 @@ Route::prefix('v1')->group(function () { // NOSONAR
             Route::prefix('addresses')->group(function () {
                 Route::get('/', [\App\Http\Controllers\Api\SavedAddressController::class, 'index']);
                 Route::post('/', [\App\Http\Controllers\Api\SavedAddressController::class, 'store']);
-                Route::get('/{id}', [\App\Http\Controllers\Api\SavedAddressController::class, 'show']);
-                Route::put('/{id}', [\App\Http\Controllers\Api\SavedAddressController::class, 'update']); // NOSONAR
-                Route::delete('/{id}', [\App\Http\Controllers\Api\SavedAddressController::class, 'destroy']); // NOSONAR
+                Route::get(OUAGA_ROUTE_ID, [\App\Http\Controllers\Api\SavedAddressController::class, 'show']);
+                Route::put(OUAGA_ROUTE_ID, [\App\Http\Controllers\Api\SavedAddressController::class, 'update']); // NOSONAR
+                Route::delete(OUAGA_ROUTE_ID, [\App\Http\Controllers\Api\SavedAddressController::class, 'destroy']); // NOSONAR
                 Route::post('/{id}/set-default', [\App\Http\Controllers\Api\SavedAddressController::class, 'setDefault']);
             });
 
@@ -259,26 +257,36 @@ Route::prefix('v1')->group(function () { // NOSONAR
             Route::prefix('ratings')->group(function () {
                 Route::get('/received', [RatingController::class, 'received']);
                 Route::get('/given', [RatingController::class, 'given']);
-                Route::get('/stats', [RatingController::class, 'stats']); // NOSONAR
+                Route::get(OUAGA_ROUTE_STATS, [RatingController::class, 'stats']);
             });
 
             // ==================== COLIS ENTRANTS (INCOMING) ====================
             Route::prefix('incoming-orders')->group(function () {
                 Route::get('/', [App\Http\Controllers\Api\V1\IncomingOrderController::class, 'index']);
-                Route::get('/{id}', [App\Http\Controllers\Api\V1\IncomingOrderController::class, 'show']); // NOSONAR
+                Route::get(OUAGA_ROUTE_ID, [App\Http\Controllers\Api\V1\IncomingOrderController::class, 'show']); // NOSONAR
                 Route::get('/{id}/track', [App\Http\Controllers\Api\V1\IncomingOrderController::class, 'track']);
                 Route::post('/{id}/confirm', [App\Http\Controllers\Api\V1\IncomingOrderController::class, 'confirmReceipt']);
             });
 
-            // ==================== JEKO PAYMENTS (CLIENT) ====================
-            Route::prefix('jeko')->group(function () {
-                Route::get('/payment-methods', [JekoPaymentController::class, 'paymentMethods']);
-                Route::post('/recharge', [JekoPaymentController::class, 'initiateWalletRecharge']);
-                Route::post('/pay-order', [JekoPaymentController::class, 'initiateOrderPayment']);
-                Route::get('/status/{transactionId}', [JekoPaymentController::class, 'checkStatus']);
-                Route::get('/transactions', [JekoPaymentController::class, 'transactionHistory']);
-                Route::get('/callback/success', [JekoPaymentController::class, 'paymentSuccess']);
-                Route::get('/callback/error', [JekoPaymentController::class, 'paymentError']);
+            // ==================== PARRAINAGE (CLIENT) ====================
+            Route::prefix('referral')->group(function () {
+                Route::get('/code', [App\Http\Controllers\Api\V1\ReferralController::class, 'myCode']);
+                Route::get(OUAGA_ROUTE_STATS, [App\Http\Controllers\Api\V1\ReferralController::class, 'stats']);
+                Route::post('/apply', [App\Http\Controllers\Api\V1\ReferralController::class, 'apply'])
+                    ->middleware('throttle:10,1');
+            });
+
+            // ==================== SAPPAY PAYMENTS (CLIENT) ====================
+            Route::prefix('sappay')->group(function () {
+                Route::get('/payment-methods', [SappayController::class, 'paymentMethods']);
+                Route::post('/recharge', [SappayController::class, 'initiateWalletRecharge'])
+                    ->middleware('idempotent');
+                Route::post('/pay-order', [SappayController::class, 'initiateOrderPayment'])
+                    ->middleware('idempotent');
+                Route::post('/confirm', [SappayController::class, 'confirmPayment'])
+                    ->middleware('idempotent');
+                Route::get('/status/{transactionId}', [SappayController::class, 'checkStatus']);
+                Route::get('/transactions', [SappayController::class, 'transactionHistory']);
             });
         });
 
@@ -309,7 +317,12 @@ Route::prefix('v1')->group(function () { // NOSONAR
             Route::get('/courier/orders/{order}', [CourierController::class, 'showOrder']);
             Route::post('/courier/orders/{order}/accept', [CourierController::class, 'acceptOrder']);
             Route::put('/courier/orders/{order}/status', [CourierController::class, 'updateOrderStatus']);
-            Route::post('/courier/orders/{order}/confirm-delivery', [CourierController::class, 'confirmDelivery']);
+            Route::post('/courier/orders/{order}/confirm-delivery', [CourierController::class, 'confirmDelivery'])
+                ->middleware('throttle:5,1'); // 5 tentatives/min — anti brute-force code 6 chiffres
+
+            // Annulation de commande (coursier)
+            Route::post('/courier/orders/{order}/cancel', [CourierController::class, 'cancelOrder'])
+                ->whereUuid('order');
 
             // ==================== SMART DISPATCH (COURSIER) ====================
             Route::post('/courier/battery', [CourierController::class, 'updateBattery']);
@@ -318,7 +331,9 @@ Route::prefix('v1')->group(function () { // NOSONAR
             // Wallet & Withdrawals
             Route::get('/wallet', [WalletController::class, 'show']);
             Route::post('/wallet/withdraw', [WalletController::class, 'requestWithdrawal'])
-                ->middleware('throttle:wallet');
+                ->middleware(['throttle:wallet', 'idempotent']);
+            Route::post('/wallet/withdraw-direct', [WalletController::class, 'withdrawDirect'])
+                ->middleware(['throttle:wallet', 'idempotent']);
             Route::get('/wallet/withdrawals', [WalletController::class, 'withdrawalHistory']);
             Route::delete('/wallet/withdrawals/{withdrawal}', [WalletController::class, 'cancelWithdrawal']);
             // Wallet Recharge (courrier)
@@ -342,7 +357,7 @@ Route::prefix('v1')->group(function () { // NOSONAR
             Route::prefix('ratings')->group(function () {
                 Route::get('/received', [RatingController::class, 'received']);
                 Route::get('/given', [RatingController::class, 'given']);
-                Route::get('/stats', [RatingController::class, 'stats']); // NOSONAR
+                Route::get(OUAGA_ROUTE_STATS, [RatingController::class, 'stats']);
             });
         });
 
@@ -368,6 +383,8 @@ Route::prefix('v1')->group(function () { // NOSONAR
         Route::get('/orders/{order}', [OrderController::class, 'show'])
             ->whereUuid('order');
         Route::get('/orders/{order}/tracking', [OrderController::class, 'tracking'])
+            ->whereUuid('order');
+        Route::get('/orders/{order}/route-history', [OrderController::class, 'routeHistory'])
             ->whereUuid('order');
 
         // Courier public profile (accessible by authenticated clients)
@@ -414,7 +431,7 @@ Route::prefix('v1')->group(function () { // NOSONAR
 
         Route::middleware('role.admin')->prefix('activity-logs')->group(function () {
             Route::get('/', [ActivityLogController::class, 'index']);
-            Route::get('/stats', [ActivityLogController::class, 'stats']); // NOSONAR
+            Route::get(OUAGA_ROUTE_STATS, [ActivityLogController::class, 'stats']); // NOSONAR
             Route::get('/export', [ActivityLogController::class, 'export']);
             Route::get('/subject', [ActivityLogController::class, 'forSubject']);
             Route::get('/{log}', [ActivityLogController::class, 'show']);
@@ -429,9 +446,9 @@ Route::prefix('v1')->group(function () { // NOSONAR
             // Gestion des admins
             Route::get('/users', [AdminController::class, 'index']);
             Route::post('/users', [AdminController::class, 'store']);
-            Route::get('/users/{admin}', [AdminController::class, 'show']);
-            Route::put('/users/{admin}', [AdminController::class, 'update']); // NOSONAR
-            Route::delete('/users/{admin}', [AdminController::class, 'destroy']); // NOSONAR
+            Route::get(OUAGA_ROUTE_ADMIN_USER, [AdminController::class, 'show']);
+            Route::put(OUAGA_ROUTE_ADMIN_USER, [AdminController::class, 'update']); // NOSONAR
+            Route::delete(OUAGA_ROUTE_ADMIN_USER, [AdminController::class, 'destroy']); // NOSONAR
             Route::post('/users/{admin}/change-password', [AdminController::class, 'changePassword']);
             Route::post('/users/{admin}/suspend', [AdminController::class, 'suspend']);
             Route::post('/users/{admin}/activate', [AdminController::class, 'activate']);
@@ -448,7 +465,7 @@ Route::prefix('v1')->group(function () { // NOSONAR
                 Route::get('/live-couriers', [LiveMapController::class, 'liveCouriers']);
                 Route::get('/active-orders', [LiveMapController::class, 'activeOrders']);
                 Route::get('/heatmap-data', [LiveMapController::class, 'heatmapData']);
-                Route::get('/stats', [LiveMapController::class, 'mapStats']);
+                Route::get(OUAGA_ROUTE_STATS, [LiveMapController::class, 'mapStats']);
             });
         });
     });

@@ -38,12 +38,7 @@ class ProcessWithdrawalJob implements ShouldQueue
 
     public function handle(SappayService $sappay): void
     {
-        // Pessimistic lock: prevents concurrent retries from both disbursing
-        $withdrawal = DB::transaction(function () {
-            return Withdrawal::with(['user', 'wallet'])
-                ->lockForUpdate()
-                ->find($this->withdrawalId);
-        });
+        $withdrawal = Withdrawal::with(['user', 'wallet'])->find($this->withdrawalId);
 
         if (!$withdrawal) {
             Log::warning('ProcessWithdrawalJob: withdrawal not found', ['id' => $this->withdrawalId]);
@@ -111,13 +106,7 @@ class ProcessWithdrawalJob implements ShouldQueue
     private function markCompleted(Withdrawal $withdrawal, string $reference): void
     {
         DB::transaction(function () use ($withdrawal, $reference) {
-            // Re-check under lock to guard against concurrent retries
-            $fresh = Withdrawal::lockForUpdate()->find($withdrawal->id);
-            if ($fresh?->status !== 'processing') {
-                return;
-            }
-            $fresh->complete($reference);
-            $withdrawal->setRawAttributes($fresh->getAttributes());
+            $withdrawal->complete($reference);
         });
 
         Log::info('ProcessWithdrawalJob: withdrawal completed', [

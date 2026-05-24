@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "bf.ouagachap.ouaga_chap_client",
+      "sha256_cert_fingerprints": [
+        "57:8D:21:FF:BA:D7:E0:64:F7:85:AB:B9:21:2E:99:9D:78:FB:C9:AC:AB:45:FA:F2:14:4D:21:E5:40:56:11:43"
+      ]
+    }
+  }
+]

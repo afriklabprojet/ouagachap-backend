@@ -16,9 +16,13 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class OrderResource extends Resource
 {
+    private const DATE_TIME_FORMAT = 'd/m/Y H:i';
+    private const PICKUP_SECTION_LABEL = 'Enlèvement';
+
     protected static ?string $model = Order::class;
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
     protected static ?string $navigationLabel = 'Commandes';
@@ -50,7 +54,7 @@ class OrderResource extends Resource
                             ->disabled(),
                     ])->columns(2),
 
-                Forms\Components\Section::make('Enlèvement')
+                Forms\Components\Section::make(self::PICKUP_SECTION_LABEL)
                     ->schema([
                         Forms\Components\TextInput::make('pickup_address')
                             ->label('Adresse enlèvement')
@@ -81,169 +85,211 @@ class OrderResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->columns([
-                Tables\Columns\TextColumn::make('order_number')
-                    ->label('N° Commande')
-                    ->searchable()
-                    ->sortable()
-                    ->copyable(),
-                Tables\Columns\TextColumn::make('client.name')
-                    ->label('Client')
-                    ->searchable()
-                    ->description(fn (Order $record) => $record->client?->phone)
-                    ->default('Inconnu'),
-                Tables\Columns\TextColumn::make('courier.name')
-                    ->label('Livreur')
-                    ->searchable()
-                    ->description(fn (Order $record) => $record->courier?->phone)
-                    ->default('Non assigné'),
-                Tables\Columns\TextColumn::make('status')
-                    ->label('Statut')
-                    ->badge()
-                    ->color(fn (OrderStatus $state): string => $state->color())
-                    ->formatStateUsing(fn (OrderStatus $state): string => $state->label()),
-                Tables\Columns\TextColumn::make('total_price')
-                    ->label('Total')
-                    ->money('XOF')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('commission_amount')
-                    ->label('Commission')
-                    ->money('XOF')
-                    ->sortable()
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('courier_earnings')
-                    ->label('Gains coursier')
-                    ->money('XOF')
-                    ->sortable()
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('pickup_address')
-                    ->label('Enlèvement')
-                    ->limit(30)
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('dropoff_address')
-                    ->label('Livraison')
-                    ->limit(30)
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('zone.name')
-                    ->label('Zone')
-                    ->badge()
-                    ->color('gray')
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('payment_method')
-                    ->label('Paiement')
-                    ->badge()
-                    ->color('gray')
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Créée le')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable(),
-            ])
+            ->columns(self::tableColumns())
             ->defaultSort('created_at', 'desc')
-            ->filters([
-                Tables\Filters\SelectFilter::make('status')
-                    ->label('Statut')
-                    ->options(collect(OrderStatus::cases())->mapWithKeys(fn ($s) => [$s->value => $s->label()])),
-                Tables\Filters\SelectFilter::make('zone_id')
-                    ->label('Zone')
-                    ->relationship('zone', 'name'),
-                Tables\Filters\Filter::make('no_courier')
-                    ->label('Sans coursier')
-                    ->query(fn ($query) => $query->whereNull('courier_id')),
-                Tables\Filters\Filter::make('today')
-                    ->label("Aujourd'hui")
-                    ->query(fn ($query) => $query->whereDate('created_at', today())),
+            ->filters(self::tableFilters())
+            ->actions(self::tableActions())
+            ->bulkActions(self::tableBulkActions());
+    }
+
+    private static function tableColumns(): array
+    {
+        return [
+            Tables\Columns\TextColumn::make('order_number')
+                ->label('N° Commande')
+                ->searchable()
+                ->sortable()
+                ->copyable(),
+            Tables\Columns\TextColumn::make('client.name')
+                ->label('Client')
+                ->searchable()
+                ->description(fn (Order $record) => $record->client?->phone)
+                ->default('Inconnu'),
+            Tables\Columns\TextColumn::make('courier.name')
+                ->label('Livreur')
+                ->searchable()
+                ->description(fn (Order $record) => $record->courier?->phone)
+                ->default('Non assigné'),
+            Tables\Columns\TextColumn::make('status')
+                ->label('Statut')
+                ->badge()
+                ->color(fn (OrderStatus $state): string => $state->color())
+                ->formatStateUsing(fn (OrderStatus $state): string => $state->label()),
+            Tables\Columns\TextColumn::make('total_price')
+                ->label('Total')
+                ->money('XOF')
+                ->sortable(),
+            Tables\Columns\TextColumn::make('commission_amount')
+                ->label('Commission')
+                ->money('XOF')
+                ->sortable()
+                ->toggleable(),
+            Tables\Columns\TextColumn::make('courier_earnings')
+                ->label('Gains coursier')
+                ->money('XOF')
+                ->sortable()
+                ->toggleable(),
+            Tables\Columns\TextColumn::make('pickup_address')
+                ->label(self::PICKUP_SECTION_LABEL)
+                ->limit(30)
+                ->toggleable(),
+            Tables\Columns\TextColumn::make('dropoff_address')
+                ->label('Livraison')
+                ->limit(30)
+                ->toggleable(),
+            Tables\Columns\TextColumn::make('zone.name')
+                ->label('Zone')
+                ->badge()
+                ->color('gray')
+                ->toggleable(),
+            Tables\Columns\TextColumn::make('payment_method')
+                ->label('Paiement')
+                ->badge()
+                ->color('gray')
+                ->toggleable(),
+            Tables\Columns\TextColumn::make('created_at')
+                ->label('Créée le')
+                ->dateTime(self::DATE_TIME_FORMAT)
+                ->sortable(),
+        ];
+    }
+
+    private static function tableFilters(): array
+    {
+        return [
+            Tables\Filters\SelectFilter::make('status')
+                ->label('Statut')
+                ->options(collect(OrderStatus::cases())->mapWithKeys(fn ($s) => [$s->value => $s->label()])),
+            Tables\Filters\SelectFilter::make('zone_id')
+                ->label('Zone')
+                ->relationship('zone', 'name'),
+            Tables\Filters\Filter::make('no_courier')
+                ->label('Sans coursier')
+                ->query(fn ($query) => $query->whereNull('courier_id')),
+            Tables\Filters\Filter::make('today')
+                ->label("Aujourd'hui")
+                ->query(fn ($query) => $query->whereDate('created_at', today())),
+        ];
+    }
+
+    private static function tableActions(): array
+    {
+        return [
+            Tables\Actions\ViewAction::make(),
+            self::assignCourierAction(),
+            self::changeStatusAction(),
+            self::cancelOrderAction(),
+        ];
+    }
+
+    private static function assignCourierAction(): Tables\Actions\Action
+    {
+        return Tables\Actions\Action::make('assign_courier')
+            ->label('Assigner coursier')
+            ->icon('heroicon-o-user-plus')
+            ->color('primary')
+            ->visible(fn (Order $record) => in_array($record->status, [OrderStatus::PENDING, OrderStatus::ASSIGNED]))
+            ->form([
+                Forms\Components\Select::make('courier_id')
+                    ->label('Coursier')
+                    ->options(
+                        User::where('role', UserRole::COURIER)
+                            ->where('is_available', true)
+                            ->get()
+                            ->mapWithKeys(fn ($u) => [$u->id => ($u->name ?? $u->phone) . ' — ⭐ ' . number_format((float) ($u->average_rating ?? 0), 1)])
+                    )
+                    ->searchable()
+                    ->required()
+                    ->helperText('Seuls les coursiers en ligne sont affichés'),
             ])
-            ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\Action::make('assign_courier')
-                    ->label('Assigner coursier')
-                    ->icon('heroicon-o-user-plus')
-                    ->color('primary')
-                    ->visible(fn (Order $record) => in_array($record->status, [OrderStatus::PENDING, OrderStatus::ASSIGNED]))
-                    ->form([
-                        Forms\Components\Select::make('courier_id')
-                            ->label('Coursier')
-                            ->options(
-                                User::where('role', UserRole::COURIER)
-                                    ->where('is_online', true)
-                                    ->get()
-                                    ->mapWithKeys(fn ($u) => [$u->id => ($u->name ?? $u->phone) . ' — ⭐ ' . number_format((float) ($u->average_rating ?? 0), 1)])
-                            )
-                            ->searchable()
-                            ->required()
-                            ->helperText('Seuls les coursiers en ligne sont affichés'),
-                    ])
-                    ->action(function (Order $record, array $data) {
-                        $courier = User::findOrFail($data['courier_id']);
-                        $success = $record->assign($courier, auth()->id());
-                        if ($success) {
-                            Notification::make()->title('Coursier assigné avec succès')->success()->send();
-                        } else {
-                            Notification::make()->title('Impossible d\'assigner ce coursier')->danger()->send();
-                        }
-                    }),
-                Tables\Actions\Action::make('change_status')
-                    ->label('Changer statut')
-                    ->icon('heroicon-o-arrow-path')
-                    ->color('warning')
-                    ->visible(fn (Order $record) => !$record->isCancelled() && !$record->isCompleted())
-                    ->form([
-                        Forms\Components\Select::make('status')
-                            ->label('Nouveau statut')
-                            ->options(fn (Order $record) => collect(OrderStatus::cases())
-                                ->filter(fn ($s) => $record->canTransitionTo($s))
-                                ->mapWithKeys(fn ($s) => [$s->value => $s->label()])
-                            )
-                            ->required(),
-                        Forms\Components\Textarea::make('note')
-                            ->label('Note interne')
-                            ->rows(2),
-                    ])
-                    ->action(function (Order $record, array $data) {
-                        $newStatus = OrderStatus::from($data['status']);
-                        $success = $record->transitionTo($newStatus, auth()->id(), $data['note'] ?? null);
-                        if ($success) {
-                            Notification::make()->title('Statut mis à jour : ' . $newStatus->label())->success()->send();
-                        } else {
-                            Notification::make()->title('Transition de statut non autorisée')->danger()->send();
-                        }
-                    }),
-                Tables\Actions\Action::make('cancel_order')
-                    ->label('Annuler')
+            ->action(function (Order $record, array $data) {
+                $courier = User::findOrFail($data['courier_id']);
+                $success = $record->assign($courier, self::currentUserId());
+
+                Notification::make()
+                    ->title($success ? 'Coursier assigné avec succès' : 'Impossible d\'assigner ce coursier')
+                    ->{$success ? 'success' : 'danger'}()
+                    ->send();
+            });
+    }
+
+    private static function changeStatusAction(): Tables\Actions\Action
+    {
+        return Tables\Actions\Action::make('change_status')
+            ->label('Changer statut')
+            ->icon('heroicon-o-arrow-path')
+            ->color('warning')
+            ->visible(fn (Order $record) => !$record->isCancelled() && !$record->isCompleted())
+            ->form([
+                Forms\Components\Select::make('status')
+                    ->label('Nouveau statut')
+                    ->options(fn (Order $record) => collect(OrderStatus::cases())
+                        ->filter(fn ($s) => $record->canTransitionTo($s))
+                        ->mapWithKeys(fn ($s) => [$s->value => $s->label()])
+                    )
+                    ->required(),
+                Forms\Components\Textarea::make('note')
+                    ->label('Note interne')
+                    ->rows(2),
+            ])
+            ->action(function (Order $record, array $data) {
+                $newStatus = OrderStatus::from($data['status']);
+                $success = $record->transitionTo($newStatus, self::currentUserId(), $data['note'] ?? null);
+
+                Notification::make()
+                    ->title($success ? 'Statut mis à jour : ' . $newStatus->label() : 'Transition de statut non autorisée')
+                    ->{$success ? 'success' : 'danger'}()
+                    ->send();
+            });
+    }
+
+    private static function cancelOrderAction(): Tables\Actions\Action
+    {
+        return Tables\Actions\Action::make('cancel_order')
+            ->label('Annuler')
+            ->icon('heroicon-o-x-circle')
+            ->color('danger')
+            ->requiresConfirmation()
+            ->visible(fn (Order $record) => !$record->isCancelled() && !$record->isCompleted())
+            ->form([
+                Forms\Components\TextInput::make('reason')
+                    ->label('Raison d\'annulation')
+                    ->required()
+                    ->maxLength(255),
+            ])
+            ->action(function (Order $record, array $data) {
+                $record->cancel($data['reason'], self::currentUserId());
+                Notification::make()->title('Commande annulée')->warning()->send();
+            });
+    }
+
+    private static function tableBulkActions(): array
+    {
+        return [
+            Tables\Actions\BulkActionGroup::make([
+                Tables\Actions\BulkAction::make('bulk_cancel')
+                    ->label('Annuler sélectionnées')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->requiresConfirmation()
-                    ->visible(fn (Order $record) => !$record->isCancelled() && !$record->isCompleted())
                     ->form([
                         Forms\Components\TextInput::make('reason')
-                            ->label('Raison d\'annulation')
-                            ->required()
-                            ->maxLength(255),
+                            ->label('Raison')
+                            ->required(),
                     ])
-                    ->action(function (Order $record, array $data) {
-                        $record->cancel($data['reason'], auth()->id());
-                        Notification::make()->title('Commande annulée')->warning()->send();
+                    ->action(function ($records, array $data) {
+                        $records->each(fn ($record) => $record->cancel($data['reason'], self::currentUserId()));
+                        Notification::make()->title('Commandes annulées')->warning()->send();
                     }),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\BulkAction::make('bulk_cancel')
-                        ->label('Annuler sélectionnées')
-                        ->icon('heroicon-o-x-circle')
-                        ->color('danger')
-                        ->requiresConfirmation()
-                        ->form([
-                            Forms\Components\TextInput::make('reason')
-                                ->label('Raison')
-                                ->required(),
-                        ])
-                        ->action(function ($records, array $data) {
-                            $records->each(fn ($r) => $r->cancel($data['reason'], auth()->id()));
-                            Notification::make()->title('Commandes annulées')->warning()->send();
-                        }),
-                ]),
-            ]);
+            ]),
+        ];
+    }
+
+    private static function currentUserId(): ?int
+    {
+        $id = Auth::id();
+
+        return is_numeric($id) ? (int) $id : null;
     }
 
     public static function infolist(Infolist $infolist): Infolist
@@ -258,20 +304,23 @@ class OrderResource extends Resource
                             ->badge()
                             ->color(fn (OrderStatus $state) => $state->color())
                             ->formatStateUsing(fn (OrderStatus $state) => $state->label()),
-                        Infolists\Components\TextEntry::make('zone.name')->label('Zone'),
+                        Infolists\Components\TextEntry::make('zone.name')->label('Zone')->placeholder('—'),
                         Infolists\Components\TextEntry::make('payment_method')->label('Méthode paiement'),
                     ])->columns(4),
 
                 Infolists\Components\Section::make('Parties')
                     ->schema([
                         Infolists\Components\TextEntry::make('client.name')->label('Client')
-                            ->description(fn ($record) => $record->client?->phone),
+                            ->placeholder('Inconnu'),
+                        Infolists\Components\TextEntry::make('client.phone')->label('Téléphone client')
+                            ->placeholder('—'),
                         Infolists\Components\TextEntry::make('courier.name')->label('Coursier')
-                            ->placeholder('Non assigné')
-                            ->description(fn ($record) => $record->courier?->phone),
-                    ])->columns(2),
+                            ->placeholder('Non assigné'),
+                        Infolists\Components\TextEntry::make('courier.phone')->label('Téléphone coursier')
+                            ->placeholder('—'),
+                    ])->columns(4),
 
-                Infolists\Components\Section::make('Enlèvement')
+                Infolists\Components\Section::make(self::PICKUP_SECTION_LABEL)
                     ->schema([
                         Infolists\Components\TextEntry::make('pickup_address')->label('Adresse')->columnSpanFull(),
                         Infolists\Components\TextEntry::make('pickup_contact_name')->label('Contact'),
@@ -314,11 +363,11 @@ class OrderResource extends Resource
 
                 Infolists\Components\Section::make('Dates')
                     ->schema([
-                        Infolists\Components\TextEntry::make('created_at')->label('Créée le')->dateTime('d/m/Y H:i'),
-                        Infolists\Components\TextEntry::make('assigned_at')->label('Assignée le')->dateTime('d/m/Y H:i')->placeholder('—'),
-                        Infolists\Components\TextEntry::make('picked_up_at')->label('Récupérée le')->dateTime('d/m/Y H:i')->placeholder('—'),
-                        Infolists\Components\TextEntry::make('delivered_at')->label('Livrée le')->dateTime('d/m/Y H:i')->placeholder('—'),
-                        Infolists\Components\TextEntry::make('cancelled_at')->label('Annulée le')->dateTime('d/m/Y H:i')->placeholder('—'),
+                        Infolists\Components\TextEntry::make('created_at')->label('Créée le')->dateTime(self::DATE_TIME_FORMAT),
+                        Infolists\Components\TextEntry::make('assigned_at')->label('Assignée le')->dateTime(self::DATE_TIME_FORMAT)->placeholder('—'),
+                        Infolists\Components\TextEntry::make('picked_up_at')->label('Récupérée le')->dateTime(self::DATE_TIME_FORMAT)->placeholder('—'),
+                        Infolists\Components\TextEntry::make('delivered_at')->label('Livrée le')->dateTime(self::DATE_TIME_FORMAT)->placeholder('—'),
+                        Infolists\Components\TextEntry::make('cancelled_at')->label('Annulée le')->dateTime(self::DATE_TIME_FORMAT)->placeholder('—'),
                         Infolists\Components\TextEntry::make('cancellation_reason')->label('Raison annulation')->placeholder('—'),
                     ])->columns(3),
             ]);

@@ -127,7 +127,7 @@ class SmartDispatcherService
      *
      * @return array{dispatched: int, failed: int, skipped: int, details: array}
      */
-    public function autoDispatchPending(bool $dryRun = false): array
+    public function autoDispatchPending(): array
     {
         $pendingOrders = Order::where('status', OrderStatus::PENDING)
             ->whereNull('courier_id')
@@ -163,33 +163,6 @@ class SmartDispatcherService
                 continue;
             }
 
-            if ($dryRun) {
-                // Simuler sans assigner : chercher le meilleur candidat uniquement
-                $candidates = $this->getScoredCandidates($order, self::DEFAULT_RADIUS_KM, limit: 1);
-                if ($candidates->isEmpty()) {
-                    $candidates = $this->getScoredCandidates($order, self::EXTENDED_RADIUS_KM, limit: 1);
-                }
-
-                $best = $candidates->first();
-                if ($best && ($best['score']['total'] ?? 0) >= self::MIN_DISPATCH_SCORE) {
-                    $stats['dispatched']++;
-                    $stats['details'][] = [
-                        'order_id'   => $order->id,
-                        'status'     => 'would_dispatch',
-                        'courier_id' => $best['courier']->id,
-                        'score'      => $best['score']['total'] ?? null,
-                    ];
-                } else {
-                    $stats['failed']++;
-                    $stats['details'][] = [
-                        'order_id' => $order->id,
-                        'status'   => 'would_fail',
-                        'reason'   => $best ? 'Score insuffisant (' . round($best['score']['total'] ?? 0, 1) . ')' : 'Aucun coursier disponible',
-                    ];
-                }
-                continue;
-            }
-
             $result = $this->dispatchOrder($order);
 
             if ($result['success']) {
@@ -210,14 +183,12 @@ class SmartDispatcherService
             }
         }
 
-        if (! $dryRun) {
-            Log::info('SmartDispatcher autoDispatch: ' . json_encode([
-                'total'      => $pendingOrders->count(),
-                'dispatched' => $stats['dispatched'],
-                'failed'     => $stats['failed'],
-                'skipped'    => $stats['skipped'],
-            ]));
-        }
+        Log::info('SmartDispatcher autoDispatch: ' . json_encode([
+            'total'      => $pendingOrders->count(),
+            'dispatched' => $stats['dispatched'],
+            'failed'     => $stats['failed'],
+            'skipped'    => $stats['skipped'],
+        ]));
 
         return $stats;
     }

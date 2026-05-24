@@ -14,9 +14,11 @@ use App\Http\Middleware\EnsureIsClient;
 use App\Http\Middleware\EnsureIsCourier;
 use App\Http\Middleware\EnsureUserActive;
 use App\Http\Middleware\ForceJsonResponse;
+use App\Http\Middleware\IdempotencyMiddleware;
 use App\Http\Middleware\LogApiRequests;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\TrackLastSeen;
+use App\Http\Middleware\VerifySappayIp;
 use App\Exceptions\Domain\DomainException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -51,24 +53,19 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Register middleware aliases
         $middleware->alias([
-            'role.client' => EnsureIsClient::class,
+            'role.client'  => EnsureIsClient::class,
             'role.courier' => EnsureIsCourier::class,
-            'role.admin' => EnsureIsAdmin::class,
-            'user.active' => EnsureUserActive::class,
-            'auth.api' => \App\Http\Middleware\AuthenticateSanctumApi::class,
+            'role.admin'   => EnsureIsAdmin::class,
+            'user.active'  => EnsureUserActive::class,
+            'auth.api'     => \App\Http\Middleware\AuthenticateSanctumApi::class,
+            'idempotent'   => IdempotencyMiddleware::class,
+            'sappay.ip'    => VerifySappayIp::class,
         ]);
 
         // Configure trusted proxies for load balancers
         $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        // Send exceptions to Sentry before custom rendering
-        $exceptions->reportable(function (Throwable $e) {
-            if (app()->bound('sentry') && app('sentry')->getClient()) {
-                app('sentry')->captureException($e);
-            }
-        });
-
         // Render all exceptions as JSON for API requests
         $exceptions->shouldRenderJsonWhen(function (Request $request, Throwable $e) {
             return $request->is('api/*') || $request->expectsJson();

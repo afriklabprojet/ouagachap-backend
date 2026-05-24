@@ -23,15 +23,7 @@ class AddPaymentMethodToOrders extends Command
             return Command::SUCCESS;
         }
 
-        // DDL (ALTER TABLE) is auto-committed by MySQL — no transaction wrapper needed.
-        // Guard against partial failures with explicit error handling.
-        try {
-            DB::statement("ALTER TABLE `orders` ADD COLUMN `payment_method` VARCHAR(50) NOT NULL DEFAULT 'cash' AFTER `package_size`");
-        } catch (\Throwable $e) {
-            $this->error("❌ Impossible d'ajouter la colonne : " . $e->getMessage());
-            return Command::FAILURE;
-        }
-
+        DB::statement("ALTER TABLE `orders` ADD COLUMN `payment_method` VARCHAR(50) NOT NULL DEFAULT 'cash' AFTER `package_size`");
         $this->info("✅ Colonne 'payment_method' ajoutée avec succès à la table 'orders'.");
 
         return Command::SUCCESS;

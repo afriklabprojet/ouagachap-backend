@@ -12,7 +12,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -53,23 +52,18 @@ class ReassignStuckOrderJob implements ShouldQueue
 
         foreach ($stuckOrders as $order) {
             try {
-                $result = $this->handleStuckOrder($order, $courierService, $notificationService);
-                if ($result === 'reassigned') {
-                    $reassigned++;
-                } elseif ($result === 'reset') {
-                    $reset++;
-                }
+                $this->handleStuckOrder($order, $courierService, $notificationService, $reassigned, $reset);
             } catch (\Exception $e) {
                 Log::error('ReassignStuckOrderJob: erreur sur commande', [
                     'order_id' => $order->id,
-                    'error'    => $e->getMessage(),
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
 
         Log::info('ReassignStuckOrderJob: traitement terminé', [
-            'total'            => $stuckOrders->count(),
-            'reassigned'       => $reassigned,
+            'total' => $stuckOrders->count(),
+            'reassigned' => $reassigned,
             'reset_to_pending' => $reset,
         ]);
     }
@@ -78,34 +72,39 @@ class ReassignStuckOrderJob implements ShouldQueue
         Order $order,
         CourierMatchingService $courierService,
         NotificationService $notificationService,
-    ): string {
+        int &$reassigned,
+        int &$reset
+    ): void {
         $currentCourier = $order->courier;
-        $stuckMinutes   = now()->diffInMinutes($order->updated_at);
+        $stuckMinutes = now()->diffInMinutes($order->updated_at);
 
         Log::warning('ReassignStuckOrderJob: commande bloquée', [
-            'order_id'     => $order->id,
+            'order_id' => $order->id,
             'order_number' => $order->order_number,
-            'status'       => $order->status->value,
-            'courier_id'   => $currentCourier?->id,
+            'status' => $order->status->value,
+            'courier_id' => $currentCourier?->id,
             'stuck_minutes' => $stuckMinutes,
         ]);
 
+        // Notifier les admins
         $this->notifyAdmins($order, $notificationService, $stuckMinutes);
 
+        // Tenter une réassignation à un autre coursier
         $newCourier = $courierService->getBestCourierForOrder($order);
 
         if ($newCourier && $newCourier->id !== $currentCourier?->id) {
             $order->update([
                 'courier_id' => $newCourier->id,
-                'status'     => OrderStatus::ASSIGNED,
+                'status' => OrderStatus::ASSIGNED,
             ]);
             $order->statusHistories()->create([
-                'status'          => OrderStatus::ASSIGNED,
+                'status' => OrderStatus::ASSIGNED,
                 'previous_status' => $order->getOriginal('status'),
-                'changed_by'      => null,
-                'note'            => "Réassignation automatique après {$stuckMinutes} min d'inactivité (coursier précédent: #{$currentCourier?->id})",
+                'changed_by' => null,
+                'note' => "Réassignation automatique après {$stuckMinutes} min d'inactivité (coursier précédent: #{$currentCourier?->id})",
             ]);
 
+            // Notifier le nouveau coursier
             $notificationService->sendToUser(
                 $newCourier,
                 'Nouvelle commande assignée',
@@ -113,39 +112,34 @@ class ReassignStuckOrderJob implements ShouldQueue
                 ['order_id' => $order->id, 'type' => 'order_reassigned']
             );
 
+            $reassigned++;
             Log::info('ReassignStuckOrderJob: commande réassignée', [
-                'order_id'       => $order->id,
+                'order_id' => $order->id,
                 'new_courier_id' => $newCourier->id,
             ]);
+        } else {
+            // Pas de coursier dispo → remettre en PENDING pour redistribution
+            $order->update([
+                'courier_id' => null,
+                'status' => OrderStatus::PENDING,
+            ]);
+            $order->statusHistories()->create([
+                'status' => OrderStatus::PENDING,
+                'previous_status' => $order->getOriginal('status'),
+                'changed_by' => null,
+                'note' => "Remise en attente automatique après {$stuckMinutes} min d'inactivité (aucun coursier disponible)",
+            ]);
 
-            return 'reassigned';
+            $reset++;
+            Log::info('ReassignStuckOrderJob: commande remise en attente', [
+                'order_id' => $order->id,
+            ]);
         }
-
-        // Pas de coursier dispo → remettre en PENDING pour redistribution
-        $order->update([
-            'courier_id' => null,
-            'status'     => OrderStatus::PENDING,
-        ]);
-        $order->statusHistories()->create([
-            'status'          => OrderStatus::PENDING,
-            'previous_status' => $order->getOriginal('status'),
-            'changed_by'      => null,
-            'note'            => "Remise en attente automatique après {$stuckMinutes} min d'inactivité (aucun coursier disponible)",
-        ]);
-
-        Log::info('ReassignStuckOrderJob: commande remise en attente', ['order_id' => $order->id]);
-
-        return 'reset';
     }
 
     private function notifyAdmins(Order $order, NotificationService $notificationService, int $stuckMinutes): void
     {
-        // Cache admin list for 5 min to avoid one query per stuck order per run
-        $admins = Cache::remember('admin_users_for_notifications', 300, fn () =>
-            User::where('role', 'admin')
-                ->select(['id', 'fcm_token', 'email', 'phone'])
-                ->get()
-        );
+        $admins = User::where('role', 'admin')->get();
 
         foreach ($admins as $admin) {
             try {

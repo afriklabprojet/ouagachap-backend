@@ -3,15 +3,14 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Requests\WithdrawalRequest;
-use App\Models\Wallet;
-use App\Models\WalletTransaction;
+use App\Models\SappayTransaction;
 use App\Models\Withdrawal;
+use App\Services\SappayService;
 use App\Services\WalletService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 
 /**
  * @group Portefeuille Coursier
@@ -21,7 +20,8 @@ use Illuminate\Support\Str;
 class WalletController extends BaseController
 {
     public function __construct(
-        private WalletService $walletService
+        private WalletService $walletService,
+        private SappayService $sappayService,
     ) {}
 
     /**
@@ -170,115 +170,129 @@ class WalletController extends BaseController
     }
 
     /**
-     * Initier une recharge wallet coursier
+     * Retrait direct Mobile Money (payout automatique)
+     *
+     * Débite immédiatement le wallet et déclenche une tentative de virement B2C.
+     * Si l'opérateur n'est pas encore connecté, le retrait passe en file admin.
+     *
+     * @authenticated
+     * @bodyParam amount integer required Montant (min: 500 FCFA). Example: 5000
+     * @bodyParam provider string required Opérateur (orange_money, moov_money, telecel_money, coris_money). Example: orange_money
+     * @bodyParam phone string required Numéro Mobile Money destinataire. Example: 22670123456
+     *
+     * @response 202 {
+     *   "success": true,
+     *   "message": "Retrait en cours de traitement",
+     *   "data": {
+     *     "id": 42,
+     *     "amount": "5000.00",
+     *     "status": "processing",
+     *     "payment_provider": "orange_money",
+     *     "payment_phone": "22670123456",
+     *     "created_at": "2026-05-17T10:00:00Z"
+     *   }
+     * }
+     */
+    public function withdrawDirect(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'amount'   => 'required|numeric|min:500|max:500000',
+            'provider' => 'required|in:orange_money,moov_money,telecel_money,coris_money',
+            'phone'    => 'required|string|min:8|max:15',
+        ]);
+
+        $this->authorize('create', Withdrawal::class);
+
+        try {
+            $withdrawal = $this->walletService->initiateDirectWithdrawal(
+                user:     $request->user(),
+                amount:   (float) $validated['amount'],
+                provider: $validated['provider'],
+                phone:    $validated['phone'],
+            );
+
+            return $this->success($withdrawal, 'Retrait en cours de traitement', 202);
+        } catch (\Exception $e) {
+            return $this->error($e->getMessage(), 422);
+        }
+    }
+
+    /**
+     * Initier une recharge wallet via Sappay
      *
      * @authenticated
      * @bodyParam amount integer required Montant à recharger (min: 100 FCFA). Example: 1000
-     * @bodyParam provider string required Opérateur (orange_money, moov_money, wave, telecel_money, coris_money). Example: orange_money
-     * @bodyParam phone string required Numéro Mobile Money. Example: 70123456
+     * @bodyParam payment_method string required Opérateur (orange_money, moov_money, telecel_money, coris_money). Example: orange_money
+     * @bodyParam phone string required Numéro Mobile Money. Example: 22670123456
      */
     public function initiateRecharge(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'amount'   => 'required|integer|min:100|max:500000',
-            'provider' => 'required|in:orange_money,moov_money,wave,telecel_money,coris_money',
-            'phone'    => 'required|string|min:8|max:15',
+            'amount'         => 'required|integer|min:100|max:500000',
+            'payment_method' => 'required|in:orange_money,moov_money,telecel_money,coris_money',
+            'phone'          => 'required|string|min:8|max:15',
         ]);
 
-        $user          = $request->user();
-        $transactionId = 'RECH-COUR-' . strtoupper(Str::random(8));
+        $result = $this->sappayService->initiatePayment(
+            user:            $request->user(),
+            amountFcfa:      (int) $validated['amount'],
+            paymentMethod:   $validated['payment_method'],
+            customerMsisdn:  $validated['phone'],
+            type:            'wallet_recharge',
+        );
 
-        try {
-            WalletTransaction::create([
-                'user_id'        => $user->id,
-                'transaction_id' => $transactionId,
-                'amount'         => $validated['amount'],
-                'type'           => 'recharge',
-                'method'         => $validated['provider'],
-                'phone_number'   => $validated['phone'],
-                'status'         => 'pending',
-            ]);
-
-            return $this->success([
-                'transaction_id' => $transactionId,
-                'amount'         => (int) $validated['amount'],
-                'provider'       => $validated['provider'],
-                'phone'          => $validated['phone'],
-                'status'         => 'pending',
-                'instructions'   => $this->getProviderInstructions($validated['provider']),
-            ], 'Recharge initiée avec succès');
-
-        } catch (\Exception $e) {
-            Log::error('Courier recharge initiation failed', [
-                'user_id' => $user->id,
-                'error'   => $e->getMessage(),
-            ]);
-
-            return $this->error('Erreur lors de l\'initiation de la recharge', 500);
+        if (!$result['success']) {
+            return $this->error($result['message'], 422);
         }
+
+        return $this->success($result['data'], $result['message']);
     }
 
     /**
-     * Confirmer une recharge wallet coursier
+     * Confirmer une recharge wallet via OTP Sappay
      *
      * @authenticated
-     * @bodyParam transaction_id string required ID de la transaction. Example: RECH-COUR-ABC123
+     * @bodyParam transaction_id integer required ID de la transaction Sappay. Example: 42
+     * @bodyParam otp string required Code OTP reçu par SMS. Example: 123456
+     * @bodyParam trans_id string Identifiant de transaction opérateur (si requis). Example: TXN789
      */
     public function confirmRecharge(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'transaction_id' => 'required|string',
+            'transaction_id' => 'required|integer',
+            'otp'            => 'required|string|min:4|max:10',
+            'trans_id'       => 'nullable|string',
         ]);
 
-        $transaction = WalletTransaction::where('transaction_id', $validated['transaction_id'])
+        $transaction = SappayTransaction::where('id', $validated['transaction_id'])
             ->where('user_id', $request->user()->id)
-            ->where('status', 'pending')
+            ->where('type', 'wallet_recharge')
             ->first();
 
         if (!$transaction) {
-            return $this->notFound('Transaction non trouvée ou déjà traitée');
+            return $this->notFound('Transaction non trouvée');
         }
 
-        try {
-            DB::transaction(function () use ($transaction) {
-                $transaction->update([
-                    'status'       => 'success',
-                    'completed_at' => now(),
-                ]);
-
-                $wallet = $this->walletService->getOrCreateWallet($transaction->user);
-                $wallet->credit((float) $transaction->amount);
-                $transaction->user->syncWalletBalance();
-            });
-
-            $wallet = $this->walletService->getOrCreateWallet($transaction->user->fresh());
-
-            return $this->success([
-                'new_balance' => (float) $wallet->balance,
-            ], 'Recharge confirmée avec succès');
-
-        } catch (\Exception $e) {
-            Log::error('Courier recharge confirmation failed', [
-                'transaction_id' => $validated['transaction_id'],
-                'error'          => $e->getMessage(),
-            ]);
-
-            return $this->error('Erreur lors de la confirmation', 500);
+        if (!$transaction->isPending()) {
+            return $this->error('Transaction déjà traitée', 422);
         }
-    }
 
-    /**
-     * Instructions selon le provider
-     */
-    private function getProviderInstructions(string $provider): string
-    {
-        return match ($provider) {
-            'orange_money'  => 'Vous allez recevoir une demande Orange Money. Composez #144# ou ouvrez l\'app Orange Money pour confirmer.',
-            'moov_money'    => 'Vous allez recevoir une demande Moov Money. Composez *555# ou ouvrez l\'app Moov Money pour confirmer.',
-            'telecel_money' => 'Vous allez recevoir une demande Telecel Money. Ouvrez l\'app Telecel pour confirmer.',
-            'coris_money'   => 'Vous allez recevoir une demande Coris Money. Ouvrez l\'app Coris pour confirmer.',
-            'wave'          => 'Vous allez recevoir une demande Wave. Ouvrez l\'app Wave pour confirmer.',
-            default         => 'Veuillez confirmer le paiement sur votre téléphone.',
-        };
+        $result = $this->sappayService->confirmPayment(
+            transaction: $transaction,
+            otp:         $validated['otp'],
+            transId:     $validated['trans_id'] ?? null,
+        );
+
+        if (!$result['success']) {
+            return $this->error($result['message'], 422);
+        }
+
+        $wallet = $this->walletService->getOrCreateWallet($request->user()->fresh());
+
+        return $this->success([
+            'transaction_id' => $transaction->id,
+            'status'         => 'success',
+            'new_balance'    => (float) $wallet->balance,
+        ], $result['message']);
     }
 }

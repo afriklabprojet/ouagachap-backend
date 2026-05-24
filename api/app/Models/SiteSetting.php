@@ -25,9 +25,14 @@ class SiteSetting extends Model
     public const GROUP_CONTACT = 'contact';
     public const GROUP_SEO = 'seo';
     public const GROUP_SOCIAL = 'social';
-    public const GROUP_APP_COURIER = 'app_courier';
-    public const GROUP_DISPATCH = 'dispatch';
-    public const GROUP_WALLET = 'wallet';
+    public const GROUP_APP_COURIER    = 'app_courier';
+    public const GROUP_DISPATCH       = 'dispatch';
+    public const GROUP_WALLET         = 'wallet';
+    public const GROUP_APP_CLIENT     = 'app_client';
+    public const GROUP_PRICING_GLOBAL = 'pricing_global';
+    public const GROUP_HOURS          = 'hours';
+    public const GROUP_NOTIF          = 'notifications';
+    public const GROUP_SAPPAY         = 'sappay';
 
     protected $fillable = [
         'key',
@@ -131,9 +136,14 @@ class SiteSetting extends Model
             self::GROUP_CONTACT => 'Contact',
             self::GROUP_SEO => 'SEO',
             self::GROUP_SOCIAL => 'Réseaux sociaux',
-            self::GROUP_APP_COURIER => 'App Coursier',
-            self::GROUP_DISPATCH => 'Dispatch & Affectation',
-            self::GROUP_WALLET => 'Portefeuille & Retraits',
+            self::GROUP_APP_COURIER    => 'App Coursier',
+            self::GROUP_DISPATCH       => 'Dispatch & Affectation',
+            self::GROUP_WALLET         => 'Portefeuille & Retraits',
+            self::GROUP_APP_CLIENT     => 'App Client',
+            self::GROUP_PRICING_GLOBAL => 'Tarification globale',
+            self::GROUP_HOURS          => 'Heures d\'ouverture',
+            self::GROUP_NOTIF          => 'Notifications',
+            self::GROUP_SAPPAY         => 'Paiement Sappay',
         ];
     }
 }

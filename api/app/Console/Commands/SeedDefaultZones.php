@@ -15,49 +15,43 @@ class SeedDefaultZones extends Command
     protected $signature = 'zones:seed-default {--force : Écraser les zones existantes}';
     protected $description = 'Créer les zones de livraison par défaut pour Ouagadougou';
 
-    private function defaultZones(): array
-    {
-        $commission = (float) config('app.commission_rate', 0.15);
-
-        return [
-            [
-                'name'            => 'Centre-ville',
-                'code'            => 'centre',
-                'description'     => "Quartiers centraux : Koulouba, Paspanga, Bilbalgo, Larlé, Zone du Bois",
-                'base_price'      => 500,
-                'price_per_km'    => 150,
-                'commission_rate' => $commission,
-                'is_active'       => true,
-            ],
-            [
-                'name'            => 'Ouaga Standard',
-                'code'            => 'standard',
-                'description'     => "Zone standard : Patte d'oie, Tampouy, Somgandé, Karpala, Dassasgho, Cissin",
-                'base_price'      => 500,
-                'price_per_km'    => 200,
-                'commission_rate' => $commission,
-                'is_active'       => true,
-            ],
-            [
-                'name'            => 'Ouaga 2000 & Périphérie',
-                'code'            => 'peripherie',
-                'description'     => 'Zones éloignées : Ouaga 2000, Bassinko, Kilwin, Saaba, Koubri, Tabtenga',
-                'base_price'      => 750,
-                'price_per_km'    => 250,
-                'commission_rate' => $commission,
-                'is_active'       => true,
-            ],
-        ];
-    }
+    private array $defaultZones = [
+        [
+            'name' => 'Centre-ville',
+            'code' => 'centre',
+            'description' => "Quartiers centraux : Koulouba, Paspanga, Bilbalgo, Larlé, Zone du Bois",
+            'base_price' => 500,
+            'price_per_km' => 150,
+            'commission_rate' => 0.15,
+            'is_active' => true,
+        ],
+        [
+            'name' => 'Ouaga Standard',
+            'code' => 'standard',
+            'description' => "Zone standard : Patte d'oie, Tampouy, Somgandé, Karpala, Dassasgho, Cissin",
+            'base_price' => 500,
+            'price_per_km' => 200,
+            'commission_rate' => 0.15,
+            'is_active' => true,
+        ],
+        [
+            'name' => 'Ouaga 2000 & Périphérie',
+            'code' => 'peripherie',
+            'description' => 'Zones éloignées : Ouaga 2000, Bassinko, Kilwin, Saaba, Koubri, Tabtenga',
+            'base_price' => 750,
+            'price_per_km' => 250,
+            'commission_rate' => 0.15,
+            'is_active' => true,
+        ],
+    ];
 
     public function handle(): int
     {
-        $force   = $this->option('force');
+        $force = $this->option('force');
         $created = 0;
         $skipped = 0;
-        $zones   = $this->defaultZones();
 
-        foreach ($zones as $zoneData) {
+        foreach ($this->defaultZones as $zoneData) {
             $existing = Zone::where('code', $zoneData['code'])->first();
 
             if ($existing && !$force) {
@@ -82,7 +76,7 @@ class SeedDefaultZones extends Command
         $this->newLine();
         $this->table(
             ['Zone', 'Code', 'Base (FCFA)', 'Par km', 'Exemple 5km', 'Actif'],
-            collect($zones)->map(fn($z) => [
+            collect($this->defaultZones)->map(fn($z) => [
                 $z['name'],
                 $z['code'],
                 $z['base_price'],

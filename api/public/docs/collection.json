@@ -1,0 +1,2864 @@
+{
+    "variable": [
+        {
+            "id": "baseUrl",
+            "key": "baseUrl",
+            "type": "string",
+            "name": "string",
+            "value": "https:\/\/ouagachap.pro"
+        }
+    ],
+    "info": {
+        "name": "OUAGA CHAP API Documentation",
+        "_postman_id": "9caf5445-c381-4e8f-a92d-b6bc1a34b68e",
+        "description": "API de la plateforme OUAGA CHAP \u2014 livraison de repas \u00e0 Ouagadougou. Gestion des commandes, paiements, suivi en temps r\u00e9el et notifications.",
+        "schema": "https:\/\/schema.getpostman.com\/json\/collection\/v2.1.0\/collection.json"
+    },
+    "item": [
+        {
+            "name": "Addresses",
+            "description": "",
+            "item": [
+                {
+                    "name": "Create a new saved address",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/addresses",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/addresses"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"label\":\"b\",\"address\":\"n\",\"latitude\":-90,\"longitude\":-179,\"contact_name\":\"m\",\"contact_phone\":\"iyvdljnikhwaykcm\",\"instructions\":\"y\",\"is_default\":true,\"type\":\"other\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update a saved address",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/addresses\/:id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/addresses\/:id",
+                            "variable": [
+                                {
+                                    "id": "id",
+                                    "key": "id",
+                                    "value": "architecto",
+                                    "description": "The ID of the address."
+                                }
+                            ]
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"label\":\"b\",\"address\":\"n\",\"latitude\":-90,\"longitude\":-179,\"contact_name\":\"m\",\"contact_phone\":\"iyvdljnikhwaykcm\",\"instructions\":\"y\",\"is_default\":false,\"type\":\"other\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Delete a saved address",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/addresses\/:id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/addresses\/:id",
+                            "variable": [
+                                {
+                                    "id": "id",
+                                    "key": "id",
+                                    "value": "architecto",
+                                    "description": "The ID of the address."
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Set an address as default",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/addresses\/:id\/set-default",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/addresses\/:id\/set-default",
+                            "variable": [
+                                {
+                                    "id": "id",
+                                    "key": "id",
+                                    "value": "architecto",
+                                    "description": "The ID of the address."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Authentification",
+            "description": "\nEndpoints pour l'authentification par OTP et la gestion du profil utilisateur.",
+            "item": [
+                {
+                    "name": "Envoyer un OTP",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/courier\/login",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/courier\/login"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"phone\":\"+22670123456\"}"
+                        },
+                        "description": "Envoie un code OTP \u00e0 6 chiffres au num\u00e9ro de t\u00e9l\u00e9phone sp\u00e9cifi\u00e9.\nLe code expire apr\u00e8s 5 minutes.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"success\": true, \"message\": \"Code OTP envoy\u00e9 avec succ\u00e8s.\", \"data\": {\"expires_in\": 300}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "V\u00e9rifier l'OTP",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/courier\/verify-otp",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/courier\/verify-otp"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"phone\":\"+22670123456\",\"code\":\"123456\",\"firebase_id_token\":\"cmyuwpwlvqwrsitcpscqldzsnrwtujwvlxjklqppwqbewtnnoqitpxntltcvipojsaus\",\"device_name\":\"iPhone 15\",\"app_type\":\"client\"}"
+                        },
+                        "description": "V\u00e9rifie le code OTP et connecte\/inscrit l'utilisateur.\nRetourne un token Bearer pour les requ\u00eates authentifi\u00e9es.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"success\": true, \"message\": \"Connexion r\u00e9ussie.\", \"data\": {\"user\": {\"id\": 1, \"name\": \"John\", \"phone\": \"+22670123456\", \"role\": \"client\"}, \"token\": \"1|abc123...\"}}",
+                            "name": ""
+                        },
+                        {
+                            "header": [],
+                            "code": 401,
+                            "body": "{\"success\": false, \"message\": \"Code OTP invalide ou expir\u00e9.\"}",
+                            "name": ""
+                        },
+                        {
+                            "header": [],
+                            "code": 403,
+                            "body": "{\"success\": false, \"message\": \"Ce compte est un compte coursier. Veuillez utiliser l'application OUAGA CHAP Coursier.\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Envoyer un OTP",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/otp\/send",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/otp\/send"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"phone\":\"+22670123456\"}"
+                        },
+                        "description": "Envoie un code OTP \u00e0 6 chiffres au num\u00e9ro de t\u00e9l\u00e9phone sp\u00e9cifi\u00e9.\nLe code expire apr\u00e8s 5 minutes.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"success\": true, \"message\": \"Code OTP envoy\u00e9 avec succ\u00e8s.\", \"data\": {\"expires_in\": 300}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "V\u00e9rifier l'OTP",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/otp\/verify",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/otp\/verify"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"phone\":\"+22670123456\",\"code\":\"123456\",\"firebase_id_token\":\"cmyuwpwlvqwrsitcpscqldzsnrwtujwvlxjklqppwqbewtnnoqitpxntltcvipojsaus\",\"device_name\":\"iPhone 15\",\"app_type\":\"client\"}"
+                        },
+                        "description": "V\u00e9rifie le code OTP et connecte\/inscrit l'utilisateur.\nRetourne un token Bearer pour les requ\u00eates authentifi\u00e9es.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"success\": true, \"message\": \"Connexion r\u00e9ussie.\", \"data\": {\"user\": {\"id\": 1, \"name\": \"John\", \"phone\": \"+22670123456\", \"role\": \"client\"}, \"token\": \"1|abc123...\"}}",
+                            "name": ""
+                        },
+                        {
+                            "header": [],
+                            "code": 401,
+                            "body": "{\"success\": false, \"message\": \"Code OTP invalide ou expir\u00e9.\"}",
+                            "name": ""
+                        },
+                        {
+                            "header": [],
+                            "code": 403,
+                            "body": "{\"success\": false, \"message\": \"Ce compte est un compte coursier. Veuillez utiliser l'application OUAGA CHAP Coursier.\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Inscription coursier",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/register\/courier",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/register\/courier"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"phone\":\"+22670123456\",\"name\":\"Ou\u00e9draogo Ibrahim\",\"vehicle_type\":\"moto\",\"vehicle_plate\":\"12AB3456\",\"vehicle_model\":\"r\",\"email\":\"ibrahim@example.com\"}"
+                        },
+                        "description": "Inscrit un nouvel utilisateur en tant que coursier.\nLe coursier doit ensuite \u00eatre approuv\u00e9 par un admin.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 201,
+                            "body": "{\"success\": true, \"message\": \"Inscription r\u00e9ussie. En attente d'approbation.\", \"data\": {\"id\": 1, \"name\": \"Ou\u00e9draogo Ibrahim\", \"role\": \"courier\", \"status\": \"pending\"}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Profil utilisateur",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/me",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/me"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Retourne les informations de l'utilisateur connect\u00e9."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"success\": true, \"data\": {\"id\": 1, \"name\": \"John\", \"phone\": \"+22670123456\", \"email\": null, \"role\": \"client\", \"wallet_balance\": 0}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Update FCM token for push notifications\nPUT \/api\/v1\/auth\/fcm-token",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/fcm-token",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/fcm-token"
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"fcm_token\":\"b\",\"device_type\":\"ios\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Rafra\u00eechir le token",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/refresh-token",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/refresh-token"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "R\u00e9voque le token actuel et en g\u00e9n\u00e8re un nouveau.\n\u00c0 appeler p\u00e9riodiquement par l'app mobile pour maintenir la session s\u00e9curis\u00e9e."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"success\": true, \"message\": \"Token rafra\u00eechi avec succ\u00e8s.\", \"data\": {\"token\": \"2|xyz789...\", \"user\": {...}}}",
+                            "name": ""
+                        },
+                        {
+                            "header": [],
+                            "code": 403,
+                            "body": "{\"success\": false, \"message\": \"Votre compte est suspendu.\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "D\u00e9connexion",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/logout",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/logout"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "R\u00e9voque le token actuel de l'utilisateur."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"success\": true, \"message\": \"D\u00e9connexion r\u00e9ussie.\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "D\u00e9connexion de tous les appareils",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/logout-all",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/logout-all"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "R\u00e9voque tous les tokens de l'utilisateur."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"success\": true, \"message\": \"D\u00e9connexion de tous les appareils r\u00e9ussie.\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Supprimer le compte",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/account",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/account"
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Supprime d\u00e9finitivement le compte de l'utilisateur et anonymise ses donn\u00e9es (RGPD)."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"success\": true, \"message\": \"Votre compte a \u00e9t\u00e9 supprim\u00e9 avec succ\u00e8s.\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Update FCM token for push notifications\nPUT \/api\/v1\/auth\/fcm-token",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/user\/fcm-token",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/user\/fcm-token"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"fcm_token\":\"b\",\"device_type\":\"android\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Profil utilisateur",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/courier\/profile",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/courier\/profile"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Retourne les informations de l'utilisateur connect\u00e9."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"success\": true, \"data\": {\"id\": 1, \"name\": \"John\", \"phone\": \"+22670123456\", \"email\": null, \"role\": \"client\", \"wallet_balance\": 0}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "D\u00e9connexion",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/courier\/logout",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/courier\/logout"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "R\u00e9voque le token actuel de l'utilisateur."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"success\": true, \"message\": \"D\u00e9connexion r\u00e9ussie.\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "D\u00e9connexion de tous les appareils",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/courier\/logout-all",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/courier\/logout-all"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "R\u00e9voque tous les tokens de l'utilisateur."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"success\": true, \"message\": \"D\u00e9connexion de tous les appareils r\u00e9ussie.\"}",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Commandes",
+            "description": "\nEndpoints pour g\u00e9rer les commandes de livraison.",
+            "item": [
+                {
+                    "name": "Estimer le prix",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/orders\/estimate",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/orders\/estimate"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"pickup_latitude\":12.3714,\"pickup_longitude\":-1.5197,\"dropoff_latitude\":12.38,\"dropoff_longitude\":-1.51,\"zone_id\":1}"
+                        },
+                        "description": "Calcule une estimation de prix bas\u00e9e sur la distance entre les points de collecte et de livraison."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"success\": true, \"message\": \"Estimation calcul\u00e9e.\", \"data\": {\"distance_km\": 2.5, \"estimated_price\": 1500, \"estimated_duration_minutes\": 15}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Cr\u00e9er une commande",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/orders",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/orders"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"pickup_address\":\"b\",\"pickup_latitude\":-89,\"pickup_longitude\":-180,\"pickup_contact_name\":\"z\",\"pickup_contact_phone\":\"+22642559314\",\"pickup_instructions\":\"k\",\"dropoff_address\":\"h\",\"dropoff_latitude\":-90,\"dropoff_longitude\":-180,\"dropoff_contact_name\":\"y\",\"dropoff_contact_phone\":\"+22642559314\",\"dropoff_instructions\":\"k\",\"package_description\":\"h\",\"package_size\":\"small\",\"zone_id\":16}"
+                        },
+                        "description": "Cr\u00e9e une nouvelle commande de livraison. R\u00e9serv\u00e9 aux clients."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 201,
+                            "body": "{\"success\": true, \"message\": \"Commande cr\u00e9\u00e9e avec succ\u00e8s.\", \"data\": {\"id\": \"uuid\", \"order_number\": \"OC-20260120-ABCD\", \"status\": \"pending\", \"total_price\": 1500}}",
+                            "name": ""
+                        },
+                        {
+                            "header": [],
+                            "code": 403,
+                            "body": "{\"success\": false, \"message\": \"Seuls les clients peuvent cr\u00e9er des commandes.\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Lister mes commandes",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/orders",
+                            "query": [
+                                {
+                                    "key": "status",
+                                    "value": "pending",
+                                    "description": "Filtrer par statut (pending, assigned, picked_up, delivered, cancelled).",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "per_page",
+                                    "value": "15",
+                                    "description": "Nombre de r\u00e9sultats par page.",
+                                    "disabled": false
+                                }
+                            ],
+                            "raw": "{{baseUrl}}\/api\/v1\/orders?status=pending&per_page=15"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Retourne la liste pagin\u00e9e des commandes du client connect\u00e9."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"success\": true, \"message\": \"Commandes r\u00e9cup\u00e9r\u00e9es.\", \"data\": [], \"meta\": {\"current_page\": 1, \"last_page\": 1, \"per_page\": 15, \"total\": 0}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Cancel order (client)\nPOST \/api\/v1\/orders\/{order}\/cancel",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/orders\/:order\/cancel",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/orders\/:order\/cancel",
+                            "variable": [
+                                {
+                                    "id": "order",
+                                    "key": "order",
+                                    "value": "BcECdBDA-CdED-bFEA-CbCE-BcCdeBfbbebc",
+                                    "description": "The order."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"reason\":\"b\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Rate courier (client)\nPOST \/api\/v1\/orders\/{order}\/rate-courier",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/orders\/:order\/rate-courier",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/orders\/:order\/rate-courier",
+                            "variable": [
+                                {
+                                    "id": "order",
+                                    "key": "order",
+                                    "value": "BcECdBDA-CdED-bFEA-CbCE-BcCdeBfbbebc",
+                                    "description": "The order."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"rating\":2,\"review\":\"n\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Rate client (courier)\nPOST \/api\/v1\/orders\/{order}\/rate-client",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/orders\/:order\/rate-client",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/orders\/:order\/rate-client",
+                            "variable": [
+                                {
+                                    "id": "order",
+                                    "key": "order",
+                                    "value": "BcECdBDA-CdED-bFEA-CbCE-BcCdeBfbbebc",
+                                    "description": "The order."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"rating\":2,\"review\":\"n\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Configuration",
+            "description": "\nEndpoints pour obtenir la configuration de l'application.",
+            "item": [
+                {
+                    "name": "Configuration g\u00e9n\u00e9rale",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/config\/general",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/config\/general"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Retourne la configuration g\u00e9n\u00e9rale de l'application.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"success\": true, \"data\": {\"app_name\": \"OUAGA CHAP\", \"version\": \"1.0.0\", \"currency\": \"XOF\", \"support_phone\": \"+22670000000\"}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Configuration WebSocket",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/config\/websocket",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/config\/websocket"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Retourne les informations de connexion pour le client WebSocket.\nUtilisez ces informations pour configurer Laravel Echo dans Flutter.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"success\": true, \"data\": {\"host\": \"localhost\", \"port\": 8080, \"key\": \"xxx\", \"scheme\": \"http\", \"cluster\": \"mt1\"}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Zones de livraison",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/config\/zones",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/config\/zones"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Retourne la liste des zones de livraison actives.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"success\": true, \"data\": [{\"id\": 1, \"name\": \"Centre-ville\", \"base_price\": 500, \"price_per_km\": 200}]}",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Coursiers",
+            "description": "\nEndpoints r\u00e9serv\u00e9s aux coursiers pour g\u00e9rer leur disponibilit\u00e9, localisation et commandes.",
+            "item": [
+                {
+                    "name": "Mettre \u00e0 jour la position",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/courier\/location",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/courier\/location"
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"latitude\":12.3714,\"longitude\":-1.5197}"
+                        },
+                        "description": "Met \u00e0 jour la position GPS du coursier en temps r\u00e9el.\n\u00c0 appeler r\u00e9guli\u00e8rement pendant les livraisons."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"success\": true, \"message\": \"Position mise \u00e0 jour.\", \"data\": {\"latitude\": 12.3714, \"longitude\": -1.5197}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Mettre \u00e0 jour la position",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/courier\/location",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/courier\/location"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"latitude\":12.3714,\"longitude\":-1.5197}"
+                        },
+                        "description": "Met \u00e0 jour la position GPS du coursier en temps r\u00e9el.\n\u00c0 appeler r\u00e9guli\u00e8rement pendant les livraisons."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"success\": true, \"message\": \"Position mise \u00e0 jour.\", \"data\": {\"latitude\": 12.3714, \"longitude\": -1.5197}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Mettre \u00e0 jour le statut en ligne",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/courier\/status",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/courier\/status"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"is_online\":true,\"latitude\":12.3714,\"longitude\":-1.5197}"
+                        },
+                        "description": "Active ou d\u00e9sactive le mode en ligne du coursier (avec position GPS)."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"success\": true, \"message\": \"Statut mis \u00e0 jour.\", \"data\": {\"is_online\": true}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Modifier la disponibilit\u00e9",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/courier\/availability",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/courier\/availability"
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"is_available\":true}"
+                        },
+                        "description": "Active ou d\u00e9sactive la disponibilit\u00e9 du coursier pour recevoir des commandes."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"success\": true, \"message\": \"Disponibilit\u00e9 mise \u00e0 jour.\", \"data\": {\"is_available\": true}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Accept an order\nPOST \/api\/v1\/courier\/orders\/{order}\/accept",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/courier\/orders\/:order\/accept",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/courier\/orders\/:order\/accept",
+                            "variable": [
+                                {
+                                    "id": "order",
+                                    "key": "order",
+                                    "value": "architecto",
+                                    "description": "The order."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update order status (picked_up, delivered)\nPUT \/api\/v1\/courier\/orders\/{order}\/status",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/courier\/orders\/:order\/status",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/courier\/orders\/:order\/status",
+                            "variable": [
+                                {
+                                    "id": "order",
+                                    "key": "order",
+                                    "value": "architecto",
+                                    "description": "The order."
+                                }
+                            ]
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"status\":\"picked_up\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Confirm delivery with client's confirmation code\nPOST \/api\/v1\/courier\/orders\/{order}\/confirm-delivery",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/courier\/orders\/:order\/confirm-delivery",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/courier\/orders\/:order\/confirm-delivery",
+                            "variable": [
+                                {
+                                    "id": "order",
+                                    "key": "order",
+                                    "value": "architecto",
+                                    "description": "The order."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"confirmation_code\":\"bngzmi\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Profil public d'un coursier",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/couriers\/:courier\/profile",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/couriers\/:courier\/profile",
+                            "variable": [
+                                {
+                                    "id": "courier",
+                                    "key": "courier",
+                                    "value": "16",
+                                    "description": "L'ID du coursier."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Retourne les informations publiques d'un coursier (nom, photo, note, v\u00e9hicule).\nAccessible par les clients authentifi\u00e9s."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"success\": true, \"data\": {\"id\": 1, \"name\": \"Ali\", \"avatar_url\": \"https:\/\/...\", ...}}",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Endpoints",
+            "description": "",
+            "item": [
+                {
+                    "name": "Connexion admin via API (avec email\/password)",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/admin\/login",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/admin\/login"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"email\":\"gbailey@example.net\",\"password\":\"|]|{+-\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "G\u00e9rer le webhook JEKO",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/jeko\/webhook",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/jeko\/webhook"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "La signature HMAC-SHA256 est v\u00e9rifi\u00e9e avec le corps brut de la requ\u00eate"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Recherche de colis par num\u00e9ro de commande (pour les non-inscrits)\nPOST \/api\/v1\/incoming-orders\/search",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/track-order",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/track-order"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"order_number\":\"architecto\",\"phone\":\"architecto\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Incr\u00e9menter le compteur de vues d'une FAQ",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/support\/faqs\/:id\/view",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/support\/faqs\/:id\/view",
+                            "variable": [
+                                {
+                                    "id": "id",
+                                    "key": "id",
+                                    "value": "architecto",
+                                    "description": "The ID of the faq."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Report a new traffic incident\nPOST \/api\/v1\/traffic\/incidents",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/traffic\/incidents",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/traffic\/incidents"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"type\":\"hazard\",\"severity\":\"high\",\"latitude\":-89,\"longitude\":-179,\"address\":\"g\",\"description\":\"Quos velit et fugiat sunt nihil accusantium harum.\",\"duration_hours\":5}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Confirm an existing incident\nPOST \/api\/v1\/traffic\/incidents\/{incident}\/confirm",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/traffic\/incidents\/:incident\/confirm",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/traffic\/incidents\/:incident\/confirm",
+                            "variable": [
+                                {
+                                    "id": "incident",
+                                    "key": "incident",
+                                    "value": "architecto",
+                                    "description": "The incident."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Resolve\/dismiss an incident\nPOST \/api\/v1\/traffic\/incidents\/{incident}\/resolve",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/traffic\/incidents\/:incident\/resolve",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/traffic\/incidents\/:incident\/resolve",
+                            "variable": [
+                                {
+                                    "id": "incident",
+                                    "key": "incident",
+                                    "value": "architecto",
+                                    "description": "The incident."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Valider un code promo",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/promo-codes\/validate",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/promo-codes\/validate"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"code\":\"b\",\"order_amount\":39,\"zone_id\":16}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Appliquer un code promo \u00e0 une commande",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/promo-codes\/apply",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/promo-codes\/apply"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"code\":\"b\",\"order_id\":\"a4855dc5-0acb-33c3-b921-f4291f719ca0\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Confirmer la r\u00e9ception d'un colis avec le code\nPOST \/api\/v1\/incoming-orders\/{id}\/confirm",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/incoming-orders\/:id\/confirm",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/incoming-orders\/:id\/confirm",
+                            "variable": [
+                                {
+                                    "id": "id",
+                                    "key": "id",
+                                    "value": "architecto",
+                                    "description": "The ID of the incoming order."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"confirmation_code\":\"bngzmi\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Initier une recharge de wallet via JEKO",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/jeko\/recharge",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/jeko\/recharge"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"amount\":1,\"payment_method\":\"moov\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Initier un paiement de commande via JEKO",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/jeko\/pay-order",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/jeko\/pay-order"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"order_id\":\"architecto\",\"payment_method\":\"moov\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Mettre \u00e0 jour la position et v\u00e9rifier les g\u00e9ofences (pour coursiers)",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/geofence\/position",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/geofence\/position"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"latitude\":-89,\"longitude\":-179,\"order_id\":\"6b72fe4a-5b40-307c-bc24-f79acf9a1bb9\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Obtenir ou cr\u00e9er une conversation de chat",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/support\/chats",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/support\/chats"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Envoyer un message dans une conversation",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/support\/chats\/:chatId\/messages",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/support\/chats\/:chatId\/messages",
+                            "variable": [
+                                {
+                                    "id": "chatId",
+                                    "key": "chatId",
+                                    "value": "architecto",
+                                    "description": ""
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"message\":\"b\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Fermer une conversation",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/support\/chats\/:chatId\/close",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/support\/chats\/:chatId\/close",
+                            "variable": [
+                                {
+                                    "id": "chatId",
+                                    "key": "chatId",
+                                    "value": "architecto",
+                                    "description": ""
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Cr\u00e9er une nouvelle r\u00e9clamation",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/support\/complaints",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/support\/complaints"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"type\":\"other\",\"subject\":\"b\",\"description\":\"Et animi quos velit et fugiat.\",\"priority\":\"low\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Ajouter un message \u00e0 une r\u00e9clamation",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/support\/complaints\/:complaintId\/messages",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/support\/complaints\/:complaintId\/messages",
+                            "variable": [
+                                {
+                                    "id": "complaintId",
+                                    "key": "complaintId",
+                                    "value": "architecto",
+                                    "description": ""
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"message\":\"b\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Envoyer un message",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/orders\/:order_id\/chat\/messages",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/orders\/:order_id\/chat\/messages",
+                            "variable": [
+                                {
+                                    "id": "order_id",
+                                    "key": "order_id",
+                                    "value": "architecto",
+                                    "description": "The ID of the order."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "multipart\/form-data"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "message",
+                                    "value": "b",
+                                    "type": "text",
+                                    "description": "This field is required when <code>image<\/code> is not present. validation.max."
+                                },
+                                {
+                                    "key": "image",
+                                    "src": [],
+                                    "type": "file"
+                                }
+                            ]
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Marquer les messages comme lus",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/orders\/:order_id\/chat\/read",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/orders\/:order_id\/chat\/read",
+                            "variable": [
+                                {
+                                    "id": "order_id",
+                                    "key": "order_id",
+                                    "value": "architecto",
+                                    "description": "The ID of the order."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Calculer le multiplicateur de prix dynamique pour une zone",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/geofence\/dynamic-pricing",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/geofence\/dynamic-pricing"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"zone_id\":16}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "V\u00e9rifier si une position est dans une zone sp\u00e9cifique",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/geofence\/check-position",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/geofence\/check-position"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"latitude\":-89,\"longitude\":-179,\"zone_id\":16}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Cr\u00e9er un nouvel administrateur",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/admin\/users",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/admin\/users"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"name\":\"b\",\"email\":\"zbailey@example.net\",\"phone\":\"(+226\",\"password\":\"architecto\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Mettre \u00e0 jour un administrateur",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/admin\/users\/:admin_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/admin\/users\/:admin_id",
+                            "variable": [
+                                {
+                                    "id": "admin_id",
+                                    "key": "admin_id",
+                                    "value": "16",
+                                    "description": "The ID of the admin."
+                                }
+                            ]
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"name\":\"b\",\"email\":\"zbailey@example.net\",\"phone\":\"(+226\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Supprimer un administrateur (soft delete)",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/admin\/users\/:admin_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/admin\/users\/:admin_id",
+                            "variable": [
+                                {
+                                    "id": "admin_id",
+                                    "key": "admin_id",
+                                    "value": "16",
+                                    "description": "The ID of the admin."
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Changer le mot de passe d'un administrateur",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/admin\/users\/:admin_id\/change-password",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/admin\/users\/:admin_id\/change-password",
+                            "variable": [
+                                {
+                                    "id": "admin_id",
+                                    "key": "admin_id",
+                                    "value": "16",
+                                    "description": "The ID of the admin."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"password\":\"architecto\",\"password_confirmation\":\"architecto\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Suspendre un administrateur",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/admin\/users\/:admin_id\/suspend",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/admin\/users\/:admin_id\/suspend",
+                            "variable": [
+                                {
+                                    "id": "admin_id",
+                                    "key": "admin_id",
+                                    "value": "16",
+                                    "description": "The ID of the admin."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "R\u00e9activer un administrateur",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/admin\/users\/:admin_id\/activate",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/admin\/users\/:admin_id\/activate",
+                            "variable": [
+                                {
+                                    "id": "admin_id",
+                                    "key": "admin_id",
+                                    "value": "16",
+                                    "description": "The ID of the admin."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Notifications In-App",
+            "description": "\nAPIs pour g\u00e9rer les notifications dans l'application",
+            "item": [
+                {
+                    "name": "Liste des notifications",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/notifications",
+                            "query": [
+                                {
+                                    "key": "unread_only",
+                                    "value": "1",
+                                    "description": "Afficher uniquement les non lues.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "type",
+                                    "value": "order_status",
+                                    "description": "Filtrer par type (order_status, payment, promo, system, wallet).",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "per_page",
+                                    "value": "20",
+                                    "description": "Nombre par page (max 50).",
+                                    "disabled": false
+                                }
+                            ],
+                            "raw": "{{baseUrl}}\/api\/v1\/notifications?unread_only=1&type=order_status&per_page=20"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "R\u00e9cup\u00e8re les notifications de l'utilisateur connect\u00e9"
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\n  \"success\": true,\n  \"data\": {\n    \"current_page\": 1,\n    \"data\": [...],\n    \"unread_count\": 5\n  }\n}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Nombre de notifications non lues",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/notifications\/unread-count",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/notifications\/unread-count"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\n  \"success\": true,\n  \"unread_count\": 5\n}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Marquer plusieurs notifications comme lues",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/notifications\/mark-read",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/notifications\/mark-read"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"ids\":[\"550e8400-e29b-41d4-a716-446655440000\"]}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Marquer toutes les notifications comme lues",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/notifications\/mark-all-read",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/notifications\/mark-all-read"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Supprimer les notifications lues",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/notifications\/clear-read",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/notifications\/clear-read"
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Marquer une notification comme lue",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/notifications\/:notification\/read",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/notifications\/:notification\/read",
+                            "variable": [
+                                {
+                                    "id": "notification",
+                                    "key": "notification",
+                                    "value": "550e8400-e29b-41d4-a716-446655440000",
+                                    "description": "UUID de la notification."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Supprimer une notification",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/notifications\/:notification",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/notifications\/:notification",
+                            "variable": [
+                                {
+                                    "id": "notification",
+                                    "key": "notification",
+                                    "value": "architecto",
+                                    "description": "UUID de la notification."
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Paiements",
+            "description": "\nEndpoints pour g\u00e9rer les paiements Mobile Money.",
+            "item": [
+                {
+                    "name": "Handle webhook from payment provider\nPOST \/api\/v1\/payments\/webhook",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/payments\/webhook",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/payments\/webhook"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Initier un paiement",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/payments\/initiate",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/payments\/initiate"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"order_id\":\"550e8400-e29b-41d4-a716-446655440000\",\"method\":\"orange_money\",\"phone_number\":\"+22670123456\"}"
+                        },
+                        "description": "Initie un paiement Mobile Money pour une commande.\nSupporte Orange Money et Moov Money."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"success\": true, \"message\": \"Paiement initi\u00e9.\", \"data\": {\"payment\": {\"id\": 1, \"transaction_id\": \"TXN-ABC123\", \"amount\": 1500, \"status\": \"pending\"}}}",
+                            "name": ""
+                        },
+                        {
+                            "header": [],
+                            "code": 400,
+                            "body": "{\"success\": false, \"message\": \"Cette commande a d\u00e9j\u00e0 \u00e9t\u00e9 pay\u00e9e.\"}",
+                            "name": ""
+                        },
+                        {
+                            "header": [],
+                            "code": 403,
+                            "body": "{\"success\": false, \"message\": \"Acc\u00e8s non autoris\u00e9.\"}",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Portefeuille Client",
+            "description": "\nAPIs pour la gestion du portefeuille client (recharge)",
+            "item": [
+                {
+                    "name": "Mon solde",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/client-wallet\/balance",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/client-wallet\/balance"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "R\u00e9cup\u00e8re le solde du portefeuille client"
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\n  \"success\": true,\n  \"data\": {\n    \"balance\": 5000,\n    \"currency\": \"FCFA\"\n  }\n}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Initier une recharge",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/client-wallet\/recharge",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/client-wallet\/recharge"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"amount\":1000,\"provider\":\"orange_money\",\"phone\":\"70123456\"}"
+                        },
+                        "description": "D\u00e9marre le processus de recharge via Mobile Money"
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\n  \"success\": true,\n  \"message\": \"Recharge initi\u00e9e avec succ\u00e8s\",\n  \"data\": {\n    \"transaction_id\": \"RECH-ABC123\",\n    \"amount\": 1000,\n    \"provider\": \"orange_money\",\n    \"phone\": \"70123456\",\n    \"status\": \"pending\",\n    \"instructions\": \"Vous allez recevoir une demande de paiement sur votre t\u00e9l\u00e9phone. Veuillez confirmer avec votre code PIN Mobile Money.\"\n  }\n}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Confirmer une recharge (webhook ou simulation)",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/client-wallet\/recharge\/confirm",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/client-wallet\/recharge\/confirm"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"transaction_id\":\"RECH-ABC123\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\n  \"success\": true,\n  \"message\": \"Recharge confirm\u00e9e\",\n  \"data\": {\n    \"new_balance\": 6000\n  }\n}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Historique des recharges",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/client-wallet\/recharge\/history",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/client-wallet\/recharge\/history"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": 1,\n      \"transaction_id\": \"RECH-ABC123\",\n      \"amount\": 1000,\n      \"provider\": \"orange_money\",\n      \"status\": \"completed\",\n      \"created_at\": \"2026-01-20T10:00:00Z\"\n    }\n  ]\n}",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Portefeuille Coursier",
+            "description": "\nAPIs pour la gestion du portefeuille et des retraits des coursiers",
+            "item": [
+                {
+                    "name": "Mon portefeuille",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/wallet",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/wallet"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "R\u00e9cup\u00e8re les informations du portefeuille du coursier connect\u00e9"
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\n  \"success\": true,\n  \"data\": {\n    \"balance\": \"15000.00\",\n    \"pending_balance\": \"2000.00\",\n    \"total_earned\": \"50000.00\",\n    \"total_withdrawn\": \"33000.00\",\n    \"available_for_withdrawal\": \"15000.00\",\n    \"pending_withdrawals_count\": 1,\n    \"pending_withdrawals_amount\": \"2000.00\"\n  }\n}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Demander un retrait",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/wallet\/withdraw",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/wallet\/withdraw"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"amount\":\"5000\",\"payment_method\":\"mobile_money\",\"phone\":\"22670123456\",\"provider\":\"orange_money\",\"bank_name\":\"SGBF\",\"bank_account\":\"BF001234567890\"}"
+                        },
+                        "description": "Cr\u00e9er une demande de retrait de fonds"
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 201,
+                            "body": "{\n  \"success\": true,\n  \"message\": \"Demande de retrait cr\u00e9\u00e9e avec succ\u00e8s\",\n  \"data\": {\n    \"id\": 1,\n    \"amount\": \"5000.00\",\n    \"status\": \"pending\",\n    \"payment_method\": \"mobile_money\",\n    \"payment_phone\": \"22670123456\",\n    \"created_at\": \"2026-01-20T10:00:00Z\"\n  }\n}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Historique des retraits",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/wallet\/withdrawals",
+                            "query": [
+                                {
+                                    "key": "status",
+                                    "value": "pending",
+                                    "description": "Filtrer par statut (pending, approved, completed, rejected).",
+                                    "disabled": false
+                                }
+                            ],
+                            "raw": "{{baseUrl}}\/api\/v1\/wallet\/withdrawals?status=pending"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Liste pagin\u00e9e des demandes de retrait du coursier"
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\n  \"success\": true,\n  \"data\": {\n    \"current_page\": 1,\n    \"data\": [\n      {\n        \"id\": 1,\n        \"amount\": \"5000.00\",\n        \"status\": \"completed\",\n        \"payment_method\": \"mobile_money\",\n        \"transaction_reference\": \"TXN123456\",\n        \"created_at\": \"2026-01-20T10:00:00Z\",\n        \"completed_at\": \"2026-01-20T12:00:00Z\"\n      }\n    ],\n    \"total\": 10\n  }\n}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Annuler un retrait",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/wallet\/withdrawals\/:withdrawal",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/wallet\/withdrawals\/:withdrawal",
+                            "variable": [
+                                {
+                                    "id": "withdrawal",
+                                    "key": "withdrawal",
+                                    "value": "1",
+                                    "description": "ID du retrait."
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Annuler une demande de retrait en attente"
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\n  \"success\": true,\n  \"message\": \"Demande de retrait annul\u00e9e\"\n}",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Services",
+            "description": "\nAPIs pour la liste des services disponibles",
+            "item": [
+                {
+                    "name": "Liste des services",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/services",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/services"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "R\u00e9cup\u00e8re la liste des services disponibles pour le client"
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\n  \"success\": true,\n  \"data\": {\n    \"services\": [\n      {\n        \"id\": \"delivery\",\n        \"name\": \"Livraison Express\",\n        \"description\": \"Livraison rapide en moins de 2h\",\n        \"icon\": \"local_shipping\",\n        \"color\": \"#FF9800\",\n        \"is_active\": true,\n        \"badge\": \"Express\"\n      }\n    ],\n    \"promotions\": [\n      {\n        \"id\": 1,\n        \"title\": \"-20% sur votre premi\u00e8re commande\",\n        \"code\": \"BIENVENUE20\",\n        \"expires_at\": \"2026-02-28\"\n      }\n    ]\n  }\n}",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "Authorization",
+                "type": "string"
+            }
+        ]
+    }
+}

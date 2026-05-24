@@ -50,17 +50,10 @@ class CreateAdminCommand extends Command
      */
     private function collectInputs(): array
     {
-        $email = $this->option('email') ?? $this->ask('Email de l\'administrateur');
-        $name  = $this->option('name')  ?? $this->ask('Nom complet', 'Admin');
-        $phone = $this->option('phone') ?? $this->ask('Téléphone (ex: +22670000001)', null);
-
-        if ($this->option('password')) {
-            // Warn: passing password via CLI flag exposes it in process list (ps aux / shell history)
-            $this->warn('⚠️  Mot de passe fourni en clair via --password. Préférez le mode interactif pour éviter l\'exposition dans ps/history.');
-            $plainPassword = $this->option('password');
-        } else {
-            $plainPassword = $this->secret('Mot de passe (min. 8 caractères)');
-        }
+        $email         = $this->option('email')    ?? $this->ask('Email de l\'administrateur');
+        $name          = $this->option('name')     ?? $this->ask('Nom complet', 'Admin');
+        $phone         = $this->option('phone')    ?? $this->ask('Téléphone (ex: +22670000001)', null);
+        $plainPassword = $this->option('password') ?? $this->secret('Mot de passe (min. 8 caractères)');
 
         return [$email, $name, $phone, $plainPassword];
     }

@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use App\Models\User;
 use App\Models\Wallet;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 
 class SyncWalletBalances extends Command
 {
@@ -41,12 +40,7 @@ class SyncWalletBalances extends Command
                         round($realBalance - $currentCache, 2) . " FCFA)"
                     );
                 } else {
-                    // Lock both rows to prevent a concurrent withdrawal reading stale cache
-                    DB::transaction(function () use ($user, $wallet, $realBalance) {
-                        Wallet::lockForUpdate()->find($wallet->id);
-                        User::lockForUpdate()->find($user->id);
-                        $user->update(['wallet_balance' => $realBalance]);
-                    });
+                    $user->update(['wallet_balance' => $realBalance]);
                     $this->line("  User #{$user->id} ({$user->phone}): {$currentCache} → {$realBalance} FCFA");
                 }
                 $synced++;
@@ -64,15 +58,13 @@ class SyncWalletBalances extends Command
             if ($dryRun) {
                 $this->warn("  User #{$user->id} ({$user->phone}): wallet_balance={$user->wallet_balance} FCFA mais PAS de Wallet model");
             } else {
-                DB::transaction(function () use ($user) {
-                    Wallet::create([
-                        'user_id'         => $user->id,
-                        'balance'         => $user->wallet_balance,
-                        'pending_balance' => 0,
-                        'total_earned'    => $user->wallet_balance,
-                        'total_withdrawn' => 0,
-                    ]);
-                });
+                Wallet::create([
+                    'user_id' => $user->id,
+                    'balance' => $user->wallet_balance,
+                    'pending_balance' => 0,
+                    'total_earned' => $user->wallet_balance,
+                    'total_withdrawn' => 0,
+                ]);
                 $this->line("  User #{$user->id}: Wallet créé avec solde {$user->wallet_balance} FCFA");
             }
             $synced++;
