@@ -16,6 +16,7 @@
         "laravel/tinker": "^2.9",
         "maatwebsite/excel": "^3.1",
         "psr/simple-cache": "^2.0",
+        "sentry/sentry-laravel": "^4.25",
         "spatie/laravel-permission": "^6.24",
         "twilio/sdk": "^8.10"
     },
