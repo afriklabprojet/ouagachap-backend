@@ -37,6 +37,9 @@ class FirebaseAuthController extends Controller
             'firebase_token' => ['required', 'string', 'min:100'],
             'role'           => ['required', 'string', 'in:client,courier'],
             'device_name'    => ['nullable', 'string', 'max:100'],
+            'device_id'      => ['nullable', 'string', 'max:255'],
+            'platform'       => ['nullable', 'string', 'in:android,ios,web'],
+            'device_type'    => ['nullable', 'string', 'max:100'],
         ]);
 
         $deviceName = $validated['device_name']
@@ -46,6 +49,9 @@ class FirebaseAuthController extends Controller
             idToken:    $validated['firebase_token'],
             appType:    $validated['role'],
             deviceName: $deviceName,
+            deviceId:   $validated['device_id'] ?? null,
+            platform:   $validated['platform'] ?? null,
+            deviceType: $validated['device_type'] ?? null,
         );
 
         if (!$result['success']) {
@@ -63,9 +69,10 @@ class FirebaseAuthController extends Controller
         }
 
         return response()->json([
-            'token'      => $result['token'],
-            'token_type' => 'Bearer',
-            'user'       => $result['user'],
+            'token'                     => $result['token'],
+            'token_type'                => 'Bearer',
+            'user'                      => $result['user'],
+            'duplicate_account_warning' => $result['duplicate_account_warning'] ?? false,
         ]);
     }
 

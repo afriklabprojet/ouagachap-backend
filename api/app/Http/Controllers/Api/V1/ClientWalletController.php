@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Models\SappayTransaction;
 use App\Models\WalletTransaction;
 use App\Services\SappayService;
+use App\Services\TransactionVelocityService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -17,6 +18,7 @@ class ClientWalletController extends BaseController
 {
     public function __construct(
         private SappayService $sappayService,
+        private TransactionVelocityService $velocityService,
     ) {}
 
     /**
@@ -52,6 +54,11 @@ class ClientWalletController extends BaseController
             'payment_method' => 'required|in:orange_money,moov_money,telecel_money,coris_money',
             'phone'          => 'required|string|min:8|max:15',
         ]);
+
+        $velocityCheck = $this->velocityService->checkRechargeVelocity($request->user());
+        if ($velocityCheck['blocked']) {
+            return $this->error($velocityCheck['message'], 429);
+        }
 
         $result = $this->sappayService->initiatePayment(
             user:           $request->user(),
@@ -106,6 +113,8 @@ class ClientWalletController extends BaseController
         if (!$result['success']) {
             return $this->error($result['message'], 422);
         }
+
+        $this->velocityService->recordRecharge($request->user());
 
         $user = $request->user()->fresh();
 

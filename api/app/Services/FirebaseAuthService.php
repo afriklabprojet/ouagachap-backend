@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\UserRole;
+use App\Support\PhoneNormalizer;
 use App\Enums\UserStatus;
 use App\Models\User;
+use App\Services\DeviceFingerprintService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Kreait\Firebase\Contract\Auth as FirebaseAuth;
@@ -43,7 +45,10 @@ class FirebaseAuthService
     public function authenticateWithToken(
         string $idToken,
         string $appType,
-        string $deviceName = 'mobile'
+        string $deviceName = 'mobile',
+        ?string $deviceId = null,
+        ?string $platform = null,
+        ?string $deviceType = null,
     ): array {
         if ($this->firebaseAuth === null) {
             Log::error('FirebaseAuthService: Firebase Auth SDK non configuré');
@@ -94,7 +99,10 @@ class FirebaseAuthService
         ]);
 
         // 3. Créer ou récupérer l'utilisateur
-        return $this->findOrCreateUser($phone, $firebaseUid, $appType, $deviceName);
+        return $this->findOrCreateUser(
+            $phone, $firebaseUid, $appType, $deviceName,
+            $deviceId, $platform, $deviceType,
+        );
     }
 
     /**
@@ -104,7 +112,10 @@ class FirebaseAuthService
         string $phone,
         string $firebaseUid,
         string $appType,
-        string $deviceName
+        string $deviceName,
+        ?string $deviceId = null,
+        ?string $platform = null,
+        ?string $deviceType = null,
     ): array {
         // Données de pré-inscription éventuellement stockées par registerClient/registerCourier
         $registrationData = Cache::pull("registration:{$phone}");
@@ -177,16 +188,37 @@ class FirebaseAuthService
             'role'    => $user->role->value,
         ]);
 
+        $fingerprintResult = $this->processFingerprintIfPresent($user, $deviceId, $platform, $deviceType);
+
         return [
-            'success' => true,
-            'message' => 'Connexion réussie.',
-            'token'   => $token,
-            'user'    => $user->only([
+            'success'                    => true,
+            'message'                    => 'Connexion réussie.',
+            'token'                      => $token,
+            'user'                       => $user->only([
                 'id', 'name', 'email', 'phone', 'role', 'status',
                 'avatar', 'firebase_uid', 'fcm_token',
                 'wallet_balance', 'kyc_status',
             ]),
+            'duplicate_account_warning'  => $fingerprintResult['duplicate_account_warning'],
         ];
+    }
+
+    private function processFingerprintIfPresent(
+        User $user,
+        ?string $deviceId,
+        ?string $platform,
+        ?string $deviceType,
+    ): array {
+        if ($deviceId === null || $platform === null || $deviceType === null) {
+            return ['duplicate_account_warning' => false, 'duplicate_user_id' => null];
+        }
+
+        return app(DeviceFingerprintService::class)->processForUser(
+            $user,
+            $deviceId,
+            $platform,
+            $deviceType,
+        );
     }
 
     /**
@@ -218,21 +250,8 @@ class FirebaseAuthService
         return ['success' => true];
     }
 
-    /**
-     * Normaliser le numéro de téléphone (supprimer préfixe +226)
-     */
     public function normalizePhone(string $phone): string
     {
-        $phone = preg_replace('/[\s\-]/', '', $phone);
-
-        if (str_starts_with($phone, '+226')) {
-            return substr($phone, 4);
-        }
-
-        if (str_starts_with($phone, '00226')) {
-            return substr($phone, 5);
-        }
-
-        return $phone;
+        return PhoneNormalizer::toLocal($phone);
     }
 }

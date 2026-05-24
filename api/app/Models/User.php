@@ -45,6 +45,7 @@ class User extends Authenticatable implements FilamentUser // NOSONAR php:S1448
     protected $fillable = [
         'phone',
         'firebase_uid',
+        'device_fingerprint',
         'name',
         'email',
         'avatar',

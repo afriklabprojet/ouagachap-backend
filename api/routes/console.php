@@ -2,6 +2,7 @@
 
 use App\Jobs\AutoDispatchPendingOrdersJob;
 use App\Jobs\CleanupExpiredOrdersJob;
+use App\Jobs\DetectStaticCourierJob;
 use App\Jobs\GenerateDailyReportJob;
 use App\Jobs\ReassignStuckOrderJob;
 use Illuminate\Foundation\Inspiring;
@@ -40,6 +41,12 @@ $schedule(
 $schedule(
     Schedule::job(new ReassignStuckOrderJob)->everyFiveMinutes(),
     'ouagachap-reassign-stuck-orders'
+);
+
+// Détecter les coursiers statiques (sans mouvement pendant une livraison active)
+$schedule(
+    Schedule::job(new DetectStaticCourierJob)->everyFiveMinutes(),
+    'ouagachap-detect-static-couriers'
 );
 
 // Générer le rapport quotidien à 1h du matin

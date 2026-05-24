@@ -71,7 +71,8 @@ class AutoAlert extends Model
             'high_pending_orders' => '📦 Beaucoup de commandes en attente',
             'withdrawal_pending' => '💸 Retraits en attente',
             'negative_rating' => '⭐ Avis négatif',
-            'zone_missing' => '🗺️ Commande hors zone tarifaire',
+            'zone_missing'    => '🗺️ Commande hors zone tarifaire',
+            'static_courier'  => '📍 Coursier sans mouvement',
             default => $this->trigger_type,
         };
     }

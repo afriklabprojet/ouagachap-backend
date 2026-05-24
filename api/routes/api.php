@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\ActivityLogController;
 use App\Http\Controllers\Api\V1\AdminController;
 use App\Http\Controllers\Api\V1\AdminDispatchController;
+use App\Http\Controllers\Api\V1\DisputeController;
 use App\Http\Controllers\Api\V1\LiveMapController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\FirebaseAuthController;
@@ -231,6 +232,10 @@ Route::prefix('v1')->group(function () { // NOSONAR
             Route::post('/orders/{order}/rate-courier', [OrderController::class, 'rateCourier'])
                 ->whereUuid('order');
 
+            // Open a dispute on a delivered order (auto-complaint with photo proof)
+            Route::post('/orders/{order}/dispute', [DisputeController::class, 'store'])
+                ->whereUuid('order');
+
             // Payment initiation (rate limited)
             Route::post('/payments/initiate', [PaymentController::class, 'initiate'])
                 ->middleware('throttle:payments');
@@ -265,7 +270,8 @@ Route::prefix('v1')->group(function () { // NOSONAR
                 Route::get('/', [App\Http\Controllers\Api\V1\IncomingOrderController::class, 'index']);
                 Route::get(OUAGA_ROUTE_ID, [App\Http\Controllers\Api\V1\IncomingOrderController::class, 'show']); // NOSONAR
                 Route::get('/{id}/track', [App\Http\Controllers\Api\V1\IncomingOrderController::class, 'track']);
-                Route::post('/{id}/confirm', [App\Http\Controllers\Api\V1\IncomingOrderController::class, 'confirmReceipt']);
+                Route::post('/{id}/confirm', [App\Http\Controllers\Api\V1\IncomingOrderController::class, 'confirmReceipt'])
+                    ->middleware('throttle:confirm-delivery');
             });
 
             // ==================== PARRAINAGE (CLIENT) ====================
@@ -318,7 +324,7 @@ Route::prefix('v1')->group(function () { // NOSONAR
             Route::post('/courier/orders/{order}/accept', [CourierController::class, 'acceptOrder']);
             Route::put('/courier/orders/{order}/status', [CourierController::class, 'updateOrderStatus']);
             Route::post('/courier/orders/{order}/confirm-delivery', [CourierController::class, 'confirmDelivery'])
-                ->middleware('throttle:5,1'); // 5 tentatives/min — anti brute-force code 6 chiffres
+                ->middleware('throttle:confirm-delivery');
 
             // Annulation de commande (coursier)
             Route::post('/courier/orders/{order}/cancel', [CourierController::class, 'cancelOrder'])
