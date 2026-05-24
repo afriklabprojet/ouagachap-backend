@@ -1,8 +1,8 @@
 <?php
 
-// Stub for missing dev-only packages (not installed in production vendor)
+// Aliases for dev-only packages not installed in production vendor
 if (! class_exists('Knuckles\\Scribe\\ScribeServiceProvider')) {
-    require_once __DIR__.'/../app/Providers/ScribeStub.php';
+    class_alias('Illuminate\\Support\\ServiceProvider', 'Knuckles\\Scribe\\ScribeServiceProvider');
 }
 
 if (! class_exists('Laravel\\Pail\\PailServiceProvider')) {
