@@ -6,6 +6,7 @@ use App\Models\PromoCode;
 use App\Models\PromoCodeUsage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PromoCodeController extends BaseController
 {
@@ -79,38 +80,58 @@ class PromoCodeController extends BaseController
             return $this->error('Cette commande ne peut plus être modifiée.', 422);
         }
 
-        // Vérifier qu'aucun code promo n'est déjà appliqué (via usage table)
-        $alreadyApplied = PromoCodeUsage::where('order_id', $order->id)->exists();
-        if ($alreadyApplied) {
-            return $this->error('Un code promo est déjà appliqué à cette commande.', 422);
+        // Transaction + locks pessimistes pour éliminer la race condition :
+        // deux requêtes parallèles ne peuvent pas appliquer deux codes sur la même commande.
+        $result = DB::transaction(function () use ($promo, $order, $request) {
+            // Lock sur le code promo — sérialise les demandes concurrentes
+            $lockedPromo = PromoCode::lockForUpdate()->find($promo->id);
+
+            // Double-check : code toujours actif et non épuisé après lock
+            if (! $lockedPromo || ! $lockedPromo->is_active) {
+                return ['error' => 'Code promo invalide ou désactivé.', 'status' => 422];
+            }
+
+            if ($lockedPromo->max_uses && $lockedPromo->current_uses >= $lockedPromo->max_uses) {
+                return ['error' => 'Ce code promo a atteint sa limite d\'utilisation.', 'status' => 422];
+            }
+
+            // Vérifier qu'aucun code promo n'est déjà appliqué à cette commande (après lock)
+            $alreadyApplied = PromoCodeUsage::where('order_id', $order->id)->exists();
+            if ($alreadyApplied) {
+                return ['error' => 'Un code promo est déjà appliqué à cette commande.', 'status' => 422];
+            }
+
+            // Valider les conditions utilisateur
+            $validation = $this->validatePromoCode($lockedPromo, $request->user(), $order->total_price, $order->zone_id);
+            if (! $validation['valid']) {
+                return ['error' => $validation['message'], 'status' => 422];
+            }
+
+            $discount = $lockedPromo->calculateDiscount($order->total_price);
+
+            // forceFill requis — total_price est dans $guarded (protection mass assignment)
+            $order->forceFill(['total_price' => max(0, $order->total_price - $discount)])->save();
+
+            // Enregistrer l'utilisation — la contrainte UNIQUE(promo_code_id, order_id)
+            // garantit qu'une seconde insertion simultanée échouera avec IntegrityException
+            PromoCodeUsage::create([
+                'promo_code_id' => $lockedPromo->id,
+                'user_id'       => $request->user()->id,
+                'order_id'      => $order->id,
+                'discount_applied' => $discount,
+            ]);
+
+            $lockedPromo->increment('current_uses');
+
+            return ['discount' => $discount];
+        });
+
+        if (isset($result['error'])) {
+            return $this->error($result['error'], $result['status']);
         }
-
-        // Valider le code promo
-        $validation = $this->validatePromoCode($promo, $request->user(), $order->total_price, $order->zone_id);
-
-        if (!$validation['valid']) {
-            return $this->error($validation['message'], 422);
-        }
-
-        // Calculer la réduction
-        $discount = $promo->calculateDiscount($order->total_price);
-
-        // forceFill requis — total_price est dans $guarded (protection mass assignment)
-        $order->forceFill(['total_price' => max(0, $order->total_price - $discount)])->save();
-
-        // Enregistrer l'utilisation
-        PromoCodeUsage::create([
-            'promo_code_id' => $promo->id,
-            'user_id' => $request->user()->id,
-            'order_id' => $order->id,
-            'discount_applied' => $discount,
-        ]);
-
-        // Incrémenter le compteur d'utilisation
-        $promo->increment('current_uses');
 
         return $this->success([
-                'discount_applied' => $discount,
+                'discount_applied' => $result['discount'],
                 'new_total' => $order->fresh()->total_price,
             ], 'Code promo appliqué avec succès !');
     }
