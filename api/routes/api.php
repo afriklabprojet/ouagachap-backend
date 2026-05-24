@@ -218,7 +218,7 @@ Route::prefix('v1')->group(function () { // NOSONAR
             // Order creation (rate limited)
             Route::post('/orders/estimate', [OrderController::class, 'estimate']);
             Route::post('/orders', [OrderController::class, 'store'])
-                ->middleware('throttle:orders');
+                ->middleware(['throttle:orders', 'idempotent']);
 
             // Client's orders
             Route::get('/orders', [OrderController::class, 'index']);
