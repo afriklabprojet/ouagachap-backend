@@ -266,16 +266,28 @@ class PaymentService
     }
 
     /**
-     * Handle webhook callback from payment provider
+     * Handle webhook callback from payment provider.
+     *
+     * La signature MUST être validée AVANT d'appeler cette méthode (via PaymentController).
+     * Si rawBody et signature sont fournis directement, cette méthode les revalide
+     * comme défense en profondeur.
      */
-    public function handleWebhook(array $data): array
+    public function handleWebhook(array $data, ?string $rawBody = null, ?string $signature = null): array
     {
+        // Défense en profondeur : revalider la signature si fournie directement
+        if ($rawBody !== null || $signature !== null) {
+            if (! $this->verifyWebhookSignature($rawBody ?? '', $signature)) {
+                Log::channel('security')->warning('Payment webhook: signature invalide (couche service)', [
+                    'has_body'      => $rawBody !== null,
+                    'has_signature' => $signature !== null,
+                ]);
+                return ['success' => false, 'message' => 'Signature invalide.'];
+            }
+        }
+
         Log::info('Payment webhook received', [
             'data' => array_merge($data, ['signature' => '***REDACTED***']),
         ]);
-
-        // In production: validate webhook signature
-        // $this->validateWebhookSignature($data);
 
         $transactionId = $data['transaction_id'] ?? null;
 
@@ -326,25 +338,35 @@ class PaymentService
     }
 
     /**
-     * Verify webhook signature
+     * Verify webhook HMAC-SHA256 signature.
+     *
+     * Header attendu : X-Webhook-Signature: sha256=<hex>
+     * Si SAPPAY_WEBHOOK_SECRET n'est pas configuré :
+     *  - production → false (fail-closed)
+     *  - autres environnements → true (développement local)
      */
     public function verifyWebhookSignature(string $payload, ?string $signature): bool
     {
-        $secret = config('services.payment.webhook_secret');
+        $secret = config('sappay.webhook_secret', '');
 
         if (empty($secret)) {
-            Log::channel('security')->error('Payment: Webhook secret not configured');
-            return false;
+            if (config('app.env') === 'production') {
+                Log::channel('security')->error('Payment: SAPPAY_WEBHOOK_SECRET non configuré — webhook bloqué en production');
+                return false;
+            }
+            return true; // dev/staging : autoriser sans secret
         }
 
         if (empty($signature)) {
-            Log::channel('security')->warning('Payment: No signature provided');
+            Log::channel('security')->warning('Payment: Pas de signature webhook fournie');
             return false;
         }
 
+        // Support format brut (hex) ET format "sha256=<hex>" (même convention que Sappay/Meta)
+        $sigHex  = str_starts_with($signature, 'sha256=') ? substr($signature, 7) : $signature;
         $expected = hash_hmac('sha256', $payload, $secret);
 
-        return hash_equals($expected, $signature);
+        return hash_equals($expected, $sigHex);
     }
 
     /**

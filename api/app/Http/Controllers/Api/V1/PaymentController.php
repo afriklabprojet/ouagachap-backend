@@ -108,18 +108,25 @@ class PaymentController extends BaseController
      */
     public function webhook(Request $request): JsonResponse
     {
-        // Validate webhook signature
-        $signature = $request->header('X-Webhook-Signature');
-        if (!$this->paymentService->verifyWebhookSignature($request->getContent(), $signature)) {
-            Log::warning('Payment webhook: Invalid signature', [
+        $rawBody  = $request->getContent();
+        $signature = $request->header('X-Webhook-Signature', '');
+
+        // Première couche : rejet immédiat avant tout traitement
+        if (! $this->paymentService->verifyWebhookSignature($rawBody, $signature)) {
+            Log::channel('security')->warning('Payment webhook: signature invalide', [
                 'ip' => $request->ip(),
             ]);
             return $this->error('Invalid webhook signature', 401);
         }
 
-        $result = $this->paymentService->handleWebhook($request->all());
+        // Le service revalide en interne (défense en profondeur) si appelé par d'autres chemins
+        $result = $this->paymentService->handleWebhook($request->all(), $rawBody, $signature);
 
-        return $this->success($result, $result['message']);
+        if (! ($result['success'] ?? false)) {
+            return $this->error($result['message'] ?? 'Erreur webhook.', 422);
+        }
+
+        return $this->success(null, $result['message']);
     }
 
     /**
