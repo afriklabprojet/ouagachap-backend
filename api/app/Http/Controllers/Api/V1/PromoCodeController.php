@@ -95,10 +95,8 @@ class PromoCodeController extends BaseController
         // Calculer la réduction
         $discount = $promo->calculateDiscount($order->total_price);
 
-        // Appliquer la réduction au prix total de la commande
-        $order->update([
-            'total_price' => max(0, $order->total_price - $discount),
-        ]);
+        // forceFill requis — total_price est dans $guarded (protection mass assignment)
+        $order->forceFill(['total_price' => max(0, $order->total_price - $discount)])->save();
 
         // Enregistrer l'utilisation
         PromoCodeUsage::create([

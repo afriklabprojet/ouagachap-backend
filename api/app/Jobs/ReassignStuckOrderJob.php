@@ -93,10 +93,11 @@ class ReassignStuckOrderJob implements ShouldQueue
         $newCourier = $courierService->getBestCourierForOrder($order);
 
         if ($newCourier && $newCourier->id !== $currentCourier?->id) {
-            $order->update([
+            // forceFill requis — courier_id et status sont dans $guarded (services internes uniquement)
+            $order->forceFill([
                 'courier_id' => $newCourier->id,
-                'status' => OrderStatus::ASSIGNED,
-            ]);
+                'status'     => OrderStatus::ASSIGNED,
+            ])->save();
             $order->statusHistories()->create([
                 'status' => OrderStatus::ASSIGNED,
                 'previous_status' => $order->getOriginal('status'),
@@ -119,10 +120,11 @@ class ReassignStuckOrderJob implements ShouldQueue
             ]);
         } else {
             // Pas de coursier dispo → remettre en PENDING pour redistribution
-            $order->update([
+            // forceFill requis — courier_id et status sont dans $guarded
+            $order->forceFill([
                 'courier_id' => null,
-                'status' => OrderStatus::PENDING,
-            ]);
+                'status'     => OrderStatus::PENDING,
+            ])->save();
             $order->statusHistories()->create([
                 'status' => OrderStatus::PENDING,
                 'previous_status' => $order->getOriginal('status'),

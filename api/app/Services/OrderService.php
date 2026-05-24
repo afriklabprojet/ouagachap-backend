@@ -152,45 +152,46 @@ class OrderService
             // Générer un code de confirmation pour le destinataire
             $confirmationCode = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
-            $order = Order::create([
-                'client_id' => $client->id,
-                'recipient_user_id' => $recipientUser?->id,
-                'zone_id' => $dto->zoneId,
-                'status' => OrderStatus::PENDING,
+            // forceFill() contourne $guarded — réservé aux services internes uniquement.
+            // Les champs financiers et d'état ne peuvent pas être passés via les contrôleurs.
+            $order = (new Order)->forceFill([
+                'client_id'                  => $client->id,
+                'recipient_user_id'          => $recipientUser?->id,
+                'zone_id'                    => $dto->zoneId,
+                'status'                     => OrderStatus::PENDING,
+                'recipient_confirmation_code'=> $confirmationCode,
 
                 // Pickup
-                'pickup_address' => $dto->pickupAddress,
-                'pickup_latitude' => $dto->pickupLatitude,
-                'pickup_longitude' => $dto->pickupLongitude,
-                'pickup_contact_name' => $dto->pickupContactName,
-                'pickup_contact_phone' => $dto->pickupContactPhone,
-                'pickup_instructions' => $dto->pickupInstructions,
+                'pickup_address'             => $dto->pickupAddress,
+                'pickup_latitude'            => $dto->pickupLatitude,
+                'pickup_longitude'           => $dto->pickupLongitude,
+                'pickup_contact_name'        => $dto->pickupContactName,
+                'pickup_contact_phone'       => $dto->pickupContactPhone,
+                'pickup_instructions'        => $dto->pickupInstructions,
 
                 // Dropoff
-                'dropoff_address' => $dto->dropoffAddress,
-                'dropoff_latitude' => $dto->dropoffLatitude,
-                'dropoff_longitude' => $dto->dropoffLongitude,
-                'dropoff_contact_name' => $dto->dropoffContactName,
-                'dropoff_contact_phone' => $dropoffPhone,
-                'dropoff_instructions' => $dto->dropoffInstructions,
-
-                // Code de confirmation destinataire
-                'recipient_confirmation_code' => $confirmationCode,
+                'dropoff_address'            => $dto->dropoffAddress,
+                'dropoff_latitude'           => $dto->dropoffLatitude,
+                'dropoff_longitude'          => $dto->dropoffLongitude,
+                'dropoff_contact_name'       => $dto->dropoffContactName,
+                'dropoff_contact_phone'      => $dropoffPhone,
+                'dropoff_instructions'       => $dto->dropoffInstructions,
 
                 // Package
-                'package_description' => $dto->packageDescription,
-                'package_size' => $dto->packageSize,
-                'payment_method' => $dto->paymentMethod,
+                'package_description'        => $dto->packageDescription,
+                'package_size'               => $dto->packageSize,
+                'payment_method'             => $dto->paymentMethod,
 
-                // Pricing
-                'distance_km' => $estimate['distance_km'],
-                'base_price' => $estimate['base_price'],
-                'distance_price' => $estimate['distance_price'],
-                'total_price' => $discountedTotal,
-                'subscription_discount' => $subscriptionDiscount,
-                'commission_amount' => $commissionAmount,
-                'courier_earnings' => $courierEarnings,
+                // Pricing — calculé par l'API, jamais fourni par le client
+                'distance_km'                => $estimate['distance_km'],
+                'base_price'                 => $estimate['base_price'],
+                'distance_price'             => $estimate['distance_price'],
+                'total_price'                => $discountedTotal,
+                'subscription_discount'      => $subscriptionDiscount,
+                'commission_amount'          => $commissionAmount,
+                'courier_earnings'           => $courierEarnings,
             ]);
+            $order->save();
 
             // Log initial status
             $order->statusHistories()->create([

@@ -36,13 +36,18 @@ class Order extends Model
 
     public $incrementing = false;
 
+    /**
+     * Champs modifiables par l'utilisateur final (PUT/PATCH depuis les contrôleurs).
+     * Les champs financiers et d'état sont exclusivement mis à jour via les méthodes
+     * du modèle (transitionTo, assign, markAsDelivered…) ou forceFill() dans les services.
+     */
     protected $fillable = [
-        'order_number',
-        'client_id',
-        'recipient_user_id',
-        'courier_id',
-        'zone_id',
-        'status',
+        // Informations colis — modifiables avant dispatch
+        'package_description',
+        'package_size',
+        'payment_method',
+
+        // Adresses — saisie client
         'pickup_address',
         'pickup_latitude',
         'pickup_longitude',
@@ -55,12 +60,31 @@ class Order extends Model
         'dropoff_contact_name',
         'dropoff_contact_phone',
         'dropoff_instructions',
-        'recipient_confirmation_code',
+
+        // Confirmation destinataire (mise à jour ciblée par le service)
         'recipient_confirmed',
         'delivery_photo_url',
-        'package_description',
-        'package_size',
-        'payment_method',
+
+        // Notes et évaluations post-livraison
+        'cancellation_reason',
+        'client_rating',
+        'client_review',
+        'courier_rating',
+        'courier_review',
+    ];
+
+    /**
+     * Champs protégés contre le mass assignment — uniquement via forceFill() ou setAttribute().
+     * Toute tentative de modifier ces champs via create()/update() avec données utilisateur sera ignorée.
+     */
+    protected $guarded = [
+        'id',
+        'order_number',
+        'client_id',
+        'recipient_user_id',
+        'courier_id',
+        'zone_id',
+        'status',
         'distance_km',
         'base_price',
         'distance_price',
@@ -68,15 +92,11 @@ class Order extends Model
         'subscription_discount',
         'commission_amount',
         'courier_earnings',
+        'recipient_confirmation_code',
         'assigned_at',
         'picked_up_at',
         'delivered_at',
         'cancelled_at',
-        'cancellation_reason',
-        'client_rating',
-        'client_review',
-        'courier_rating',
-        'courier_review',
     ];
 
     protected function casts(): array
