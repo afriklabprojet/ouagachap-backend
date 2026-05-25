@@ -1,8 +1,13 @@
 <?php
 
-// Aliases for dev-only packages not installed in production vendor
+// No-op providers for dev-only packages absent from production vendor
 if (! class_exists('Knuckles\\Scribe\\ScribeServiceProvider')) {
-    class_alias('Illuminate\\Support\\ServiceProvider', 'Knuckles\\Scribe\\ScribeServiceProvider');
+    class ScribeServiceProviderNoOp extends \Illuminate\Support\ServiceProvider
+    {
+        public function register(): void {}
+        public function boot(): void {}
+    }
+    class_alias('ScribeServiceProviderNoOp', 'Knuckles\\Scribe\\ScribeServiceProvider');
 }
 
 if (! class_exists('Laravel\\Pail\\PailServiceProvider')) {
