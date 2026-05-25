@@ -11,6 +11,7 @@
         "filament/filament": "^3.0",
         "kreait/laravel-firebase": "^6.2",
         "laravel/framework": "^11.31",
+        "laravel/horizon": "^5.0",
         "laravel/reverb": "^1.7",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
@@ -67,7 +68,9 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": []
+            "dont-discover": [
+                "knuckleswtf/scribe"
+            ]
         }
     },
     "config": {

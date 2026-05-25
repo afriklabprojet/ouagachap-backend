@@ -1,15 +1,6 @@
 <?php
 
-// No-op providers for dev-only packages absent from production vendor
-if (! class_exists('Knuckles\\Scribe\\ScribeServiceProvider')) {
-    class ScribeServiceProviderNoOp extends \Illuminate\Support\ServiceProvider
-    {
-        public function register(): void {}
-        public function boot(): void {}
-    }
-    class_alias('ScribeServiceProviderNoOp', 'Knuckles\\Scribe\\ScribeServiceProvider');
-}
-
+// No-op provider for Pail (dev-only, absent from production vendor)
 if (! class_exists('Laravel\\Pail\\PailServiceProvider')) {
     class_alias('Illuminate\\Support\\ServiceProvider', 'Laravel\\Pail\\PailServiceProvider');
 }
