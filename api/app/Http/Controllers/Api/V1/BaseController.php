@@ -9,6 +9,19 @@ use Illuminate\Routing\Controller;
 abstract class BaseController extends Controller
 {
     use AuthorizesRequests;
+
+    /**
+     * Auth-sensitive responses must never be cached by shared or local caches.
+     *
+     * @var array<string, string>
+     */
+    protected const AUTH_SENSITIVE_HEADERS = [
+        'Cache-Control' => 'no-store, no-cache, private, must-revalidate, max-age=0',
+        'Pragma' => 'no-cache',
+        'Expires' => 'Thu, 01 Jan 1970 00:00:00 GMT',
+        'Vary' => 'Authorization',
+    ];
+
     /**
      * Success response
      */
@@ -52,6 +65,15 @@ abstract class BaseController extends Controller
     protected function unauthorized(string $message = 'Unauthorized'): JsonResponse
     {
         return $this->error($message, 401);
+    }
+
+    protected function withAuthSensitiveHeaders(JsonResponse $response): JsonResponse
+    {
+        foreach (self::AUTH_SENSITIVE_HEADERS as $header => $value) {
+            $response->headers->set($header, $value);
+        }
+
+        return $response;
     }
 
     /**

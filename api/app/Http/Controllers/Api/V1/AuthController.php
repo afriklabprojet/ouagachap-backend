@@ -2,18 +2,19 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\UserRole;
 use App\Http\Requests\Auth\RegisterClientRequest;
 use App\Http\Requests\Auth\RegisterCourierRequest;
 use App\Http\Requests\Auth\UpdateProfileRequest;
 use App\Http\Resources\UserResource;
 use App\Services\AuthService;
 use App\Services\CdnService;
+use App\Services\CourierDeviceAttestationService;
 use App\Services\CourierPasswordResetService;
 use App\Services\PhoneVerificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules\Password;
-use Illuminate\Support\Facades\Log;
 
 /**
  * @group Authentification — endpoints résidants post-migration Firebase.
@@ -29,12 +30,14 @@ use Illuminate\Support\Facades\Log;
 class AuthController extends BaseController
 {
     private const BF_PHONE_RULE = 'regex:/^(\+226|00226)?[0-9]{8}$/';
+
     private const LOGIN_SUCCESS_MESSAGE = 'Connexion réussie.';
 
     public function __construct(
         private readonly AuthService $authService,
         private readonly PhoneVerificationService $phoneVerificationService,
         private readonly CourierPasswordResetService $courierPasswordResetService,
+        private readonly CourierDeviceAttestationService $courierDeviceAttestationService,
     ) {}
 
     // ─────────────────────────────────────────────────────────────
@@ -54,7 +57,7 @@ class AuthController extends BaseController
     {
         $result = $this->phoneVerificationService->sendOtp($request->user());
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             return $this->error($result['message'], 409);
         }
 
@@ -77,7 +80,7 @@ class AuthController extends BaseController
 
         $result = $this->phoneVerificationService->verifyOtp($request->user(), $validated['code']);
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             return $this->error($result['message'], 422);
         }
 
@@ -94,12 +97,13 @@ class AuthController extends BaseController
     /**
      * Connecter un client
      *
-    * Authentifie directement par numéro de téléphone et mot de passe.
+     * Authentifie directement par numéro de téléphone et mot de passe.
      * Retourne un token Sanctum si le compte existe et est actif.
      *
      * @unauthenticated
+     *
      * @bodyParam phone string required Numéro BF. Example: +22670123456
-    * @bodyParam password string required Mot de passe. Example: password123
+     * @bodyParam password string required Mot de passe. Example: password123
      *
      * @response 200 {"success": true, "data": {"user": {...}, "token": "..."}}
      * @response 404 {"success": false, "message": "Aucun compte trouvé pour ce numéro."}
@@ -114,7 +118,7 @@ class AuthController extends BaseController
 
         $result = $this->authService->loginClient($validated);
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             $message = $result['message'] ?? '';
             $status = 404;
             if (str_contains($message, 'incorrect')) {
@@ -122,11 +126,18 @@ class AuthController extends BaseController
             } elseif (str_contains($message, 'suspendu') || str_contains($message, 'attente') || str_contains($message, 'rejeté')) {
                 $status = 403;
             }
+
             return $this->error($result['message'], $status);
         }
 
+        $this->issueCourierAttestationSessionIfApplicable($request, $result);
+
         return $this->success(
-            ['user' => new UserResource($result['user']), 'token' => $result['token']],
+            [
+                'user' => new UserResource($result['user']),
+                'token' => $result['token'],
+                'expires_at' => $result['expires_at'] ?? null,
+            ],
             $result['message'] ?? self::LOGIN_SUCCESS_MESSAGE,
         );
     }
@@ -142,6 +153,7 @@ class AuthController extends BaseController
      * Retourne un token Sanctum coursier si le compte existe et est actif.
      *
      * @unauthenticated
+     *
      * @bodyParam phone string required Numéro BF. Example: +22670123456
      * @bodyParam password string required Mot de passe. Example: password123
      *
@@ -158,7 +170,7 @@ class AuthController extends BaseController
 
         $result = $this->authService->loginCourier($validated);
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             $message = $result['message'] ?? '';
             $status = 404;
             if (str_contains($message, 'incorrect') || str_contains($message, 'configuré')) {
@@ -166,11 +178,19 @@ class AuthController extends BaseController
             } elseif (str_contains($message, 'suspendu') || str_contains($message, 'attente') || str_contains($message, 'rejeté')) {
                 $status = 403;
             }
+
             return $this->error($result['message'], $status);
         }
 
+        $deviceAttestation = $this->buildCourierAttestationPayload($request, $result);
+
         return $this->success(
-            ['user' => new UserResource($result['user']), 'token' => $result['token']],
+            [
+                'user' => new UserResource($result['user']),
+                'token' => $result['token'],
+                'expires_at' => $result['expires_at'] ?? null,
+                'device_attestation' => $deviceAttestation,
+            ],
             $result['message'] ?? self::LOGIN_SUCCESS_MESSAGE,
         );
     }
@@ -179,6 +199,7 @@ class AuthController extends BaseController
      * Demander un code de réinitialisation du mot de passe coursier.
      *
      * @unauthenticated
+     *
      * @bodyParam phone string required Numéro BF. Example: +22670123456
      */
     public function forgotCourierPassword(Request $request): JsonResponse
@@ -196,8 +217,9 @@ class AuthController extends BaseController
             $request->userAgent(),
         );
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             $status = ($result['code'] ?? null) === 'OTP_RATE_LIMIT_EXCEEDED' ? 429 : 422;
+
             return $this->error($result['message'], $status);
         }
 
@@ -208,6 +230,7 @@ class AuthController extends BaseController
      * Réinitialiser le mot de passe coursier avec le code reçu par SMS.
      *
      * @unauthenticated
+     *
      * @bodyParam phone string required Numéro BF. Example: +22670123456
      * @bodyParam code string required Code SMS à 6 chiffres. Example: 123456
      * @bodyParam password string required Nouveau mot de passe. Example: password123
@@ -230,7 +253,7 @@ class AuthController extends BaseController
             $validated['password'],
         );
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             return $this->error($result['message'], 422);
         }
 
@@ -244,13 +267,14 @@ class AuthController extends BaseController
     /**
      * Pré-inscrire un client
      *
-    * Crée un compte client actif avec numéro, email et mot de passe.
+     * Crée un compte client actif avec numéro, email et mot de passe.
      *
      * @unauthenticated
+     *
      * @bodyParam phone string required Numéro BF. Example: +22670123456
      * @bodyParam name  string required Nom complet. Example: Abdoulaye Ouédraogo
-        * @bodyParam email string required Email du client. Example: a@example.com
-        * @bodyParam password string required Mot de passe du client. Example: password123
+     * @bodyParam email string required Email du client. Example: a@example.com
+     * @bodyParam password string required Mot de passe du client. Example: password123
      *
      * @response 200 {"success": true, "message": "Compte créé. Connectez-vous avec votre numéro."}
      * @response 409 {"success": false, "message": "Ce numéro est déjà inscrit."}
@@ -259,7 +283,7 @@ class AuthController extends BaseController
     {
         $result = $this->authService->registerClient($request->validated());
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             return $this->error($result['message'], 409);
         }
 
@@ -277,6 +301,7 @@ class AuthController extends BaseController
      * La connexion s'effectue ensuite via Firebase Phone Auth.
      *
      * @unauthenticated
+     *
      * @bodyParam phone        string required Numéro BF. Example: +22670123456
      * @bodyParam name         string required Nom complet. Example: Ouédraogo Drissa
      * @bodyParam vehicle_type string required Type de véhicule. Example: moto
@@ -290,7 +315,7 @@ class AuthController extends BaseController
     {
         $result = $this->authService->registerCourier($request->validated());
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             return $this->error($result['message'], 409);
         }
 
@@ -338,7 +363,7 @@ class AuthController extends BaseController
     public function sendOtp(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'phone'   => ['required', 'string', 'min:8', 'max:20'],
+            'phone' => ['required', 'string', 'min:8', 'max:20'],
             'purpose' => ['nullable', 'string'],
         ]);
 
@@ -349,11 +374,12 @@ class AuthController extends BaseController
             $request->userAgent(),
         );
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             if (($result['code'] ?? null) === 'OTP_RATE_LIMIT_EXCEEDED') {
                 return response()->json(['success' => false, 'code' => 'OTP_RATE_LIMIT_EXCEEDED', 'message' => $result['message']], 429);
             }
             $status = str_contains($result['message'] ?? '', 'rate') ? 429 : 422;
+
             return $this->error($result['message'], $status);
         }
 
@@ -366,8 +392,8 @@ class AuthController extends BaseController
     public function verifyOtp(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'phone'    => ['required', 'string', 'min:8', 'max:20'],
-            'code'     => ['required', 'string', 'digits:6'],
+            'phone' => ['required', 'string', 'min:8', 'max:20'],
+            'code' => ['required', 'string', 'digits:6'],
             'platform' => ['nullable', 'string'],
             'app_type' => ['nullable', 'string'],
         ]);
@@ -379,20 +405,22 @@ class AuthController extends BaseController
             $validated['app_type'] ?? null,
         );
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             $status = 401;
             if (str_contains($result['message'] ?? '', 'suspendu')) {
                 $status = 403;
             } elseif (str_contains($result['message'] ?? '', 'maximum')) {
                 $status = 429;
             }
+
             return $this->error($result['message'], $status);
         }
 
         return $this->success(
             [
-                'user'  => new UserResource($result['user']),
+                'user' => new UserResource($result['user']),
                 'token' => $result['token'] ?? null,
+                'expires_at' => $result['expires_at'] ?? null,
             ],
             $result['message'] ?? self::LOGIN_SUCCESS_MESSAGE,
         );
@@ -404,7 +432,9 @@ class AuthController extends BaseController
 
     public function me(Request $request): JsonResponse
     {
-        return $this->success(new UserResource($request->user()));
+        return $this->withAuthSensitiveHeaders(
+            $this->success(new UserResource($request->user()))
+        );
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -414,7 +444,10 @@ class AuthController extends BaseController
     public function logout(Request $request): JsonResponse
     {
         $result = $this->authService->logout($request->user());
-        return $this->success(null, $result['message']);
+
+        return $this->withAuthSensitiveHeaders(
+            $this->success(null, $result['message'])
+        );
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -425,16 +458,50 @@ class AuthController extends BaseController
     {
         $result = $this->authService->refreshToken($request->user());
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             return $this->error($result['message'], 403);
         }
 
-        return $this->success(
-            [
-                'token' => $result['token'],
-                'user'  => new UserResource($request->user()->fresh()),
-            ],
-            'Token renouvelé.',
+        $deviceAttestation = $this->buildCourierAttestationPayload($request, [
+            'user' => $request->user(),
+            'access_token_id' => $result['access_token_id'] ?? null,
+        ]);
+
+        return $this->withAuthSensitiveHeaders(
+            $this->success(
+                [
+                    'token' => $result['token'],
+                    'expires_at' => $result['expires_at'] ?? null,
+                    'user' => new UserResource($request->user()->fresh()),
+                    'device_attestation' => $deviceAttestation,
+                ],
+                'Token renouvelé.',
+            )
         );
+    }
+
+    private function buildCourierAttestationPayload(Request $request, array $result): ?array
+    {
+        $user = $result['user'] ?? null;
+        $accessTokenId = $result['access_token_id'] ?? null;
+
+        $shouldSkip = ! $user instanceof \App\Models\User
+            || ! is_int($accessTokenId)
+            || $user->role !== UserRole::COURIER
+            || ! $this->courierDeviceAttestationService->isEnforced();
+
+        if ($shouldSkip) {
+            return null;
+        }
+
+        $session = $this->courierDeviceAttestationService->issueChallengeForRequest(
+            user: $user,
+            personalAccessTokenId: $accessTokenId,
+            request: $request,
+        );
+
+        return $session === null
+            ? null
+            : $this->courierDeviceAttestationService->toApiPayload($session);
     }
 }
