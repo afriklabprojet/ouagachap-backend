@@ -16,6 +16,30 @@ class FullAuthFlowTest extends TestCase
 {
     use RefreshDatabase;
 
+    private function assertAuthNoStoreHeaders($response): void
+    {
+        $cacheControl = (string) $response->headers->get('Cache-Control', '');
+        $directives = array_map(
+            static fn (string $directive): string => trim(strtolower($directive)),
+            explode(',', $cacheControl)
+        );
+
+        foreach (['no-store', 'no-cache', 'private', 'must-revalidate', 'max-age=0'] as $directive) {
+            $this->assertContains($directive, $directives);
+        }
+
+        $response->assertHeader('Pragma', 'no-cache');
+        $response->assertHeader('Expires', 'Thu, 01 Jan 1970 00:00:00 GMT');
+
+        $varyHeader = (string) $response->headers->get('Vary', '');
+        $varyDirectives = array_map(
+            static fn (string $directive): string => trim($directive),
+            explode(',', $varyHeader)
+        );
+
+        $this->assertContains('Authorization', $varyDirectives);
+    }
+
     // =========================================================================
     // COMPLETE AUTH FLOW: REGISTER → LOGIN → PROFILE → LOGOUT
     // =========================================================================
@@ -59,6 +83,7 @@ class FullAuthFlowTest extends TestCase
 
         $meResponse->assertStatus(200)
             ->assertJsonPath('data.phone', $phone);
+        $this->assertAuthNoStoreHeaders($meResponse);
 
         // 4. Mettre à jour le profil
         $updateResponse = $this->withHeaders([
@@ -76,6 +101,7 @@ class FullAuthFlowTest extends TestCase
 
         $refreshResponse->assertStatus(200)
             ->assertJsonStructure(['data' => ['token']]);
+        $this->assertAuthNoStoreHeaders($refreshResponse);
 
         $newToken = $refreshResponse->json('data.token');
 
@@ -88,15 +114,18 @@ class FullAuthFlowTest extends TestCase
         ])->postJson('/api/v1/auth/logout');
 
         $logoutResponse->assertStatus(200);
+        $this->assertAuthNoStoreHeaders($logoutResponse);
 
         // Reset auth guard cache so revoked token is re-evaluated from DB
         $this->app['auth']->forgetGuards();
 
         // 7. Ancien token ne fonctionne plus
-        $this->withHeaders([
+        $revokedMeResponse = $this->withHeaders([
             'Authorization' => "Bearer {$newToken}",
-        ])->getJson('/api/v1/auth/me')
-            ->assertStatus(401);
+        ])->getJson('/api/v1/auth/me');
+
+        $revokedMeResponse->assertStatus(401);
+        $this->assertAuthNoStoreHeaders($revokedMeResponse);
     }
 
     // =========================================================================
@@ -135,10 +164,11 @@ class FullAuthFlowTest extends TestCase
             ->getJson('/api/v1/auth/me')
             ->assertStatus(200);
 
-        // Logout-all depuis token1
-        $this->withHeaders(['Authorization' => "Bearer {$token1}"])
-            ->postJson('/api/v1/auth/logout-all')
-            ->assertStatus(200);
+        $logoutAllResponse = $this->withHeaders(['Authorization' => "Bearer {$token1}"])
+            ->postJson('/api/v1/auth/logout-all');
+
+        $logoutAllResponse->assertStatus(200);
+        $this->assertAuthNoStoreHeaders($logoutAllResponse);
 
         // Reset auth guard cache so revoked tokens are re-evaluated from DB
         $this->app['auth']->forgetGuards();
@@ -202,8 +232,14 @@ class FullAuthFlowTest extends TestCase
 
     public function test_unauthenticated_cannot_access_protected_routes(): void
     {
-        $this->getJson('/api/v1/auth/me')->assertStatus(401);
-        $this->postJson('/api/v1/auth/logout')->assertStatus(401);
+        $meResponse = $this->getJson('/api/v1/auth/me');
+        $meResponse->assertStatus(401);
+        $this->assertAuthNoStoreHeaders($meResponse);
+
+        $logoutResponse = $this->postJson('/api/v1/auth/logout');
+        $logoutResponse->assertStatus(401);
+        $this->assertAuthNoStoreHeaders($logoutResponse);
+
         $this->getJson('/api/v1/orders')->assertStatus(401);
         $this->getJson('/api/v1/notifications')->assertStatus(401);
     }
